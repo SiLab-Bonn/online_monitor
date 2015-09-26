@@ -1,4 +1,4 @@
-# A generic online monitor showing real-time plots from multiple and independent data acquisition systems
+# A generic online monitor showing real-time plots from independent data acquisition systems
 
 TBD
 
