@@ -1,0 +1,3 @@
+pyzmq
+PyYAML
+pyqtgraph
