@@ -1,0 +1,13 @@
+converter :
+    dut0 :
+        data_type : pybar_fei4
+        receive_address : tcp://localhost:5678
+        send_address : tcp://localhost:5559
+    dut1 :
+        data_type : forwarder
+        receive_address : tcp://localhost:5681
+        send_address : tcp://localhost:5582
+    dut2 :
+        data_type : forwarder
+        receive_address : tcp://localhost:5681
+        send_address : tcp://localhost:5582
