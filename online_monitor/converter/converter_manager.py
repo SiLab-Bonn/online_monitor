@@ -1,8 +1,8 @@
-import argparse
 import logging
 import yaml
 import time
-
+import psutil
+import sys
 from importlib import import_module
 from inspect import getmembers, isclass
 
@@ -50,12 +50,15 @@ class ConverterManager(object):
             converters.append(converter)
         try:
             while True:
-                time.sleep(0.1)
+                sys.stdout.write("Sytem CPU usage: %1.1f \r" % psutil.cpu_percent())
+                sys.stdout.flush()
+                time.sleep(1)
         except KeyboardInterrupt:
-            logging.info('CRTL-C pressed, shutting down converters')
+            logging.info('CRTL-C pressed, shutting down %d converters', len(self.configuration['converter']))
             for converter in converters:
                 converter.shutdown()
 
         for converter in converters:
             converter.join()
+        logging.info('Close converter manager')
 
