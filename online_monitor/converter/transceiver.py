@@ -29,7 +29,7 @@ class Transceiver(multiprocessing.Process):
         self.exit = multiprocessing.Event()  # exit signal
         self.setup_logging(loglevel)
 
-        logging.info("Initialize %s converter for data at %s", self.data_type, self.receive_address)
+        logging.debug("Initialize %s converter for data at %s", self.data_type, self.receive_address)
 
     def setup_logging(self, loglevel):
         numeric_level = getattr(logging, loglevel.upper(), None)
@@ -37,35 +37,45 @@ class Transceiver(multiprocessing.Process):
             raise ValueError('Invalid log level: %s' % loglevel)
         logging.basicConfig(level=numeric_level)
 
-    def run(self):  # the receiver loop
+    def setup_forwarder_device(self):
         # ignore SIGTERM; signal shutdown() is used for controlled process termination
         signal.signal(signal.SIGINT, signal.SIG_IGN)
         # Setup ZeroMQ connetions, has to be within run; otherwise zMQ does not work
-        context = zmq.Context()
+        self.context = zmq.Context()
         # Socket facing clients (DAQ systems)
-        receiver = context.socket(zmq.SUB)  # subscriber
-        receiver.connect(self.receive_address)
-        receiver.setsockopt(zmq.SUBSCRIBE, '')  # do not filter any data
+        self.receiver = self.context.socket(zmq.SUB)  # subscriber
+        self.receiver.connect(self.receive_address)
+        self.receiver.setsockopt(zmq.SUBSCRIBE, '')  # do not filter any data
         # Socket facing services (e.g. online monitor)
-        sender = context.socket(zmq.PUB)
-        sender.connect(self.send_address)
+        self.sender = self.context.socket(zmq.PUB)
+        self.sender.connect(self.send_address)
+
+    def run(self):  # the receiver loop
+        # Thisfunction has to work 'stand alone' since it is spawned as a new process
+        # Thus all setting has to take place here
+        self.setup_forwarder_device()
+        self.setup_interpretation()
 
         logging.info("Start %s transceiver for %s", self.data_type, self.receive_address)
         while not self.exit.wait(0.01):
             try:
-                raw_data = receiver.recv(flags=zmq.NOBLOCK)
+                raw_data = self.receiver.recv(flags=zmq.NOBLOCK)
                 data = self.interpret_data(raw_data)
-                sender.send(data)
-            except zmq.Again:
+                if data is not None:  # data is None if there is nothing to convert
+                    self.sender.send(data)
+            except zmq.Again:  # no data
                 pass
 
-        receiver.close()
-        sender.close()
-        context.term()
+        self.receiver.close()
+        self.sender.close()
+        self.context.term()
         logging.info("Close %s transceiver for %s", self.data_type, self.receive_address)
 
     def shutdown(self):
         self.exit.set()
+
+    def setup_interpretation(self, data):  # this function can be overwritten in derived class
+        pass
 
     def interpret_data(self, data):  # this function has to be overwritten in derived class
         raise NotImplementedError("You have to implement a interpret_data method!")
