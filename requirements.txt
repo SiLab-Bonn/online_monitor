@@ -1,3 +1,4 @@
 pyzmq
 PyYAML
 pyqtgraph
+psutil
