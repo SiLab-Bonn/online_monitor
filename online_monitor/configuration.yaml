@@ -1,13 +1,28 @@
 converter :
-    dut0 :
+    DUT0 :
         data_type : pybar_fei4
         receive_address : tcp://localhost:5678
         send_address : tcp://localhost:5559
-    dut1 :
+        max_cpu_load : 30
+    DUT1 :
         data_type : forwarder
-        receive_address : tcp://localhost:5681
-        send_address : tcp://localhost:5582
-    dut2 :
-        data_type : forwarder
-        receive_address : tcp://localhost:5681
-        send_address : tcp://localhost:5582
+        receive_address : tcp://localhost:5680
+        send_address : tcp://localhost:5581
+     
+        
+receiver :
+    DUT0 :
+        data_type : pybar_fei4
+        receive_address : tcp://localhost:5559
+    #DUT1 :
+     #   data_type : pybar_fei4
+      #  receive_address : tcp://localhost:5549
+
+correlator :
+    hits :
+        on :
+            - event_number
+            - trigger_number 
+        devices : 
+            - DUT0
+            - DUT1
