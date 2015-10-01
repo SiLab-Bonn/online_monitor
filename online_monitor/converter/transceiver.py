@@ -4,6 +4,8 @@ import logging
 import signal
 import psutil
 
+from online_monitor import utils
+
 
 class Transceiver(multiprocessing.Process):
 
@@ -39,17 +41,11 @@ class Transceiver(multiprocessing.Process):
         self.max_cpu_load = max_cpu_load
 
         self.exit = multiprocessing.Event()  # exit signal
-        self.setup_logging(loglevel)
+        utils.setup_logging(loglevel)
 
         logging.debug("Initialize %s converter for data at %s", self.data_type, self.receive_address)
 
-    def setup_logging(self, loglevel):
-        numeric_level = getattr(logging, loglevel.upper(), None)
-        if not isinstance(numeric_level, int):
-            raise ValueError('Invalid log level: %s' % loglevel)
-        logging.basicConfig(level=numeric_level)
-
-    def setup_forwarder_device(self):
+    def setup_transceiver_device(self):
         # ignore SIGTERM; signal shutdown() is used for controlled process termination
         signal.signal(signal.SIGINT, signal.SIG_IGN)
         # Setup ZeroMQ connetions, has to be within run; otherwise zMQ does not work
@@ -63,9 +59,7 @@ class Transceiver(multiprocessing.Process):
         self.sender.connect(self.send_address)
 
     def run(self):  # the receiver loop
-        # Thisfunction has to work 'stand alone' since it is spawned as a new process
-        # Thus all setting has to take place here
-        self.setup_forwarder_device()
+        self.setup_transceiver_device()
         self.setup_interpretation()
 
         process = psutil.Process(self.ident)  # access this process info
@@ -94,10 +88,11 @@ class Transceiver(multiprocessing.Process):
     def shutdown(self):
         self.exit.set()
 
-    def setup_interpretation(self, data):  # this function can be overwritten in derived class
+    def setup_interpretation(self, data):
+        # This function has to be overwritten in derived class and is called once at the beginning
         pass
 
     def interpret_data(self, data):
         # This function has to be overwritten in derived class and should not throw exceptions
-        # if the data is not valid. Invalid data should return None
+        # Invalid data and failed interpretations should return None
         raise NotImplementedError("You have to implement a interpret_data method!")
