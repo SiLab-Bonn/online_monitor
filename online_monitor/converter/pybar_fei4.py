@@ -23,10 +23,12 @@ class PybarFEI4(Transceiver):
         except ValueError:
             try:
                 if self.meta_data:
-                    raw_data_array = np.frombuffer(buffer(data), dtype=self.meta_data.pop('dtype')).reshape(self.meta_data.pop('shape'))
-                    self.analyze_raw_data(raw_data_array)
-                    print self.histograming.get_occupancy().shape
-                    return self.interpreter.get_hits()
+                    try:
+                        raw_data_array = np.frombuffer(buffer(data), dtype=self.meta_data.pop('dtype')).reshape(self.meta_data.pop('shape'))
+                        self.analyze_raw_data(raw_data_array)
+                        return self.interpreter.get_hits()
+                    except (KeyError, ValueError):  # KeyError happens if meta data read is omitted; ValueError if np.frombuffer fails due to wrong shape
+                        return None
             except AttributeError:  # happens if first data is not meta data
                 return None
         return jsonapi.dumps(self.meta_data)
