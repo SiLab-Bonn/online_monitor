@@ -12,7 +12,7 @@ from transceiver import Transceiver
 class ConverterManager(object):
     def __init__(self, configuration, loglevel='INFO'):
         self._setup_logging(loglevel)
-        logging.info("Initialize converter mananager with configuration %s", configuration)
+        logging.info("Initialize converter mananager with configuration in %s", configuration)
         self.configuration = self._parse_config_file(configuration)
 
     def _setup_logging(self, loglevel):
@@ -41,17 +41,26 @@ class ConverterManager(object):
             cls = clsmembers[0][1]
         return cls(*args, **kargs)
 
+    def _info_output(self, process_infos):
+        info_str = 'INFO: Sytem CPU usage: %1.1f' % psutil.cpu_percent()
+        for process_info in process_infos:
+            info_str += ', %s CPU usage: %1.1f ' % (process_info[0], process_info[1].cpu_percent())
+        info_str += '\r'
+        sys.stdout.write(info_str)
+        sys.stdout.flush()
+
     def start(self):
         logging.info('Starting %d converters', len(self.configuration['converter']))
-        converters = []
-        for (_, converter_settings) in self.configuration['converter'].items():
+        converters, process_infos = [], []
+
+        for (converter_name, converter_settings) in self.configuration['converter'].items():
             converter = self._factory('converter.%s' % converter_settings['data_type'], *(), **converter_settings)
             converter.start()
+            process_infos.append((converter_name, psutil.Process(converter.ident)))
             converters.append(converter)
         try:
             while True:
-                sys.stdout.write("Sytem CPU usage: %1.1f \r" % psutil.cpu_percent())
-                sys.stdout.flush()
+                self._info_output(process_infos)
                 time.sleep(1)
         except KeyboardInterrupt:
             logging.info('CRTL-C pressed, shutting down %d converters', len(self.configuration['converter']))
