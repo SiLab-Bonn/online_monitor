@@ -1,4 +1,5 @@
 pyzmq
 PyYAML
-pyqtgraph
+blosc
 psutil
+pyqtgraph
