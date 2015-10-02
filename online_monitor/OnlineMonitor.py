@@ -25,7 +25,11 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
         self.configuration = utils.parse_config_file(config_file)
         self.setup_style()
         self.setup_widgets()
-        self.setup_receivers()
+        self.receivers = self.start_receivers()
+
+    def closeEvent(self, event):
+        super(OnlineMonitorApplication, self).closeEvent(event)
+        self.stop_receivers()
 
     def setup_style(self):
         # Fore/Background color
@@ -34,10 +38,22 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
         # Enable antialiasing for prettier plots
         pg.setConfigOptions(antialias=True)
 
-    def setup_receivers(self):
-        for (receiver_name, receiver_settings) in self.configuration['receiver'].items():
-            receiver = utils.factory('receiver.%s' % receiver_settings['data_type'], base_class_type=Receiver, *(), **receiver_settings)
-            receiver.setup_plots(self.tab_widget, name=receiver_name)
+    def start_receivers(self):
+        receivers = []
+        if self.configuration['receiver']:
+            logging.info('Starting %d receivers', len(self.configuration['receiver']))
+            for (receiver_name, receiver_settings) in self.configuration['receiver'].items():
+                receiver_settings['device'] = receiver_name
+                receiver = utils.factory('receiver.%s' % receiver_settings['data_type'], base_class_type=Receiver, *(), **receiver_settings)
+                receiver.setup_plots(self.tab_widget, name=receiver_name)
+                receivers.append(receiver)
+            return receivers
+
+    def stop_receivers(self):
+        if self.receivers:
+            logging.info('Stopping %d receivers', len(self.receivers))
+            for receiver in self.receivers:
+                receiver.shutdown()
 
     def setup_widgets(self):
         # Main window with Tab widget
@@ -55,24 +71,75 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
         status_graphics_widget = pg.GraphicsLayoutWidget()
         status_graphics_widget.show()
         self.status_dock.addWidget(status_graphics_widget)
-        # Create nodes with links from configuration file
-        for converter_index, (converter_name, converter_settings) in enumerate(self.configuration['converter'].items()):
-            nodes = ['Producer\n%s' % converter_name, 'Converter\n%s' % converter_settings['data_type'], 'Receiver\n%s' % converter_settings['data_type']]
-            links = [converter_settings['receive_address'], converter_settings['send_address']]
-            for node_index, node in enumerate(nodes):
-                view = status_graphics_widget.addViewBox(row=converter_index, col=node_index * 2, lockAspect=True, enableMouse=False)
-                text = pg.TextItem(node, border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+        # Create nodes with links from configuration file for converter/receiver
+        for receiver_index, (receiver_name, receiver_settings) in enumerate(self.configuration['receiver'].items()):
+            # Add receiver info
+            view = status_graphics_widget.addViewBox(row=receiver_index, col=5, lockAspect=True, enableMouse=False)
+            text = pg.TextItem('Receiver\n%s' % receiver_name, border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+            text.setPos(0.5, 0.5)
+            view.addItem(text)
+            # Add corresponding producer info
+            if self.configuration['converter']:
+                actual_converter = self.configuration['converter'][receiver_name]
+                view = status_graphics_widget.addViewBox(row=receiver_index, col=1, lockAspect=True, enableMouse=False)
+                text = pg.TextItem('Producer\n%s' % receiver_name, border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
                 text.setPos(0.5, 0.5)
                 view.addItem(text)
-                if node_index < 2:
-                    view = status_graphics_widget.addViewBox(row=converter_index, col=node_index * 2 + 1, lockAspect=True, enableMouse=False)
-#                     # BUG? Position does not not work for arrows?
-#                     arrow = pg.ArrowItem(angle=180, tipAngle=00, baseAngle=00, headLen=50, tailLen=20, tailWidth=2, pen=None, brush=(0, 0, 0, 200))
-#                     arrow.setPos(0.1, 0.2)
-#                     view.addItem(arrow)
-                    text = pg.TextItem('     --------------->\n%s' % links[node_index], anchor=(0.5, 0.5), color=(0, 0, 0, 200))
-                    text.setPos(0.5, 0.5)
-                    view.addItem(text)
+                view = status_graphics_widget.addViewBox(row=receiver_index, col=3, lockAspect=True, enableMouse=False)
+                text = pg.TextItem('Converter\n%s' % pprint.pformat(receiver_settings), border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+                text.setPos(0.5, 0.5)
+                view.addItem(text)
+            
+#             nodes = ['Producer\n%s' % converter_name, 'Converter\n%s' % converter_settings['data_type'], 'Receiver\n%s' % converter_settings['data_type']]
+            
+#             links = [converter_settings['receive_address'], converter_settings['send_address']]
+#             for node_index, node in enumerate(nodes):
+#                 view = status_graphics_widget.addViewBox(row=converter_index, col=node_index * 2, lockAspect=True, enableMouse=False)
+#                 text = pg.TextItem(node, border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+#                 text.setPos(0.5, 0.5)
+#                 view.addItem(text)
+# 
+#                 if node_index == 0:
+#                     text = pg.TextItem('%s' % links[node_index], anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+#                 else:
+#                     text = pg.TextItem('%s %s' % (links[node_index - 1], links[node_index]), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+#                 text.setPos(0.5, 0.3)
+#                 view.addItem(text)
+# 
+#                 view = status_graphics_widget.addViewBox(row=converter_index, col=node_index * 2 + 1, lockAspect=True, enableMouse=False)
+# #                     # BUG? Position does not not work for arrows?
+# #                     arrow = pg.ArrowItem(angle=180, tipAngle=00, baseAngle=00, headLen=50, tailLen=20, tailWidth=2, pen=None, brush=(0, 0, 0, 200))
+# #                     arrow.setPos(0.1, 0.2)
+# #                     view.addItem(arrow)
+#                 text = pg.TextItem('---->', anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+#                 text.setPos(0.5, 0.5)
+#                 view.addItem(text)
+#             
+#         # Create nodes with links from configuration file for converter/receiver
+#         for receiver_index, (receiver_name, receiver_settings) in enumerate(self.configuration['converter'].items()):
+#             nodes = ['Producer\n%s' % converter_name, 'Converter\n%s' % converter_settings['data_type']]
+#             links = [converter_settings['receive_address'], converter_settings['send_address']]
+#             for node_index, node in enumerate(nodes):
+#                 view = status_graphics_widget.addViewBox(row=converter_index, col=node_index * 2, lockAspect=True, enableMouse=False)
+#                 text = pg.TextItem(node, border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+#                 text.setPos(0.5, 0.5)
+#                 view.addItem(text)
+# 
+#                 if node_index == 0:
+#                     text = pg.TextItem('%s' % links[node_index], anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+#                 else:
+#                     text = pg.TextItem('%s %s' % (links[node_index - 1], links[node_index]), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+#                 text.setPos(0.5, 0.3)
+#                 view.addItem(text)
+# 
+#                 view = status_graphics_widget.addViewBox(row=converter_index, col=node_index * 2 + 1, lockAspect=True, enableMouse=False)
+# #                     # BUG? Position does not not work for arrows?
+# #                     arrow = pg.ArrowItem(angle=180, tipAngle=00, baseAngle=00, headLen=50, tailLen=20, tailWidth=2, pen=None, brush=(0, 0, 0, 200))
+# #                     arrow.setPos(0.1, 0.2)
+# #                     view.addItem(arrow)
+#                 text = pg.TextItem('---->', anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+#                 text.setPos(0.5, 0.5)
+#                 view.addItem(text)   
 
 
 if __name__ == '__main__':
