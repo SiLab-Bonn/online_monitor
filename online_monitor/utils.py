@@ -1,6 +1,10 @@
 import logging
 import argparse
 import yaml
+import blosc
+import json
+import base64
+import numpy as np
 from importlib import import_module
 from inspect import getmembers, isclass
 
@@ -23,10 +27,12 @@ def parse_arguments():
 
 def parse_config_file(config_file):  # create config dict from yaml text file
     try:
-        with open(config_file, 'r') as config_file:
-            configuration = yaml.safe_load(config_file)
+        with open(config_file, 'r') as in_config_file:
+            configuration = yaml.safe_load(in_config_file)
     except IOError:
         logging.error("Cannot open configuration file")
+    if not configuration['receiver']:
+        logging.warning('No receiver specified, thus no data can be plotted. Change %s!', config_file)
     return configuration
 
 
@@ -48,3 +54,41 @@ def factory(importname, base_class_type, *args, **kargs):  # load module from st
         else:
             cls = clsmembers[0][1]
         return cls(*args, **kargs)
+
+
+#from http://stackoverflow.com/questions/3488934/simplejson-and-numpy-array#
+class NumpyEncoder(json.JSONEncoder):
+
+    def default(self, obj):
+        """If input object is an ndarray it will be converted into a dict 
+        holding dtype, shape and the data, base64 encoded and blosc compressed.
+        """
+        if isinstance(obj, np.ndarray):
+            if obj.flags['C_CONTIGUOUS']:
+                obj_data = obj.data
+            else:
+                cont_obj = np.ascontiguousarray(obj)
+                assert(cont_obj.flags['C_CONTIGUOUS'])
+                obj_data = cont_obj.data
+            obj_data = blosc.compress(obj_data, typesize=8)
+            data_b64 = base64.b64encode(obj_data)
+            return dict(__ndarray__=data_b64,
+                        dtype=str(obj.dtype),
+                        shape=obj.shape)
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder(self, obj)
+
+
+def json_numpy_obj_hook(dct):
+    """Decodes a previously encoded numpy ndarray with proper shape and dtype.
+    And decompresses the data with blosc
+
+    :param dct: (dict) json encoded ndarray
+    :return: (ndarray) if input was an encoded ndarray
+    """
+    if isinstance(dct, dict) and '__ndarray__' in dct:
+        data = base64.b64decode(dct['__ndarray__'])
+        data = blosc.decompress(data)
+        return np.frombuffer(data, dct['dtype']).reshape(dct['shape'])
+
+    return dct
