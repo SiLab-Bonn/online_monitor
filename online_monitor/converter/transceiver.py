@@ -3,8 +3,11 @@ import zmq
 import logging
 import signal
 import psutil
+from zmq.utils import jsonapi
 
-from online_monitor import utils
+import time
+
+import utils
 
 
 class Transceiver(multiprocessing.Process):
@@ -32,18 +35,19 @@ class Transceiver(multiprocessing.Process):
         The verbosity level for the logging (e.g. INFO, WARNING)
     '''
 
-    def __init__(self, receive_address, send_address, data_type, max_cpu_load=100, loglevel='INFO'):
+    def __init__(self, receive_address, send_address, data_type, device='Undefined', max_cpu_load=100, loglevel='INFO'):
         multiprocessing.Process.__init__(self)
 
         self.data_type = data_type
         self.receive_address = receive_address
         self.send_address = send_address
         self.max_cpu_load = max_cpu_load
+        self.device = device  # name of the DAQ/device
 
         self.exit = multiprocessing.Event()  # exit signal
         utils.setup_logging(loglevel)
 
-        logging.debug("Initialize %s converter for data at %s", self.data_type, self.receive_address)
+        logging.debug("Initialize %s converter for device %s at %s", self.data_type, self.device, self.receive_address)
 
     def setup_transceiver_device(self):
         # ignore SIGTERM; signal shutdown() is used for controlled process termination
@@ -56,7 +60,7 @@ class Transceiver(multiprocessing.Process):
         self.receiver.setsockopt(zmq.SUBSCRIBE, '')  # do not filter any data
         # Socket facing services (e.g. online monitor)
         self.sender = self.context.socket(zmq.PUB)
-        self.sender.connect(self.send_address)
+        self.sender.bind(self.send_address)
 
     def run(self):  # the receiver loop
         self.setup_transceiver_device()
@@ -65,7 +69,7 @@ class Transceiver(multiprocessing.Process):
         process = psutil.Process(self.ident)  # access this process info
         self.cpu_load = 0.
 
-        logging.info("Start %s transceiver for %s", self.data_type, self.receive_address)
+        logging.info("Start %s transceiver for device %s at %s", self.data_type, self.device, self.receive_address)
         while not self.exit.wait(0.01):
             try:
                 raw_data = self.receiver.recv(flags=zmq.NOBLOCK)
@@ -74,16 +78,16 @@ class Transceiver(multiprocessing.Process):
                 if self.cpu_load < self.max_cpu_load:  # check if already too much CPU is used by the conversion, then omit data
                     data = self.interpret_data(raw_data)
                     if data is not None:  # data is None if the data cannot be converted (e.g. is incomplete, broken, etc.)
-                        self.sender.send(data)
+                        self.sender.send(self.serialze_data(data))
                 else:
-                    logging.warning('CPU load of %s converter is with %1.2f > %1.2f too high, omit data!', self.data_type, self.cpu_load, self.max_cpu_load)
+                    logging.warning('CPU load of %s converter for device %s is with %1.2f > %1.2f too high, omit data!', self.data_type, self.device, self.cpu_load, self.max_cpu_load)
             except zmq.Again:  # no data
                 pass
 
         self.receiver.close()
         self.sender.close()
         self.context.term()
-        logging.info("Close %s transceiver for %s", self.data_type, self.receive_address)
+        logging.info("Close %s transceiver for device %s at %s", self.data_type, self.device, self.receive_address)
 
     def shutdown(self):
         self.exit.set()
@@ -95,4 +99,8 @@ class Transceiver(multiprocessing.Process):
     def interpret_data(self, data):
         # This function has to be overwritten in derived class and should not throw exceptions
         # Invalid data and failed interpretations should return None
+        # Valid data should return serializable data
         raise NotImplementedError("You have to implement a interpret_data method!")
+
+    def serialze_data(self, data):
+        return data
