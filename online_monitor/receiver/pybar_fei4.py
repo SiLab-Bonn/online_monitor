@@ -3,17 +3,17 @@ from zmq.utils import jsonapi
 import numpy as np
 
 from PyQt4 import Qt
-from PyQt4.QtCore import pyqtSlot, pyqtSignal
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore, QtGui
+from pyqtgraph.Qt import QtCore
 from pyqtgraph.dockarea import DockArea, Dock
-import pyqtgraph.ptime as ptime
-from threading import Event, Lock
+
+from online_monitor import utils
 
 
 class PybarFEI4(Receiver):
     def setup_connections(self, main):
         pass
+
     def setup_plots(self, parent, name):
         dock_area = DockArea()
         parent.addTab(dock_area, name)
@@ -85,3 +85,22 @@ class PybarFEI4(Receiver):
         self.hit_timing_plot = hit_timing_widget.plot(np.linspace(-0.5, 15.5, 17), np.zeros((16)), stepMode=True)
         hit_timing_widget.showGrid(y=True)
         dock_hit_timing.addWidget(hit_timing_widget)
+
+    def deserialze_data(self, data):
+        f = jsonapi.loads(data, object_hook=utils.json_numpy_obj_hook)
+        return f
+
+    def handle_data(self, data):
+#         for (i,k) in data.items():
+#             print i,type(k)
+#         occupancy, tot_hist, tdc_counters, error_counters, service_records_counters, trigger_error_counters, rel_bcid_hist = **data
+        if 'meta_data' not in data:
+            self.occupancy_img.setImage(data['occupancy'][:, ::-1, 0], autoDownsample=True)
+            self.tot_plot.setData(x=np.linspace(-0.5, 15.5, 17), y=data['tot_hist'], fillLevel=0, brush=(0, 0, 255, 150))
+            self.tdc_plot.setData(x=np.linspace(-0.5, 4096.5, 4097), y=data['tdc_counters'], fillLevel=0, brush=(0, 0, 255, 150))
+            self.event_status_plot.setData(x=np.linspace(-0.5, 15.5, 17), y=data['error_counters'], stepMode=True, fillLevel=0, brush=(0, 0, 255, 150))
+            self.service_record_plot.setData(x=np.linspace(-0.5, 31.5, 33), y=data['service_records_counters'], stepMode=True, fillLevel=0, brush=(0, 0, 255, 150))
+            self.trigger_status_plot.setData(x=np.linspace(-0.5, 7.5, 9), y=data['trigger_error_counters'], stepMode=True, fillLevel=0, brush=(0, 0, 255, 150))
+            self.hit_timing_plot.setData(x=np.linspace(-0.5, 15.5, 17), y=data['rel_bcid_hist'][:16], stepMode=True, fillLevel=0, brush=(0, 0, 255, 150))
+        
+    
