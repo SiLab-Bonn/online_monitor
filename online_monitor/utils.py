@@ -25,14 +25,18 @@ def parse_arguments():
     return args
 
 
-def parse_config_file(config_file):  # create config dict from yaml text file
+def parse_config_file(config_file, expect_receiver=False):  # create config dict from yaml text file
     try:
         with open(config_file, 'r') as in_config_file:
             configuration = yaml.safe_load(in_config_file)
     except IOError:
         logging.error("Cannot open configuration file")
-    if not configuration['receiver']:
-        logging.warning('No receiver specified, thus no data can be plotted. Change %s!', config_file)
+    if expect_receiver:
+        try:
+            if not configuration['receiver']:
+                logging.warning('No receiver specified, thus no data can be plotted. Change %s!', config_file)
+        except KeyError:
+            logging.warning('No receiver specified, thus no data can be plotted. Change %s!', config_file)
     return configuration
 
 
