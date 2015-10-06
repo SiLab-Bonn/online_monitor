@@ -91,9 +91,6 @@ class PybarFEI4(Receiver):
         return f
 
     def handle_data(self, data):
-#         for (i,k) in data.items():
-#             print i,type(k)
-#         occupancy, tot_hist, tdc_counters, error_counters, service_records_counters, trigger_error_counters, rel_bcid_hist = **data
         if 'meta_data' not in data:
             self.occupancy_img.setImage(data['occupancy'][:, ::-1, 0], autoDownsample=True)
             self.tot_plot.setData(x=np.linspace(-0.5, 15.5, 17), y=data['tot_hist'], fillLevel=0, brush=(0, 0, 255, 150))
@@ -102,5 +99,3 @@ class PybarFEI4(Receiver):
             self.service_record_plot.setData(x=np.linspace(-0.5, 31.5, 33), y=data['service_records_counters'], stepMode=True, fillLevel=0, brush=(0, 0, 255, 150))
             self.trigger_status_plot.setData(x=np.linspace(-0.5, 7.5, 9), y=data['trigger_error_counters'], stepMode=True, fillLevel=0, brush=(0, 0, 255, 150))
             self.hit_timing_plot.setData(x=np.linspace(-0.5, 15.5, 17), y=data['rel_bcid_hist'][:16], stepMode=True, fillLevel=0, brush=(0, 0, 255, 150))
-        
-    
