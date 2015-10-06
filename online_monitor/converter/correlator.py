@@ -11,5 +11,4 @@ class Correlator(Transceiver):
         pass
 
     def interpret_data(self, data):
-        print data
         return data
