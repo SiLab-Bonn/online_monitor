@@ -22,7 +22,7 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
         super(OnlineMonitorApplication, self).__init__()
         utils.setup_logging(loglevel)
         logging.debug("Initialize online monitor with configuration in %s", config_file)
-        self.configuration = utils.parse_config_file(config_file)
+        self.configuration = utils.parse_config_file(config_file, expect_receiver=True)
         self.setup_style()
         self.setup_widgets()
         self.receivers = self.start_receivers()
@@ -86,7 +86,7 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
                 text.setPos(0.5, 0.5)
                 view.addItem(text)
                 view = status_graphics_widget.addViewBox(row=receiver_index, col=3, lockAspect=True, enableMouse=False)
-                text = pg.TextItem('Converter\n%s' % pprint.pformat(receiver_settings), border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+                text = pg.TextItem('Converter\n%s' % receiver_settings, border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
                 text.setPos(0.5, 0.5)
                 view.addItem(text)
             
