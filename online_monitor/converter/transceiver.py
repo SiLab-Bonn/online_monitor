@@ -100,8 +100,7 @@ class Transceiver(multiprocessing.Process):
         for actual_receiver in self.receivers:
             actual_receiver.close()
 
-        for actual_sender in self.senders:
-            actual_sender.close()
+        self.sender.close()
         self.context.term()
         logging.info("Close %s transceiver %s at %s", self.data_type, self.name, self.receive_address)
 
