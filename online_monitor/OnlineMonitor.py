@@ -43,11 +43,16 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
         if self.configuration['receiver']:
             logging.info('Starting %d receivers', len(self.configuration['receiver']))
             for (receiver_name, receiver_settings) in self.configuration['receiver'].items():
-                receiver_settings['device'] = receiver_name
+                receiver_settings['name'] = receiver_name
                 receiver = utils.factory('receiver.%s' % receiver_settings['data_type'], base_class_type=Receiver, *(), **receiver_settings)
                 receiver.setup_plots(self.tab_widget, name=receiver_name)
                 receivers.append(receiver)
             return receivers
+
+    def on_tab_changed(self, value):
+        if value > 0:  # first index is status tab widget
+            for index, actual_receiver in enumerate(self.receivers):
+                actual_receiver.active(True if index == value - 1 else False)
 
     def stop_receivers(self):
         if self.receivers:
@@ -60,6 +65,7 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
         self.tab_widget = Qt.QTabWidget()
         self.setCentralWidget(self.tab_widget)
         self.setup_status_widget(self.tab_widget)
+        self.tab_widget.currentChanged.connect(self.on_tab_changed)
 
     def setup_status_widget(self, parent):  # Visualizes the nodes + their connections + CPU usage
         # Status dock area showing setup
@@ -80,15 +86,18 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
             view.addItem(text)
             # Add corresponding producer info
             if self.configuration['converter']:
-                actual_converter = self.configuration['converter'][receiver_name]
-                view = status_graphics_widget.addViewBox(row=receiver_index, col=1, lockAspect=True, enableMouse=False)
-                text = pg.TextItem('Producer\n%s' % receiver_name, border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
-                text.setPos(0.5, 0.5)
-                view.addItem(text)
-                view = status_graphics_widget.addViewBox(row=receiver_index, col=3, lockAspect=True, enableMouse=False)
-                text = pg.TextItem('Converter\n%s' % receiver_settings, border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
-                text.setPos(0.5, 0.5)
-                view.addItem(text)
+                try:
+                    actual_converter = self.configuration['converter'][receiver_name]
+                    view = status_graphics_widget.addViewBox(row=receiver_index, col=1, lockAspect=True, enableMouse=False)
+                    text = pg.TextItem('Producer\n%s' % receiver_name, border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+                    text.setPos(0.5, 0.5)
+                    view.addItem(text)
+                    view = status_graphics_widget.addViewBox(row=receiver_index, col=3, lockAspect=True, enableMouse=False)
+                    text = pg.TextItem('Converter\n%s' % receiver_settings, border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+                    text.setPos(0.5, 0.5)
+                    view.addItem(text)
+                except KeyError:  # no converter for receiver
+                    pass
             
 #             nodes = ['Producer\n%s' % converter_name, 'Converter\n%s' % converter_settings['data_type'], 'Receiver\n%s' % converter_settings['data_type']]
             
