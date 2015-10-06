@@ -4,7 +4,7 @@ import psutil
 import sys
 
 from transceiver import Transceiver
-import utils
+from online_monitor import utils
 
 
 class ConverterManager(object):
@@ -26,7 +26,7 @@ class ConverterManager(object):
         converters, process_infos = [], []
 
         for (converter_name, converter_settings) in self.configuration['converter'].items():
-            converter_settings['device'] = converter_name
+            converter_settings['name'] = converter_name
             converter = utils.factory('converter.%s' % converter_settings['data_type'], base_class_type=Transceiver, *(), **converter_settings)
             converter.start()
             process_infos.append((converter_name, psutil.Process(converter.ident)))
