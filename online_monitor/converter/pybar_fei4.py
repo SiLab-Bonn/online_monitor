@@ -5,7 +5,7 @@ import numpy as np
 from pybar.analysis.RawDataConverter.data_interpreter import PyDataInterpreter
 from pybar.analysis.RawDataConverter.data_histograming import PyDataHistograming
 
-import utils
+from online_monitor import utils
 
 
 class PybarFEI4(Transceiver):
@@ -36,6 +36,7 @@ class PybarFEI4(Transceiver):
 
     def interpret_raw_data(self, raw_data):
         self.interpreter.interpret_raw_data(raw_data)
+        self.histograming.reset()
         self.histograming.add_hits(self.interpreter.get_hits())
         interpreted_data = {
             'occupancy': self.histograming.get_occupancy(),
