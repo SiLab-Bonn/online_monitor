@@ -22,8 +22,8 @@ class Transceiver(multiprocessing.Process):
 
     Parameter
     ----------
-    receive_address : str
-        Address of the publishing device
+    receive_address : str, list
+        Address or list of adresses of the publishing device(s)
     send_address : str
         Address where the converter publishes the converted data
     data_type : str
@@ -49,11 +49,6 @@ class Transceiver(multiprocessing.Process):
             self.n_receivers = 1
         else:
             self.n_receivers = len(self.receive_address)
-        if not isinstance(self.send_address, list):  # just one sender is given
-            self.send_address = [self.send_address]
-            self.n_senders = 1
-        else:
-            self.n_senders = len(self.send_address)
 
         self.exit = multiprocessing.Event()  # exit signal
         utils.setup_logging(loglevel)
@@ -74,11 +69,8 @@ class Transceiver(multiprocessing.Process):
             self.receivers.append(actual_receiver)
 
         # Send socket facing services (e.g. online monitor)
-        self.senders = []
-        for actual_send_address in self.send_address:
-            actual_sender = self.context.socket(zmq.PUB)
-            actual_sender.bind(actual_send_address)
-            self.senders.append(actual_sender)
+        self.sender = self.context.socket(zmq.PUB)
+        self.sender.bind(self.send_address)
 
     def run(self):  # the receiver loop
         self.setup_transceiver_device()
@@ -98,8 +90,7 @@ class Transceiver(multiprocessing.Process):
                         data = self.interpret_data(raw_data)
                         if data is not None:  # data is None if the data cannot be converted (e.g. is incomplete, broken, etc.)
                             serialized_data = self.serialze_data(data)
-                            for actual_sender in self.senders:
-                                actual_sender.send(serialized_data)
+                            self.sender.send(serialized_data)
                     else:
                         logging.warning('CPU load of %s converter %s is with %1.2f > %1.2f too high, omit data!', self.data_type, self.name, self.cpu_load, self.max_cpu_load)
                 except zmq.Again:  # no data
