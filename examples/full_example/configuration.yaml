@@ -1,0 +1,29 @@
+converter :
+    DUT0 :
+        data_type : pybar_fei4
+        receive_address : tcp://127.0.0.1:5678
+        send_address : tcp://127.0.0.1:5679
+        max_cpu_load : 30
+    DUT1 :
+        data_type : pybar_fei4
+        receive_address : tcp://127.0.0.1:5678
+        send_address : tcp://127.0.0.1:5680
+        max_cpu_load : 30
+
+
+receiver :
+    DUT0 :
+        data_type : pybar_fei4
+        receive_address : tcp://127.0.0.1:5680
+    DUT1 :
+        data_type : pybar_fei4
+        receive_address : tcp://127.0.0.1:5680
+
+correlator :
+    hits :
+        on :
+            - event_number
+            - trigger_number 
+        devices : 
+            - DUT0
+            - DUT1
