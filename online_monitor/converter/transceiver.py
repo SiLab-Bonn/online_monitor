@@ -94,7 +94,7 @@ class Transceiver(multiprocessing.Process):
                     raw_data = actual_receiver.recv(flags=zmq.NOBLOCK)
                     actual_cpu_load = process.cpu_percent()
                     self.cpu_load = 0.95 * self.cpu_load + 0.05 * actual_cpu_load  # filter cpu load by running mean since it changes rapidly; cpu load spikes can be filtered away since data queues up through ZMQ
-                    if self.cpu_load < self.max_cpu_load:  # check if already too much CPU is used by the conversion, then omit data
+                    if not self.max_cpu_load or self.cpu_load < self.max_cpu_load:  # check if already too much CPU is used by the conversion, then omit data
                         data = self.interpret_data(raw_data)
                         if data is not None:  # data is None if the data cannot be converted (e.g. is incomplete, broken, etc.)
                             serialized_data = self.serialze_data(data)
