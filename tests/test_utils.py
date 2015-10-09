@@ -3,14 +3,11 @@
 
 import unittest
 import yaml
-import subprocess
 import os
 import numpy as np
 import json
 
 from testfixtures import log_capture
-
-import psutil
 
 from online_monitor import utils
 from online_monitor.converter.forwarder import Forwarder
@@ -27,28 +24,6 @@ def create_forwarder_config_yaml(n_converter):
         }
     conf['converter'] = devices
     return yaml.dump(conf, default_flow_style=False)
-
-
-def kill(proc_pid):  # kill process by id, including subprocesses; works for linux and windows
-    process = psutil.Process(proc_pid)
-    for proc in process.children(recursive=True):
-        proc.kill()
-    process.kill()
-
-
-def get_python_processes():  # return the number of python processes
-    n_python = 0
-    for proc in psutil.process_iter():
-        try:
-            if 'python' in proc.name():
-                n_python += 1
-        except psutil.AccessDenied:
-            pass
-    return n_python
-
-
-def run_script_in_process(script, arguments):
-    return subprocess.Popen(["python", script, arguments], shell=True if os.name == 'nt' else False, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0)
 
 
 class TestUtils(unittest.TestCase):
