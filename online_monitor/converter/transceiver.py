@@ -49,6 +49,11 @@ class Transceiver(multiprocessing.Process):
             self.n_receivers = 1
         else:
             self.n_receivers = len(self.receive_address)
+        if not isinstance(self.send_address, list):  # just one sender is given
+            self.send_address = [self.send_address]
+            self.n_senders = 1
+        else:
+            self.n_senders = len(self.send_address)
 
         self.exit = multiprocessing.Event()  # exit signal
         utils.setup_logging(loglevel)
@@ -69,8 +74,11 @@ class Transceiver(multiprocessing.Process):
             self.receivers.append(actual_receiver)
 
         # Send socket facing services (e.g. online monitor)
-        self.sender = self.context.socket(zmq.PUB)
-        self.sender.bind(self.send_address)
+        self.senders = []
+        for actual_send_address in self.send_address:
+            actual_sender = self.context.socket(zmq.PUB)
+            actual_sender.bind(actual_send_address)
+            self.senders.append(actual_sender)
 
     def run(self):  # the receiver loop
         self.setup_transceiver_device()
@@ -79,7 +87,7 @@ class Transceiver(multiprocessing.Process):
         process = psutil.Process(self.ident)  # access this process info
         self.cpu_load = 0.
 
-        logging.info("Start %s transceiver %s at %s", self.data_type, self.name, self.receive_address)
+        logging.debug("Start %s transceiver %s at %s", self.data_type, self.name, self.receive_address)
         while not self.exit.wait(0.01):
             for actual_receiver in self.receivers:
                 try:
@@ -90,7 +98,7 @@ class Transceiver(multiprocessing.Process):
                         data = self.interpret_data(raw_data)
                         if data is not None:  # data is None if the data cannot be converted (e.g. is incomplete, broken, etc.)
                             serialized_data = self.serialze_data(data)
-                            self.sender.send(serialized_data)
+                            self.send_data(serialized_data)
                     else:
                         logging.warning('CPU load of %s converter %s is with %1.2f > %1.2f too high, omit data!', self.data_type, self.name, self.cpu_load, self.max_cpu_load)
                 except zmq.Again:  # no data
@@ -100,14 +108,15 @@ class Transceiver(multiprocessing.Process):
         for actual_receiver in self.receivers:
             actual_receiver.close()
 
-        self.sender.close()
+        for actual_sender in self.senders:
+            actual_sender.close()
         self.context.term()
-        logging.info("Close %s transceiver %s at %s", self.data_type, self.name, self.receive_address)
+        logging.debug("Close %s transceiver %s at %s", self.data_type, self.name, self.receive_address)
 
     def shutdown(self):
         self.exit.set()
 
-    def setup_interpretation(self, data):
+    def setup_interpretation(self):
         # This function has to be overwritten in derived class and is called once at the beginning
         pass
 
@@ -119,3 +128,8 @@ class Transceiver(multiprocessing.Process):
 
     def serialze_data(self, data):
         return data
+
+    def send_data(self, serialized_data):
+        # This function can be overwritten in derived class; std function is to broadcast the same data to all senders
+        for actual_sender in self.senders:
+            actual_sender.send(serialized_data)
