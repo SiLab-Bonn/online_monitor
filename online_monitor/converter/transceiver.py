@@ -89,20 +89,23 @@ class Transceiver(multiprocessing.Process):
 
         logging.debug("Start %s transceiver %s at %s", self.data_type, self.name, self.receive_address)
         while not self.exit.wait(0.01):
+            raw_data = []
+            # Loop over all receivers
             for actual_receiver in self.receivers:
                 try:
-                    raw_data = actual_receiver.recv(flags=zmq.NOBLOCK)
-                    actual_cpu_load = process.cpu_percent()
-                    self.cpu_load = 0.95 * self.cpu_load + 0.05 * actual_cpu_load  # filter cpu load by running mean since it changes rapidly; cpu load spikes can be filtered away since data queues up through ZMQ
-                    if not self.max_cpu_load or self.cpu_load < self.max_cpu_load:  # check if already too much CPU is used by the conversion, then omit data
-                        data = self.interpret_data(raw_data)
-                        if data is not None:  # data is None if the data cannot be converted (e.g. is incomplete, broken, etc.)
-                            serialized_data = self.serialze_data(data)
-                            self.send_data(serialized_data)
-                    else:
-                        logging.warning('CPU load of %s converter %s is with %1.2f > %1.2f too high, omit data!', self.data_type, self.name, self.cpu_load, self.max_cpu_load)
+                    raw_data.append(actual_receiver.recv(flags=zmq.NOBLOCK))
                 except zmq.Again:  # no data
                     pass
+
+            actual_cpu_load = process.cpu_percent()
+            self.cpu_load = 0.95 * self.cpu_load + 0.05 * actual_cpu_load  # filter cpu load by running mean since it changes rapidly; cpu load spikes can be filtered away since data queues up through ZMQ
+            if not self.max_cpu_load or self.cpu_load < self.max_cpu_load:  # check if already too much CPU is used by the conversion, then omit data
+                data = self.interpret_data(raw_data)
+                if data is not None and len(data) != 0:  # data is None if the data cannot be converted (e.g. is incomplete, broken, etc.)
+                    serialized_data = self.serialze_data(data)
+                    self.send_data(serialized_data)
+            else:
+                logging.warning('CPU load of %s converter %s is with %1.2f > %1.2f too high, omit data!', self.data_type, self.name, self.cpu_load, self.max_cpu_load)
 
         # Close connections
         for actual_receiver in self.receivers:
@@ -130,6 +133,7 @@ class Transceiver(multiprocessing.Process):
         return data
 
     def send_data(self, serialized_data):
-        # This function can be overwritten in derived class; std function is to broadcast the same data to all senders
-        for actual_sender in self.senders:
-            actual_sender.send(serialized_data)
+        # This function can be overwritten in derived class; std function is to broadcast the all receiver data to all senders
+        for receiver_data in serialized_data:
+            for actual_sender in self.senders:
+                actual_sender.send(receiver_data)
