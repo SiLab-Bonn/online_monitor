@@ -3,3 +3,4 @@ PyYAML
 blosc
 psutil
 pyqtgraph
+testfixtures  # for unittests with logging output inspection
