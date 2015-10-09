@@ -36,10 +36,10 @@ def create_forwarder_config_yaml(n_converter, one_io=True):
     return yaml.dump(conf, default_flow_style=False)
 
 
-def kill(proc_pid):  # kill process by id, including subprocesses; works for linux and windows
-    process = psutil.Process(proc_pid)
-    for proc in process.children(recursive=True):
-        proc.kill()
+def kill(proc):  # kill process by id, including subprocesses; works for linux and windows
+    process = psutil.Process(proc.pid)
+    for child_proc in process.children(recursive=True):
+        child_proc.kill()
     process.kill()
 
 
@@ -97,8 +97,8 @@ class TestConverter(unittest.TestCase):
             self.assertEqual(msg, ret_msg)
         except zmq.Again:  # pragma: no cover
             pass
- 
-        kill(converter_manager_process.pid)
+
+        kill(converter_manager_process)
         sender.close()
         receiver.close()
         context.term()
@@ -178,7 +178,7 @@ class TestConverter(unittest.TestCase):
         with self.assertRaises(zmq.Again):  # should have no data
             ret_msg = receiver_2.recv_json(flags=zmq.NOBLOCK)
 
-        kill(converter_manager_process.pid)
+        kill(converter_manager_process)
         time.sleep(0.5)
         receiver.close()
         receiver_2.close()
