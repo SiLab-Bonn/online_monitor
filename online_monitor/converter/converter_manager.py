@@ -3,7 +3,7 @@ import time
 import psutil
 import sys
 
-from transceiver import Transceiver
+from online_monitor.converter.transceiver import Transceiver
 from online_monitor import utils
 
 

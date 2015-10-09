@@ -1,4 +1,4 @@
-from transceiver import Transceiver
+from online_monitor.converter.transceiver import Transceiver
 
 
 class Forwarder(Transceiver):
