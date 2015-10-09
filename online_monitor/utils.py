@@ -7,37 +7,38 @@ import base64
 import numpy as np
 from importlib import import_module
 from inspect import getmembers, isclass
+import sys
 
 
 def parse_arguments():
     # Parse command line options
-    parser = argparse.ArgumentParser(prog='PROG')
-    parser.add_argument('config_file', nargs='?', help='Configuration yaml file', default=None)
-#     parser.add_argument('--receive_address', '-r', help='Remote address of the sender', required=False)
-#     parser.add_argument('--data_type', '-d', help='Data type (e.g. pybar_fei4)', required=False)
-#     parser.add_argument('--send_address', '-s', help='Address to publish interpreted data', required=False)
-    parser.add_argument('--log', '-l', help='Logging level (e.g. DEBUG, INFO, WARNING, ERROR, CRITICAL)', default='INFO')
-    args = parser.parse_args()
-
-    if not args.config_file:
-        parser.error("You have to specify a configuration file")
-
+    args = parse_args(sys.argv[1:])
     return args
+
+
+def parse_args(args):  # argparse a string, http://stackoverflow.com/questions/18160078/how-do-you-write-tests-for-the-argparse-portion-of-a-python-module
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config_file', nargs='?', help='Configuration yaml file', default=None)
+    parser.add_argument('--log', '-l', help='Logging level (e.g. DEBUG, INFO, WARNING, ERROR, CRITICAL)', default='INFO')
+    args_parsed = parser.parse_args(args)
+    if not args_parsed.config_file:
+        parser.error("You have to specify a configuration file")
+    return args_parsed
 
 
 def parse_config_file(config_file, expect_receiver=False):  # create config dict from yaml text file
     try:
         with open(config_file, 'r') as in_config_file:
             configuration = yaml.safe_load(in_config_file)
+            if expect_receiver:
+                try:
+                    if not configuration['receiver']:
+                        logging.warning('No receiver specified, thus no data can be plotted. Change %s!', config_file)
+                except KeyError:
+                    logging.warning('No receiver specified, thus no data can be plotted. Change %s!', config_file)
+            return configuration
     except IOError:
         logging.error("Cannot open configuration file")
-    if expect_receiver:
-        try:
-            if not configuration['receiver']:
-                logging.warning('No receiver specified, thus no data can be plotted. Change %s!', config_file)
-        except KeyError:
-            logging.warning('No receiver specified, thus no data can be plotted. Change %s!', config_file)
-    return configuration
 
 
 def setup_logging(loglevel):  # set logging level of this module
