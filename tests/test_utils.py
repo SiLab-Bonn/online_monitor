@@ -84,7 +84,13 @@ class TestUtils(unittest.TestCase):
 
     @log_capture()
     def test_numpy_serializer(self):
+        # C_CONTIGUOUS : True
         data = {'array': np.ones((100, 101))}
+        data_serialized = json.dumps(data, cls=utils.NumpyEncoder)
+        data_deserialized = json.loads(data_serialized, object_hook=utils.json_numpy_obj_hook)
+        self.assertTrue((data['array'] == data_deserialized['array']).all())
+        # C_CONTIGUOUS : False
+        data = {'array': np.ones((100, 101)).T}
         data_serialized = json.dumps(data, cls=utils.NumpyEncoder)
         data_deserialized = json.loads(data_serialized, object_hook=utils.json_numpy_obj_hook)
         self.assertTrue((data['array'] == data_deserialized['array']).all())
