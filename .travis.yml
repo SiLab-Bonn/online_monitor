@@ -27,7 +27,10 @@ install:
 - pip install -r requirements.txt --cache-dir $HOME/.pip-cache
 - python setup.py develop
 
-script: nosetests
+script: nosetests --with-coverage --cover-package=online_monitor
+
+after_success:
+- coveralls
 
 deploy:
   provider: pypi

@@ -4,3 +4,4 @@ blosc
 psutil
 pyqtgraph
 testfixtures  # for unittests with logging output inspection
+coveralls  # for unit test coverage stats
