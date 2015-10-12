@@ -11,7 +11,7 @@ import pyqtgraph as pg
 from pyqtgraph.dockarea import DockArea, Dock
 import pyqtgraph.ptime as ptime
 
-from online_monitor import utils
+from online_monitor.utils import utils, settings
 from receiver.receiver import Receiver
 
 
@@ -30,8 +30,13 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
     def closeEvent(self, event):
         super(OnlineMonitorApplication, self).closeEvent(event)
         self.stop_receivers()
+        settings.set_window_geometry(self.geometry().getRect())
 
     def setup_style(self):
+        self.setWindowTitle(self.app_name)
+        stored_windows_geometry = settings.get_window_geometry()
+        if stored_windows_geometry:
+            self.setGeometry(pg.Qt.QtCore.QRect(*stored_windows_geometry))
         # Fore/Background color
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')
@@ -44,8 +49,9 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
             logging.info('Starting %d receivers', len(self.configuration['receiver']))
             for (receiver_name, receiver_settings) in self.configuration['receiver'].items():
                 receiver_settings['name'] = receiver_name
-                receiver = utils.factory('receiver.%s' % receiver_settings['data_type'], base_class_type=Receiver, *(), **receiver_settings)
+                receiver = utils.load_receiver(receiver_settings['data_type'], base_class_type=Receiver, *(), **receiver_settings)
                 receiver.setup_plots(self.tab_widget, name=receiver_name)
+                receiver.start()
                 receivers.append(receiver)
             return receivers
 
@@ -155,9 +161,7 @@ if __name__ == '__main__':
 #     args = utils.parse_arguments()
 #     utils.setup_logging(args.log)
 
-    app = Qt.QApplication(sys.argv)
-    win = OnlineMonitorApplication('configuration.yaml')#args.config_file)  # enter remote IP to connect to the other side listening
-    win.resize(800, 840)
-    win.setWindowTitle(win.app_name)
+    app = Qt.QApplication(sys.argv) ## r'../examples/full_example/configuration.yaml'
+    win = OnlineMonitorApplication(r'../examples/full_example/configuration.yaml')#args.config_file)  # enter remote IP to connect to the other side listening
     win.show()
     sys.exit(app.exec_())
