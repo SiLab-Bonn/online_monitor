@@ -191,6 +191,7 @@ class TestConverter(unittest.TestCase):
         self.assertTrue(all(item is False for item in no_data_2), 'Did not receive enough data')
         self.assertEqual(n_python if os.name == 'nt' else n_python + 1, n_python_2)  # check if all processes are closed, Linux has extra python process (why?)
 
+    @unittest.skipIf(os.name == 'nt', "Test requires to send CRTL event; That is difficult under windows.")
     def test_converter_crtl(self):  # test the setup and close of converter processes handled by the converter manager; initiated by crtl
         n_expected_processes = get_python_processes() + 1  # +1 needed under linux
         for _ in range(5):  # setup and delete 5 times 10 converter processes
