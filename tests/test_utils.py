@@ -9,7 +9,8 @@ import json
 
 from testfixtures import log_capture
 
-from online_monitor import utils
+from online_monitor.utils import utils, settings
+from online_monitor.converter.transceiver import Transceiver
 from online_monitor.converter.forwarder import Forwarder
 
 
@@ -35,6 +36,9 @@ class TestUtils(unittest.TestCase):
             outfile.write(cls.configuration)
         cls.configuration = yaml.load(cls.configuration)
         cls.config_file = 'tmp_cfg_10_converter.yml'
+        # Examples are needed for testing
+        settings.add_converter_path(r'examples/converter')
+        settings.add_receiver_path(r'examples/receiver')
 
     @classmethod
     def tearDownClass(cls):  # remove created files
@@ -50,12 +54,12 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(arguments.config_file, 'configfile.yaml', 'The non positional argument is parsed wrong')
         self.assertTrue('DEBUG' in arguments.log, 'The logging argument parse fails')
         # Function parse_config_file
-        utils.parse_config_file('Does_not_exist')  # open not existin file
+        with self.assertRaises(IOError):
+            utils.parse_config_file('Does_not_exist')  # open not existin file
         configuration = utils.parse_config_file(self.config_file)  # parse config and check result
         self.assertEqual(configuration, self.configuration)
         utils.parse_config_file(self.config_file, expect_receiver=True)
-        log.check(('root', 'ERROR', 'Cannot open configuration file'),  # check the logging output
-                  ('root', 'WARNING', 'No receiver specified, thus no data can be plotted. Change tmp_cfg_10_converter.yml!'))
+        log.check(('root', 'WARNING', 'No receiver specified, thus no data can be plotted. Change tmp_cfg_10_converter.yml!'))  # check the logging output
 
     @log_capture()
     def test_numpy_serializer(self):
@@ -71,13 +75,26 @@ class TestUtils(unittest.TestCase):
         self.assertTrue((data['array'] == data_deserialized['array']).all())
 
     def test_factory(self):
-        receiver = utils.factory('online_monitor.converter.forwarder', base_class_type=Forwarder, *(), **{'receive_address': '0',
-                                                                                                          'send_address': '1',
-                                                                                                          'data_type': 'forwarder',
-                                                                                                          'name': 'DUT'})
+        receiver = utils._factory('online_monitor.converter.forwarder', base_class_type=Forwarder, *(), **{'receive_address': '0',
+                                                                                                           'send_address': '1',
+                                                                                                           'data_type': 'forwarder',
+                                                                                                           'name': 'DUT'})
         self.assertEqual(receiver.__str__(), '<Forwarder(DUT, initial)>')
         with self.assertRaises(ImportError):
-            utils.factory('online_monitor.converter.notexisting', base_class_type=Forwarder, *(), **{})
+            utils._factory('online_monitor.converter.notexisting', base_class_type=Forwarder)
+
+    def test_entity_loader(self):
+        utils.load_converter('forwarder', base_class_type=Transceiver, *(), **{'receive_address': '0',
+                                                                               'send_address': '1',
+                                                                               'data_type': 'forwarder',
+                                                                               'name': 'DUT'})
+        utils.load_converter('example_converter', base_class_type=Transceiver, *(), **{'receive_address': '0',
+                                                                                       'send_address': '1',
+                                                                                       'data_type': 'example_converter',
+                                                                                       'name': 'DUT'})
+        utils.load_receiver('example_receiver', base_class_type=Transceiver, *(), **{'receive_address': '0',
+                                                                                     'data_type': 'example_receiver',
+                                                                                     'name': 'DUT'})
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestUtils)
