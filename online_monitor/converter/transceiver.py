@@ -4,7 +4,7 @@ import logging
 import signal
 import psutil
 
-from online_monitor import utils
+from online_monitor.utils import utils
 
 
 class Transceiver(multiprocessing.Process):
@@ -93,9 +93,12 @@ class Transceiver(multiprocessing.Process):
             # Loop over all receivers
             for actual_receiver in self.receivers:
                 try:
-                    raw_data.append(actual_receiver.recv(flags=zmq.NOBLOCK))
+                    raw_data.extend([actual_receiver.recv(flags=zmq.NOBLOCK)])
                 except zmq.Again:  # no data
                     pass
+
+            if not raw_data:  # read again if no raw data is read
+                continue
 
             actual_cpu_load = process.cpu_percent()
             self.cpu_load = 0.95 * self.cpu_load + 0.05 * actual_cpu_load  # filter cpu load by running mean since it changes rapidly; cpu load spikes can be filtered away since data queues up through ZMQ
