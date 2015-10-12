@@ -4,7 +4,7 @@ import psutil
 import sys
 
 from online_monitor.converter.transceiver import Transceiver
-from online_monitor import utils
+from online_monitor.utils import utils
 
 
 class ConverterManager(object):
@@ -22,12 +22,14 @@ class ConverterManager(object):
         sys.stdout.flush()
 
     def start(self):
+        if not self.configuration['converter']:
+            raise RuntimeError('Cannot find any converters defined in the configuration')
         logging.info('Starting %d converters', len(self.configuration['converter']))
         converters, process_infos = [], []
 
         for (converter_name, converter_settings) in self.configuration['converter'].items():
             converter_settings['name'] = converter_name
-            converter = utils.factory('converter.%s' % converter_settings['data_type'], base_class_type=Transceiver, *(), **converter_settings)
+            converter = utils.load_converter(converter_settings['data_type'], base_class_type=Transceiver, *(), **converter_settings)
             converter.start()
             process_infos.append((converter_name, psutil.Process(converter.ident)))
             converters.append(converter)
