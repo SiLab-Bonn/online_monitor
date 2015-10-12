@@ -3,7 +3,7 @@ import zmq
 import logging
 from threading import Event
 
-from online_monitor import utils
+from online_monitor.utils import utils
 
 
 class DataWorker(QtCore.QObject):
@@ -60,16 +60,18 @@ class Receiver(QtCore.QObject):
 
         self.worker = DataWorker(self.deserialze_data)  # no parent
         self.worker.moveToThread(self.thread)  # move worker instance to new thread
+
+    def active(self, value):  # slot called if the receiver tab widget gets active
+        self._active = value
+
+    def start(self):
         self.worker.connect(self.receive_address)  # connect to ZMQ publisher
         self.worker.finished.connect(self.thread.quit)  # quit thread on worker finished
-        self.worker.data.connect(self.handle_data_if_active)
+        self.worker.data.connect(self.handle_data_if_active)  # activate data handle
 
         self.thread.started.connect(self.worker.receive_data)  # start receive data loop when thread starts
         self.thread.finished.connect(self.finished_info)  # print on thread finished info
         self.thread.start()  # start thread
-
-    def active(self, value):  # slot called if the receiver tab widget gets active
-        self._active = value
 
     def shutdown(self):
         self.worker.shutdown()  # set signal to quit receive loop; can take some time
