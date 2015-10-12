@@ -9,6 +9,8 @@ from importlib import import_module
 from inspect import getmembers, isclass
 import sys
 
+from online_monitor.utils import settings
+
 
 def parse_arguments():
     # Parse command line options
@@ -27,18 +29,15 @@ def parse_args(args):  # argparse a string, http://stackoverflow.com/questions/1
 
 
 def parse_config_file(config_file, expect_receiver=False):  # create config dict from yaml text file
-    try:
-        with open(config_file, 'r') as in_config_file:
-            configuration = yaml.safe_load(in_config_file)
-            if expect_receiver:
-                try:
-                    if not configuration['receiver']:
-                        logging.warning('No receiver specified, thus no data can be plotted. Change %s!', config_file)
-                except KeyError:
+    with open(config_file, 'r') as in_config_file:
+        configuration = yaml.safe_load(in_config_file)
+        if expect_receiver:
+            try:
+                if not configuration['receiver']:
                     logging.warning('No receiver specified, thus no data can be plotted. Change %s!', config_file)
-            return configuration
-    except IOError:
-        logging.error("Cannot open configuration file")
+            except KeyError:
+                logging.warning('No receiver specified, thus no data can be plotted. Change %s!', config_file)
+        return configuration
 
 
 def setup_logging(loglevel):  # set logging level of this module
@@ -48,17 +47,37 @@ def setup_logging(loglevel):  # set logging level of this module
     logging.basicConfig(level=numeric_level)
 
 
-def factory(importname, base_class_type, *args, **kargs):  # load module from string
-        def is_base_class(item):
-            return isclass(item) and item.__module__ == importname
+def _factory(importname, base_class_type, *args, **kargs):  # load module from string
+    def is_base_class(item):
+        return isclass(item) and item.__module__ == importname
 
-        mod = import_module(importname)
-        clsmembers = getmembers(mod, is_base_class)
-        if not len(clsmembers):
-            raise ValueError('Found no matching class in %s.' % importname)
-        else:
-            cls = clsmembers[0][1]
-        return cls(*args, **kargs)
+    mod = import_module(importname)
+    clsmembers = getmembers(mod, is_base_class)
+    if not len(clsmembers):
+        raise ValueError('Found no matching class in %s.' % importname)
+    else:
+        cls = clsmembers[0][1]
+    return cls(*args, **kargs)
+
+
+def load_converter(importname, base_class_type, *args, **kargs):  # search under all converter paths for module with the name importname; return first occurence
+    for converter_path in settings.get_converter_path():
+        converter_path = converter_path.replace(r'/', '.')
+        try:
+            return _factory(converter_path + '.' + importname, base_class_type, *args, **kargs)
+        except ImportError:  # module not found in actual path
+            pass
+    raise RuntimeError('Converter %s in paths %s not found!', importname, settings.get_converter_path())
+
+
+def load_receiver(importname, base_class_type, *args, **kargs):  # search under all receiver paths for module with the name importname; return first occurence
+    for receiver_path in settings.get_receiver_path():
+        receiver_path = receiver_path.replace(r'/', '.')
+        try:
+            return _factory(receiver_path + '.' + importname, base_class_type, *args, **kargs)
+        except ImportError:  # module not found in actual path
+            pass
+    raise RuntimeError('Receiver %s in paths %s not found!', importname, settings.get_receiver_path())
 
 
 #from http://stackoverflow.com/questions/3488934/simplejson-and-numpy-array#
