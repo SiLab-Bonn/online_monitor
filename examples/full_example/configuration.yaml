@@ -1,23 +1,40 @@
 converter :
     DUT0 :
-        data_type : pybar_fei4
-        receive_address : tcp://127.0.0.1:5678
-        send_address : tcp://127.0.0.1:5679
+        data_type : example_converter
+        receive_address : tcp://127.0.0.1:5500
+        send_address : tcp://127.0.0.1:5600
         max_cpu_load : 30
-    DUT1 :
-        data_type : pybar_fei4
-        receive_address : tcp://127.0.0.1:5678
-        send_address : tcp://127.0.0.1:5680
+        threshold : 8
+#    DUT1 :
+ #       data_type : forwarder
+  #      receive_address : tcp://127.0.0.1:5600
+   #     send_address : tcp://127.0.0.1:5601
+    #    max_cpu_load : 30
+#    DUT2 :
+ #       data_type : example_converter
+  #      receive_address : tcp://127.0.0.1:5501
+   #     send_address : tcp://127.0.0.1:5602
+    #    max_cpu_load : 30
+    PosCorr :
+        data_type : position_correlator
+        receive_address : 
+            - tcp://127.0.0.1:5600
+            - tcp://127.0.0.1:5601
+            - tcp://127.0.0.1:5602
+        send_address : tcp://127.0.0.1:5681
         max_cpu_load : 30
 
 
 receiver :
     DUT0 :
-        data_type : pybar_fei4
-        receive_address : tcp://127.0.0.1:5680
+        data_type : example_receiver
+        receive_address : tcp://127.0.0.1:5600
     DUT1 :
-        data_type : pybar_fei4
-        receive_address : tcp://127.0.0.1:5680
+        data_type : example_receiver
+        receive_address : tcp://127.0.0.1:5601
+    DUT2 :
+        data_type : example_receiver
+        receive_address : tcp://127.0.0.1:5602
 
 correlator :
     hits :
