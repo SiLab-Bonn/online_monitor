@@ -1,4 +1,4 @@
-from receiver import Receiver
+from online_monitor.receiver.receiver import Receiver
 from zmq.utils import jsonapi
 import numpy as np
 
@@ -7,12 +7,10 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 from pyqtgraph.dockarea import DockArea, Dock
 
-from online_monitor import utils
+from online_monitor.utils import utils
 
 
 class PybarFEI4(Receiver):
-    def setup_connections(self, main):
-        pass
 
     def setup_plots(self, parent, name):
         dock_area = DockArea()
