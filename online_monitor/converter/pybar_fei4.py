@@ -5,7 +5,7 @@ import numpy as np
 from pybar.analysis.RawDataConverter.data_interpreter import PyDataInterpreter
 from pybar.analysis.RawDataConverter.data_histograming import PyDataHistograming
 
-from online_monitor import utils
+from online_monitor.utils import utils
 
 
 class PybarFEI4(Transceiver):
