@@ -42,12 +42,13 @@ class Receiver(QtCore.QObject):
 
     Usage:
     '''
-    def __init__(self, receive_address, data_type, name='Undefined', max_cpu_load=100, loglevel='INFO'):
+    def __init__(self, receive_address, data_type, name='Undefined', max_cpu_load=100, loglevel='INFO', **kwarg):
         QtCore.QObject.__init__(self)
         self.data_type = data_type
         self.receive_address = receive_address
         self.max_cpu_load = max_cpu_load
         self.name = name  # name of the DAQ/device
+        self.config = kwarg
         self._active = False  # flag to tell receiver if its active (viewed int the foreground)
 
         utils.setup_logging(loglevel)

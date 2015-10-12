@@ -34,7 +34,7 @@ class Transceiver(multiprocessing.Process):
         The verbosity level for the logging (e.g. INFO, WARNING)
     '''
 
-    def __init__(self, receive_address, send_address, data_type, name='Undefined', max_cpu_load=100, loglevel='INFO'):
+    def __init__(self, receive_address, send_address, data_type, name='Undefined', max_cpu_load=100, loglevel='INFO', **kwarg):
         multiprocessing.Process.__init__(self)
 
         self.data_type = data_type
@@ -42,6 +42,7 @@ class Transceiver(multiprocessing.Process):
         self.send_address = send_address
         self.max_cpu_load = max_cpu_load
         self.name = name  # name of the DAQ/device
+        self.config = kwarg
 
         # Determine how many receivers/sender the converter has
         if not isinstance(self.receive_address, list):  # just one receiver is given
