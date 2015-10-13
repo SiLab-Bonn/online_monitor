@@ -206,7 +206,6 @@ class TestConverter(unittest.TestCase):
             self.assertEqual(get_python_processes(), n_expected_processes)
 
 if __name__ == '__main__':
-#     print os.environ
     converter_script_path = r'../online_monitor/start_converter.py'
     suite = unittest.TestLoader().loadTestsFromTestCase(TestConverter)
     unittest.TextTestRunner(verbosity=2).run(suite)
