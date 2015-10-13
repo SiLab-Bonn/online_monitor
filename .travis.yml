@@ -23,14 +23,14 @@ install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda update --yes conda
   - conda install --yes pyqt pyyaml
-  # Hack to allow coverage in multi processes, http://coverage.readthedocs.org/en/latest/subprocess.html
-  - touch $HOME/miniconda/lib/python2.7/site-packages/converage.pth
-  - printf "import coverage; coverage.process_startup()" > $HOME/miniconda/lib/python2.7/site-packages/converage.pth
   # Install instructions valid for all python versions
   - pip install --upgrade pip
   - pip install -r requirements.txt --cache-dir $HOME/.pip-cache
-  - pip list
   - python setup.py develop
+  # Hack to allow coverage in multi processes, http://coverage.readthedocs.org/en/latest/subprocess.html
+  - touch $HOME/miniconda/lib/python2.7/site-packages/converage.pth
+  - printf "import coverage; coverage.process_startup()" > $HOME/miniconda/lib/python2.7/site-packages/converage.pth
+  - pip list
 
 script: nosetests --with-coverage --cover-package=online_monitor
 
