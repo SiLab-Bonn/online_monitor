@@ -2,7 +2,8 @@ pyzmq
 pyyaml
 blosc
 psutil
-pyqtgraph
+pyqtgraph#
+nose # unittests
 testfixtures  # for unittests with logging output inspection
 coverage  # for unit test coverage stats 
 coveralls  # for unit test coverage stats
