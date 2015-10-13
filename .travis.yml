@@ -22,7 +22,7 @@ before_install:
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda update --yes conda
-  - conda install --yes pyqt
+  - conda install --yes pyqt nose pyzmq pyyaml
   # Hack to allow coverage in multi processes, http://coverage.readthedocs.org/en/latest/subprocess.html
   - touch $HOME/miniconda/lib/python2.7/site-packages/converage.pth
   - printf "import coverage; coverage.process_startup()" > $HOME/miniconda/lib/python2.7/site-packages/converage.pth
