@@ -54,8 +54,12 @@ def get_python_processes():  # return the number of python processes
     return n_python
 
 
+def run_script_in_shell(script, arguments):
+    return subprocess.Popen("python %s %s" % (script, arguments), shell=True, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0)
+
+
 def run_script_in_process(script, arguments):
-    return subprocess.Popen(["python", script, arguments], shell=True if os.name == 'nt' else False, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0)
+    return subprocess.Popen(["python", script, arguments], shell=False, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0)
 
 
 class TestConverter(unittest.TestCase):
@@ -77,7 +81,7 @@ class TestConverter(unittest.TestCase):
     def test_converter_communication(self):  # start 10 forwarder in a chain and do "whisper down the lane"
         n_python = get_python_processes()  # python instances before converter start
         # Forward receivers with single in/out
-        converter_manager_process = run_script_in_process(converter_script_path, 'tmp_cfg_10_converter.yml')
+        converter_manager_process = run_script_in_shell(converter_script_path, 'tmp_cfg_10_converter.yml')
         time.sleep(1.5)  # 10 converter in 10 processes + ZMQ thread take time to start up
         no_data = True  # flag set to False if data is received
         context = zmq.Context()
@@ -105,12 +109,12 @@ class TestConverter(unittest.TestCase):
         time.sleep(0.5)
         n_python_2 = get_python_processes()  # python instances after converter stop
         self.assertFalse(no_data, 'Did not receive any data')
-        self.assertEqual(n_python if os.name == 'nt' else n_python + 1, n_python_2)  # check if all processes are closed, Linux has extra python process (why?)
+        self.assertEqual(n_python, n_python_2)  # check if all processes are closed, Linux has extra python process (why?)
 
     def test_converter_communication_2(self):  # start 3 forwarder in a chain with 2 i/o each and do "whisper down the lane"
         n_python = get_python_processes()  # python instances before converter start
         # Forward receivers with 2 in/out
-        converter_manager_process = run_script_in_process(converter_script_path, 'tmp_cfg_3_converter_multi.yml')
+        converter_manager_process = run_script_in_shell(converter_script_path, 'tmp_cfg_3_converter_multi.yml')
         time.sleep(1.5)  # 10 converter in 10 processes + ZMQ thread take time to start up
         context = zmq.Context()
         # Sockets facing last converter inputs
@@ -189,19 +193,20 @@ class TestConverter(unittest.TestCase):
         n_python_2 = get_python_processes()  # python instances after converter stop
         self.assertTrue(all(item is False for item in no_data), 'Did not receive enough data')
         self.assertTrue(all(item is False for item in no_data_2), 'Did not receive enough data')
-        self.assertEqual(n_python if os.name == 'nt' else n_python + 1, n_python_2)  # check if all processes are closed, Linux has extra python process (why?)
+        self.assertEqual(n_python , n_python_2)  # check if all processes are closed
 
     @unittest.skipIf(os.name == 'nt', "Test requires to send CRTL event; That is difficult under windows.")
     def test_converter_crtl(self):  # test the setup and close of converter processes handled by the converter manager; initiated by crtl
         n_expected_processes = get_python_processes() + 1  # +1 needed under linux
         for _ in range(5):  # setup and delete 5 times 10 converter processes
-            converter_manager_process = run_script_in_process(converter_script_path, 'tmp_cfg_10_converter.yml')
+            converter_manager_process = run_script_in_process(converter_script_path, 'tmp_cfg_10_converter.yml')  # start script in process that captures SIGINT
             time.sleep(0.5)  # 10 converter in 10 processes + ZMQ thread take time to start up
             converter_manager_process.send_signal(signal.SIGINT)
             time.sleep(0.5)
             self.assertEqual(get_python_processes(), n_expected_processes)
 
 if __name__ == '__main__':
+#     print os.environ
     converter_script_path = r'../online_monitor/start_converter.py'
     suite = unittest.TestLoader().loadTestsFromTestCase(TestConverter)
     unittest.TextTestRunner(verbosity=2).run(suite)
