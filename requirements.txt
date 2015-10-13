@@ -1,7 +1,8 @@
 pyzmq
-PyYAML
+pyyaml
 blosc
 psutil
 pyqtgraph
 testfixtures  # for unittests with logging output inspection
+coverage  # for unit test coverage stats 
 coveralls  # for unit test coverage stats
