@@ -1,4 +1,4 @@
-from utils import utils
+from online_monitor.utils import utils
 from converter.converter_manager import ConverterManager
 
 
