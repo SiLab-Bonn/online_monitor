@@ -1,3 +1,10 @@
+producer :
+    DAQ0 :
+        send_address : tcp://127.0.0.1:5500
+    DAQ1 :
+        send_address : tcp://127.0.0.1:5501
+
+
 converter :
     DUT0 :
         data_type : example_converter
