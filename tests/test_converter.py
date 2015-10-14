@@ -49,7 +49,7 @@ def get_python_processes():  # return the number of python processes
         try:
             if 'python' in proc.name():
                 n_python += 1
-        except psutil.AccessDenied:  # pragma: no cover
+        except psutil.AccessDenied:
             pass
     return n_python
 
