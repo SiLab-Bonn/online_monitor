@@ -2,14 +2,14 @@ import multiprocessing
 import zmq
 import logging
 import signal
-
-from online_monitor.utils import utils
 import numpy as np
 
+from online_monitor.utils import utils
 
-class Producer(multiprocessing.Process):
-    ''' For testing we have to generate some random data to fake a DAQ. This is done here'''
-    def __init__(self, send_address, name='Undefined', loglevel='INFO'):
+
+class ProducerSim(multiprocessing.Process):
+    ''' For testing we have to generate some random data to fake a DAQ. This is done with this Producer Simulation'''
+    def __init__(self, send_address, name='Undefined', loglevel='INFO', **kwarg):
         multiprocessing.Process.__init__(self)
 
         self.send_address = send_address
@@ -47,3 +47,26 @@ class Producer(multiprocessing.Process):
 
     def shutdown(self):
         self.exit.set()
+
+
+if __name__ == '__main__':
+    import time
+    args = utils.parse_arguments()
+    configuration = utils.parse_config_file(args.config_file)
+
+    daqs = []
+    for (actual_producer_name, actual_producer_cfg) in configuration['producer'].items():
+        daq = ProducerSim(send_address=actual_producer_cfg['send_address'],
+                          name=actual_producer_name,
+                          loglevel=args.log)
+        daqs.append(daq)
+
+    for daq in daqs:
+        daq.start()
+
+    while(True):
+        try:
+            time.sleep(2)
+        except:
+            for daq in daqs:
+                daq.shutdown()
