@@ -4,12 +4,9 @@ import numpy as np
 import argparse
 import logging
 
-from optparse import OptionParser
-
 from PyQt4 import Qt
 import pyqtgraph as pg
 from pyqtgraph.dockarea import DockArea, Dock
-import pyqtgraph.ptime as ptime
 
 from online_monitor.utils import utils, settings
 from receiver.receiver import Receiver
