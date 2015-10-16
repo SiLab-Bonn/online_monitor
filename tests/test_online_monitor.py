@@ -14,14 +14,10 @@ from PyQt4.QtGui import QApplication
 from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt
 
-from xvfbwrapper import Xvfb
-
 from online_monitor import OnlineMonitor
 
 producer_path = r'online_monitor/utils/producer_sim.py'
 converter_manager_path = r'online_monitor/start_converter.py'
-
-app = QApplication(sys.argv)
 
 
 # creates a yaml config describing n_converter of type forwarder that are all connection to each other
@@ -98,19 +94,24 @@ class TestOnlineMonitor(unittest.TestCase):
         cls.producer_process = run_script_in_shell(producer_path, 'tmp_cfg.yml')
         # Start converter
         cls.converter_manager_process = run_script_in_shell(converter_manager_path, 'tmp_cfg.yml')
+        if os.name != 'nt':  # linux cis run useually headless, thus virtual x server is needed for gui testing
+            from xvfbwrapper import Xvfb
+            cls.vdisplay = Xvfb()
+            cls.vdisplay.start()
         # Create Gui
-        cls.vdisplay = Xvfb()
-        cls.vdisplay.start()
         time.sleep(2)
+        cls.app = QApplication(sys.argv)
         cls.online_monitor = OnlineMonitor.OnlineMonitorApplication('tmp_cfg.yml')
         time.sleep(2)
 
     @classmethod
     def tearDownClass(cls):  # remove created files
+        time.sleep(1)
         kill(cls.producer_process)
         kill(cls.converter_manager_process)
         os.remove('tmp_cfg.yml')
-        cls.vdisplay.stop()
+        cls.online_monitor.close()
+        time.sleep(1)
 
     def test_receiver(self):
         self.assertEqual(len(self.online_monitor.receivers), 2, 'Number of receivers wrong')
