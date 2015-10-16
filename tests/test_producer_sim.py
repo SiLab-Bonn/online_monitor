@@ -8,7 +8,8 @@ import time
 import os
 import zmq
 import psutil
-import signal
+
+from online_monitor.utils import settings
 
 
 producer_sim_script_path = r'online_monitor/utils/producer_sim.py'
@@ -55,6 +56,8 @@ class TestConverter(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        settings.add_converter_path(r'examples/converter')
+        settings.add_receiver_path(r'examples/receiver')
         with open('tmp_cfg_5_producer.yml', 'w') as outfile:  # 10 forwarder converters connected in a chain
             config_file = create_producer_config_yaml(5)
             outfile.write(config_file)

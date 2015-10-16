@@ -14,6 +14,7 @@ from PyQt4.QtGui import QApplication
 from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt
 
+from online_monitor.utils import settings
 from online_monitor import OnlineMonitor
 
 producer_path = r'online_monitor/utils/producer_sim.py'
@@ -90,6 +91,8 @@ class TestOnlineMonitor(unittest.TestCase):
         with open('tmp_cfg.yml', 'w') as outfile:
             config_file = create_config_yaml()
             outfile.write(config_file)
+        settings.add_converter_path(r'examples/converter')
+        settings.add_receiver_path(r'examples/receiver')
         # Start the simulation producer to create some fake data
         cls.producer_process = run_script_in_shell(producer_path, 'tmp_cfg.yml')
         # Start converter
