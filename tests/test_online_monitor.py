@@ -14,6 +14,8 @@ from PyQt4.QtGui import QApplication
 from PyQt4.QtTest import QTest
 from PyQt4.QtCore import Qt
 
+from xvfbwrapper import Xvfb
+
 from online_monitor import OnlineMonitor
 
 producer_path = r'online_monitor/utils/producer_sim.py'
@@ -97,6 +99,9 @@ class TestOnlineMonitor(unittest.TestCase):
         # Start converter
         cls.converter_manager_process = run_script_in_shell(converter_manager_path, 'tmp_cfg.yml')
         # Create Gui
+        cls.vdisplay = Xvfb()
+        cls.vdisplay.start()
+        time.sleep(2)
         cls.online_monitor = OnlineMonitor.OnlineMonitorApplication('tmp_cfg.yml')
         time.sleep(2)
 
@@ -105,6 +110,7 @@ class TestOnlineMonitor(unittest.TestCase):
         kill(cls.producer_process)
         kill(cls.converter_manager_process)
         os.remove('tmp_cfg.yml')
+        cls.vdisplay.stop()
 
     def test_receiver(self):
         self.assertEqual(len(self.online_monitor.receivers), 2, 'Number of receivers wrong')
