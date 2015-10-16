@@ -103,6 +103,7 @@ class TestConverter(unittest.TestCase):
             pass
 
         kill(converter_manager_process)
+        time.sleep(1)
         sender.close()
         receiver.close()
         context.term()
@@ -183,7 +184,7 @@ class TestConverter(unittest.TestCase):
             ret_msg = receiver_2.recv_json(flags=zmq.NOBLOCK)
 
         kill(converter_manager_process)
-        time.sleep(0.5)
+        time.sleep(1)
         receiver.close()
         receiver_2.close()
         sender.close()

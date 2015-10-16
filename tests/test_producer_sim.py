@@ -83,7 +83,7 @@ class TestConverter(unittest.TestCase):
             receiver.close()
 
         kill(producer_process)
-
+        time.sleep(1)
         context.term()
         n_python_2 = get_python_processes()  # python instances after converter stop
         self.assertTrue(all(have_data), 'Did not receive any data')

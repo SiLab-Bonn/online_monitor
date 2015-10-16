@@ -109,6 +109,7 @@ class TestOnlineMonitor(unittest.TestCase):
         time.sleep(1)
         kill(cls.producer_process)
         kill(cls.converter_manager_process)
+        time.sleep(1)
         os.remove('tmp_cfg.yml')
         cls.online_monitor.close()
         time.sleep(1)
