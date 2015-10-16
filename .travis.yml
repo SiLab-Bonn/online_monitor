@@ -23,6 +23,7 @@ install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda update --yes conda
   - conda install --yes pyqt pyyaml
+  - pip install xvfbwrapper  # fake x server for Qt gui tests
   # Install instructions valid for all python versions
   - pip install --upgrade pip
   - pip install -r requirements.txt --cache-dir $HOME/.pip-cache
