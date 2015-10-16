@@ -91,16 +91,16 @@ class TestOnlineMonitor(unittest.TestCase):
         with open('tmp_cfg.yml', 'w') as outfile:
             config_file = create_config_yaml()
             outfile.write(config_file)
+        if os.name != 'nt':  # linux CIs run usually headless, thus virtual x server is needed for gui testing
+            from xvfbwrapper import Xvfb
+            cls.vdisplay = Xvfb()
+            cls.vdisplay.start()
         settings.add_converter_path(r'examples/converter')
         settings.add_receiver_path(r'examples/receiver')
         # Start the simulation producer to create some fake data
         cls.producer_process = run_script_in_shell(producer_path, 'tmp_cfg.yml')
         # Start converter
         cls.converter_manager_process = run_script_in_shell(converter_manager_path, 'tmp_cfg.yml')
-        if os.name != 'nt':  # linux CIs run usually headless, thus virtual x server is needed for gui testing
-            from xvfbwrapper import Xvfb
-            cls.vdisplay = Xvfb()
-            cls.vdisplay.start()
         # Create Gui
         time.sleep(2)
         cls.app = QApplication(sys.argv)
@@ -119,12 +119,36 @@ class TestOnlineMonitor(unittest.TestCase):
 
     def test_receiver(self):
         self.assertEqual(len(self.online_monitor.receivers), 2, 'Number of receivers wrong')
+        self.app.processEvents()  # clear event queue
+        self.online_monitor.tab_widget.setCurrentIndex(0)  # activate status widget, no data should be received
+        self.app.processEvents()
+        time.sleep(2)
+        data_received_0 = []
+        self.app.processEvents()
         for receiver in self.online_monitor.receivers:
-            print receiver.position_img.getHistogram()
+            data_received_0.append(receiver.position_img.getHistogram())
+        self.app.processEvents()
+#         QTest.mouseClick(self.online_monitor.tab_widget.tabBar().tabRect(0), Qt.LeftButton)
+        QTest.mouseClick(self.online_monitor.tab_widget, Qt.LeftButton, pos=self.online_monitor.tab_widget.tabBar().tabRect(1).center())
+#         self.online_monitor.tab_widget.setCurrentIndex(1)  # activate DUT widget, receiver 1 should show data
+        self.app.processEvents()
+        time.sleep(2)
+        data_received_1 = []
+        for receiver in self.online_monitor.receivers:
+            data_received_1.append(receiver.position_img.getHistogram())
+        self.online_monitor.tab_widget.setCurrentIndex(2)  # activate DUT widget, receiver 1 should show data
+        self.app.processEvents()
+        time.sleep(2)
+        data_received_2 = []
+        for receiver in self.online_monitor.receivers:
+            data_received_2.append(receiver.position_img.getHistogram())
+        self.app.processEvents()
+        print data_received_0
+        print data_received_1
+        print data_received_2
 
     def test_ui(self):  # start 10 forwarder in a chain and do "whisper down the lane"
         self.assertEqual(self.online_monitor.tab_widget.count(), 3, 'Number of tab widgets wrong')  # 2 receiver + status widget expected
-        self.assertEqual(self.online_monitor.tab_widget.currentIndex(), 0)
 
 if __name__ == '__main__':
     producer_path = r'../online_monitor/utils/producer_sim.py'
