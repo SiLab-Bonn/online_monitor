@@ -94,7 +94,7 @@ class TestOnlineMonitor(unittest.TestCase):
         cls.producer_process = run_script_in_shell(producer_path, 'tmp_cfg.yml')
         # Start converter
         cls.converter_manager_process = run_script_in_shell(converter_manager_path, 'tmp_cfg.yml')
-        if os.name != 'nt':  # linux cis run useually headless, thus virtual x server is needed for gui testing
+        if os.name != 'nt':  # linux CIs run usually headless, thus virtual x server is needed for gui testing
             from xvfbwrapper import Xvfb
             cls.vdisplay = Xvfb()
             cls.vdisplay.start()
