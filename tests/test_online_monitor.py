@@ -7,12 +7,8 @@ import yaml
 import subprocess
 import time
 import os
-import zmq
 import psutil
-import signal
 from PyQt4.QtGui import QApplication
-from PyQt4.QtTest import QTest
-from PyQt4.QtCore import Qt
 
 from online_monitor.utils import settings
 from online_monitor import OnlineMonitor
@@ -21,7 +17,8 @@ producer_path = r'online_monitor/utils/producer_sim.py'
 converter_manager_path = r'online_monitor/start_converter.py'
 
 
-# creates a yaml config describing n_converter of type forwarder that are all connection to each other
+# creates a yaml config describing n_converter of type forwarder that are
+# all connection to each other
 def create_config_yaml():
     conf = {}
     # Add producer
@@ -32,14 +29,15 @@ def create_config_yaml():
     # Add converter
     devices = {}
     devices['DUT0'] = {
-        'data_type': 'forwarder',
+        'data_type': 'example_converter',
         'receive_address': 'tcp://127.0.0.1:5500',
         'send_address': 'tcp://127.0.0.1:5600',
-        'max_cpu_load': None
+        'max_cpu_load': None,
+        'threshold': 8
     }
     devices['DUT1'] = {
         'data_type': 'forwarder',
-        'receive_address': 'tcp://127.0.0.1:5501',
+        'receive_address': 'tcp://127.0.0.1:5600',
         'send_address': 'tcp://127.0.0.1:5601',
         'max_cpu_load': None
     }
@@ -58,7 +56,8 @@ def create_config_yaml():
     return yaml.dump(conf, default_flow_style=False)
 
 
-def kill(proc):  # kill process by id, including subprocesses; works for linux and windows
+# kill process by id, including subprocesses; works for linux and windows
+def kill(proc):
     process = psutil.Process(proc.pid)
     for child_proc in process.children(recursive=True):
         child_proc.kill()
@@ -91,7 +90,9 @@ class TestOnlineMonitor(unittest.TestCase):
         with open('tmp_cfg.yml', 'w') as outfile:
             config_file = create_config_yaml()
             outfile.write(config_file)
-        if os.name != 'nt':  # linux CIs run usually headless, thus virtual x server is needed for gui testing
+        # linux CIs run usually headless, thus virtual x server is needed for
+        # gui testing
+        if os.name != 'nt':
             from xvfbwrapper import Xvfb
             cls.vdisplay = Xvfb()
             cls.vdisplay.start()
@@ -118,36 +119,48 @@ class TestOnlineMonitor(unittest.TestCase):
         time.sleep(1)
 
     def test_receiver(self):
+        self.app.processEvents()
         self.assertEqual(len(self.online_monitor.receivers), 2, 'Number of receivers wrong')
         self.app.processEvents()  # clear event queue
-        self.online_monitor.tab_widget.setCurrentIndex(0)  # activate status widget, no data should be received
+        # activate status widget, no data should be received
+        self.online_monitor.tab_widget.setCurrentIndex(0)
+        self.app.processEvents()  # event loop does not run in testss, thus we have to trigger the event queue manually
+        time.sleep(3)
         self.app.processEvents()
-        time.sleep(2)
+        time.sleep(0.2)
         data_received_0 = []
         self.app.processEvents()
         for receiver in self.online_monitor.receivers:
             data_received_0.append(receiver.position_img.getHistogram())
+        self.online_monitor.tab_widget.setCurrentIndex(1)
         self.app.processEvents()
-#         QTest.mouseClick(self.online_monitor.tab_widget.tabBar().tabRect(0), Qt.LeftButton)
-        QTest.mouseClick(self.online_monitor.tab_widget, Qt.LeftButton, pos=self.online_monitor.tab_widget.tabBar().tabRect(1).center())
-#         self.online_monitor.tab_widget.setCurrentIndex(1)  # activate DUT widget, receiver 1 should show data
+        time.sleep(3)
         self.app.processEvents()
-        time.sleep(2)
+        time.sleep(0.2)
         data_received_1 = []
         for receiver in self.online_monitor.receivers:
             data_received_1.append(receiver.position_img.getHistogram())
-        self.online_monitor.tab_widget.setCurrentIndex(2)  # activate DUT widget, receiver 1 should show data
+        # activate DUT widget, receiver 2 should show data
+        self.online_monitor.tab_widget.setCurrentIndex(2)
         self.app.processEvents()
-        time.sleep(2)
+        time.sleep(3)
+        self.app.processEvents()
+        time.sleep(0.2)
         data_received_2 = []
         for receiver in self.online_monitor.receivers:
             data_received_2.append(receiver.position_img.getHistogram())
-        self.app.processEvents()
+
         print data_received_0
         print data_received_1
         print data_received_2
 
-    def test_ui(self):  # start 10 forwarder in a chain and do "whisper down the lane"
+        self.assertListEqual(data_received_0, [(None, None), (None, None)])
+        self.assertTrue(data_received_1[0][0] is not None)
+        self.assertTupleEqual(data_received_0[1], (None, None))
+        self.assertTrue(data_received_2[1][0] is not None)
+
+    # start 10 forwarder in a chain and do "whisper down the lane"
+    def test_ui(self):
         self.assertEqual(self.online_monitor.tab_widget.count(), 3, 'Number of tab widgets wrong')  # 2 receiver + status widget expected
 
 if __name__ == '__main__':
