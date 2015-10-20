@@ -25,5 +25,11 @@ setup(
     include_package_data=True,  # accept all data files and directories matched by MANIFEST.in or found in source control
     package_data={'': ['README.*', 'VERSION'], 'docs': ['*'], 'examples': ['*']},
     keywords=['online monitor', 'real time plots'],
+    entry_points={
+          'console_scripts': [
+              'online_monitor = online_monitor.OnlineMonitor:main',
+              'start_converter = online_monitor.start_converter:main'
+          ]
+      },
     platforms='any'
 )
