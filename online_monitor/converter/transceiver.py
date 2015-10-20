@@ -57,7 +57,9 @@ class Transceiver(multiprocessing.Process):
             self.n_senders = len(self.send_address)
 
         self.exit = multiprocessing.Event()  # exit signal
-        utils.setup_logging(loglevel)
+
+        self.loglevel = loglevel
+        utils.setup_logging(self.loglevel)
 
         logging.debug("Initialize %s converter %s at %s", self.data_type, self.name, self.receive_address)
 
@@ -82,6 +84,7 @@ class Transceiver(multiprocessing.Process):
             self.senders.append(actual_sender)
 
     def run(self):  # the receiver loop
+        utils.setup_logging(self.loglevel)
         self.setup_transceiver_device()
         self.setup_interpretation()
 
