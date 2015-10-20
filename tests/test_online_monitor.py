@@ -23,8 +23,10 @@ def create_config_yaml():
     conf = {}
     # Add producer
     devices = {}
-    devices['DAQ0'] = {'send_address': 'tcp://127.0.0.1:5500'}
-    devices['DAQ1'] = {'send_address': 'tcp://127.0.0.1:5501'}
+    devices['DAQ0'] = {'send_address': 'tcp://127.0.0.1:5500',
+                       'data_type': 'test'}
+    devices['DAQ1'] = {'send_address': 'tcp://127.0.0.1:5501',
+                       'data_type': 'test'}
     conf['producer'] = devices
     # Add converter
     devices = {}
@@ -75,12 +77,8 @@ def get_python_processes():  # return the number of python processes
     return n_python
 
 
-def run_script_in_shell(script, arguments):
-    return subprocess.Popen("python %s %s" % (script, arguments), shell=True, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0)
-
-
-def run_script_in_process(script, arguments):
-    return subprocess.Popen(["python", script, arguments], shell=False, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0)
+def run_script_in_shell(script, arguments, command=None):
+    return subprocess.Popen("%s %s %s" % ('python' if not command else command, script, arguments), shell=True, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0)
 
 
 class TestOnlineMonitor(unittest.TestCase):
@@ -101,7 +99,7 @@ class TestOnlineMonitor(unittest.TestCase):
         # Start the simulation producer to create some fake data
         cls.producer_process = run_script_in_shell(producer_path, 'tmp_cfg.yml')
         # Start converter
-        cls.converter_manager_process = run_script_in_shell(converter_manager_path, 'tmp_cfg.yml')
+        cls.converter_manager_process = run_script_in_shell('', 'tmp_cfg.yml', command='start_converter')
         # Create Gui
         time.sleep(2)
         cls.app = QApplication(sys.argv)
