@@ -9,18 +9,20 @@ from online_monitor.utils import utils
 
 class ProducerSim(multiprocessing.Process):
     ''' For testing we have to generate some random data to fake a DAQ. This is done with this Producer Simulation'''
-    def __init__(self, send_address, name='Undefined', loglevel='INFO', **kwarg):
+    def __init__(self, send_address, data_type='Test', name='Undefined', loglevel='INFO', **kwarg):
         multiprocessing.Process.__init__(self)
 
         self.send_address = send_address
         self.name = name  # name of the DAQ/device
-
+        self.data_type = data_type
+        self.config = kwarg
         self.send_address = send_address
 
+        self.loglevel = loglevel
         self.exit = multiprocessing.Event()  # exit signal
         utils.setup_logging(loglevel)
 
-        logging.info("Initialize test producer %s at %s", self.name, self.send_address)
+        logging.info("Initialize %s producer %s at %s", self.data_type, self.name, self.send_address)
 
     def setup_producer_device(self):
         # ignore SIGTERM; signal shutdown() is used for controlled process termination
@@ -33,32 +35,38 @@ class ProducerSim(multiprocessing.Process):
         self.sender.bind(self.send_address)
 
     def run(self):  # the receiver loop
+        utils.setup_logging(self.loglevel)
         self.setup_producer_device()
 
-        logging.info("Start test producer %s at %s", self.name, self.send_address)
+        logging.info("Start %s producer %s at %s", self.data_type, self.name, self.send_address)
         while not self.exit.wait(0.2):
-            random_data = {'position': np.random.randint(0, 10, 100 * 100).reshape((100, 100))}
-            self.sender.send_json(random_data, cls=utils.NumpyEncoder)
+            self.send_data()
 
         # Close connections
         self.sender.close()
         self.context.term()
-        logging.info("Close test producer %s at %s", self.name, self.send_address)
+        logging.info("Close %s producer %s at %s", self.data_type, self.name, self.send_address)
 
     def shutdown(self):
         self.exit.set()
 
+    def send_data(self):
+        random_data = {'position': np.random.randint(0, 10, 100 * 100).reshape((100, 100))}
+        self.sender.send_json(random_data, cls=utils.NumpyEncoder)
 
-if __name__ == '__main__':
+
+def main():
     import time
     args = utils.parse_arguments()
     configuration = utils.parse_config_file(args.config_file)
 
     daqs = []
     for (actual_producer_name, actual_producer_cfg) in configuration['producer'].items():
-        daq = ProducerSim(send_address=actual_producer_cfg['send_address'],
-                          name=actual_producer_name,
-                          loglevel=args.log)
+        actual_producer_cfg['name'] = actual_producer_name
+        if actual_producer_cfg['data_type'] != 'test':  # only take pybar producers
+            continue
+        daq = ProducerSim(loglevel=args.log,
+                          **actual_producer_cfg)
         daqs.append(daq)
 
     for daq in daqs:
@@ -67,6 +75,12 @@ if __name__ == '__main__':
     while(True):
         try:
             time.sleep(2)
-        except:
+        except KeyboardInterrupt:
             for daq in daqs:
                 daq.shutdown()
+            for daq in daqs:
+                daq.join(timeout=500)
+            return
+
+if __name__ == '__main__':
+    main()
