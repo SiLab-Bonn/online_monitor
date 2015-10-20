@@ -153,12 +153,14 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
 #                 text.setPos(0.5, 0.5)
 #                 view.addItem(text)   
 
-
-if __name__ == '__main__':
-#     args = utils.parse_arguments()
-#     utils.setup_logging(args.log)
+def main():
+    args = utils.parse_arguments()
+    utils.setup_logging(args.log)
 
     app = Qt.QApplication(sys.argv) ## r'../examples/full_example/configuration.yaml'
     win = OnlineMonitorApplication(r'../examples/full_example/configuration.yaml')#args.config_file)  # enter remote IP to connect to the other side listening
     win.show()
     sys.exit(app.exec_())
+
+if __name__ == '__main__':
+    main()
