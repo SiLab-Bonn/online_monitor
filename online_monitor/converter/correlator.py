@@ -6,6 +6,3 @@ class Correlator(Transceiver):
         Transceiver.__init__(self, *args, **kwargs)
         if self.n_receivers < 2:
             raise ValueError('A correlator needs at least two receivers! Specify the receive adresses in the config file.')
-
-    def interpret_data(self, data):
-        return data
