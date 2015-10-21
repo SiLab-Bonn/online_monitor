@@ -158,7 +158,7 @@ def main():
     utils.setup_logging(args.log)
 
     app = Qt.QApplication(sys.argv) ## r'../examples/full_example/configuration.yaml'
-    win = OnlineMonitorApplication(r'../examples/full_example/configuration.yaml')#args.config_file)  # enter remote IP to connect to the other side listening
+    win = OnlineMonitorApplication(args.config_file)  # enter remote IP to connect to the other side listening
     win.show()
     sys.exit(app.exec_())
 
