@@ -79,7 +79,7 @@ class TestConverter(unittest.TestCase):
     def test_converter_communication(self):  # start 10 forwarder in a chain and do "whisper down the lane"
         n_python = get_python_processes()  # python instances before converter start
         # Forward receivers with single in/out
-        converter_manager_process = run_script_in_shell('', 'tmp_cfg.yml', command='start_converter')
+        converter_manager_process = run_script_in_shell('', 'tmp_cfg_10_converter.yml', command='start_converter')
         time.sleep(1.5)  # 10 converter in 10 processes + ZMQ thread take time to start up
         no_data = True  # flag set to False if data is received
         context = zmq.Context()
@@ -112,7 +112,7 @@ class TestConverter(unittest.TestCase):
     def test_converter_communication_2(self):  # start 3 forwarder in a chain with 2 i/o each and do "whisper down the lane"
         n_python = get_python_processes()  # python instances before converter start
         # Forward receivers with 2 in/out
-        converter_manager_process = run_script_in_shell('', 'tmp_cfg.yml', command='start_converter')
+        converter_manager_process = run_script_in_shell('', 'tmp_cfg_3_converter_multi.yml', command='start_converter')
         time.sleep(1.5)  # 10 converter in 10 processes + ZMQ thread take time to start up
         context = zmq.Context()
         # Sockets facing last converter inputs
@@ -197,7 +197,7 @@ class TestConverter(unittest.TestCase):
     def test_converter_crtl(self):  # test the setup and close of converter processes handled by the converter manager; initiated by crtl
         n_expected_processes = get_python_processes() + 1  # +1 needed under linux
         for _ in range(5):  # setup and delete 5 times 10 converter processes
-            converter_manager_process = run_script_in_process('', 'tmp_cfg.yml', command='start_converter')  # start script in process that captures SIGINT
+            converter_manager_process = run_script_in_process('', 'tmp_cfg_10_converter.yml', command='start_converter')  # start script in process that captures SIGINT
             time.sleep(1.0)  # 10 converter in 10 processes + ZMQ thread take time to start up
             converter_manager_process.send_signal(signal.SIGINT)
             time.sleep(2.0)
