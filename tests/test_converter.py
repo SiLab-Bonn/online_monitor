@@ -195,7 +195,7 @@ class TestConverter(unittest.TestCase):
 
     @unittest.skipIf(os.name == 'nt', "Test requires to send CRTL event; That is difficult under windows.")
     def test_converter_crtl(self):  # test the setup and close of converter processes handled by the converter manager; initiated by crtl
-        n_expected_processes = get_python_processes() + 1  # +1 needed under linux
+        n_expected_processes = get_python_processes()
         for _ in range(5):  # setup and delete 5 times 10 converter processes
             converter_manager_process = run_script_in_process('', 'tmp_cfg_10_converter.yml', command='start_converter')  # start script in process that captures SIGINT
             time.sleep(1.0)  # 10 converter in 10 processes + ZMQ thread take time to start up
