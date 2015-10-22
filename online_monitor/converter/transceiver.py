@@ -63,11 +63,7 @@ class Transceiver(multiprocessing.Process):
 
         logging.debug("Initialize %s converter %s at %s", self.data_type, self.name, self.receive_address)
 
-    def setup_transceiver_device(self):
-        # ignore SIGTERM; signal shutdown() is used for controlled process termination
-        signal.signal(signal.SIGINT, signal.SIG_IGN)
-        # Setup ZeroMQ connetions, has to be within run; otherwise zMQ does not work
-        self.context = zmq.Context()
+    def setup_receivers(self):
         # Receiver sockets facing clients (DAQ systems)
         self.receivers = []
         for actual_receive_address in self.receive_address:
@@ -76,6 +72,14 @@ class Transceiver(multiprocessing.Process):
             actual_receiver.setsockopt(zmq.SUBSCRIBE, '')  # do not filter any data
             self.receivers.append(actual_receiver)
 
+    def setup_transceiver(self):
+        # ignore SIGTERM; signal shutdown() is used for controlled process termination
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+        # Setup ZeroMQ connetions, has to be within run; otherwise zMQ does not work
+        self.context = zmq.Context()
+
+        self.setup_receivers()
+
         # Send socket facing services (e.g. online monitor)
         self.senders = []
         for actual_send_address in self.send_address:
@@ -83,9 +87,19 @@ class Transceiver(multiprocessing.Process):
             actual_sender.bind(actual_send_address)
             self.senders.append(actual_sender)
 
+    def recv_data(self):
+        raw_data = []
+        # Loop over all receivers
+        for actual_receiver in self.receivers:
+            try:
+                raw_data.extend([actual_receiver.recv(flags=zmq.NOBLOCK)])
+            except zmq.Again:  # no data
+                pass
+        return raw_data
+
     def run(self):  # the receiver loop
         utils.setup_logging(self.loglevel)
-        self.setup_transceiver_device()
+        self.setup_transceiver()
         self.setup_interpretation()
 
         process = psutil.Process(self.ident)  # access this process info
@@ -93,13 +107,7 @@ class Transceiver(multiprocessing.Process):
 
         logging.debug("Start %s transceiver %s at %s", self.data_type, self.name, self.receive_address)
         while not self.exit.wait(0.01):
-            raw_data = []
-            # Loop over all receivers
-            for actual_receiver in self.receivers:
-                try:
-                    raw_data.extend([actual_receiver.recv(flags=zmq.NOBLOCK)])
-                except zmq.Again:  # no data
-                    pass
+            raw_data = self.recv_data()
 
             if not raw_data:  # read again if no raw data is read
                 continue
