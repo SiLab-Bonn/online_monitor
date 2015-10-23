@@ -3,6 +3,10 @@ concurrency = multiprocessing
 parallel = True
 
 [report]
-exclude_lines = pragma: no cover 
-omit = */__init__.py
+exclude_lines =
+    pragma: no cover 
+    raise
+
+omit = 
+    */__init__.py
     tests/*

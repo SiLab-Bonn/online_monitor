@@ -24,7 +24,7 @@ def parse_args(args):  # argparse a string, http://stackoverflow.com/questions/1
     parser.add_argument('--log', '-l', help='Logging level (e.g. DEBUG, INFO, WARNING, ERROR, CRITICAL)', default='INFO')
     args_parsed = parser.parse_args(args)
     if not args_parsed.config_file:
-        parser.error("You have to specify a configuration file")
+        parser.error("You have to specify a configuration file")  # pragma: no cover, sysexit that coverage does not cover
     return args_parsed
 
 
@@ -33,8 +33,7 @@ def parse_config_file(config_file, expect_receiver=False):  # create config dict
         configuration = yaml.safe_load(in_config_file)
         if expect_receiver:
             try:
-                if not configuration['receiver']:
-                    logging.warning('No receiver specified, thus no data can be plotted. Change %s!', config_file)
+                configuration['receiver']
             except KeyError:
                 logging.warning('No receiver specified, thus no data can be plotted. Change %s!', config_file)
         return configuration
@@ -80,11 +79,11 @@ def load_receiver(importname, base_class_type, *args, **kargs):  # search under 
     raise RuntimeError('Receiver %s in paths %s not found!', importname, settings.get_receiver_path())
 
 
-#from http://stackoverflow.com/questions/3488934/simplejson-and-numpy-array#
+# from http://stackoverflow.com/questions/3488934/simplejson-and-numpy-array#
 class NumpyEncoder(json.JSONEncoder):
 
     def default(self, obj):
-        """If input object is an ndarray it will be converted into a dict 
+        """If input object is an ndarray it will be converted into a dict
         holding dtype, shape and the data, base64 encoded and blosc compressed.
         """
         if isinstance(obj, np.ndarray):
@@ -99,8 +98,7 @@ class NumpyEncoder(json.JSONEncoder):
             return dict(__ndarray__=data_b64,
                         dtype=str(obj.dtype),
                         shape=obj.shape)
-        # Let the base class default method raise the TypeError
-        return json.JSONEncoder(self, obj)
+        raise TypeError('Only numpy arrays ca be converted with the numpy encoder')
 
 
 def json_numpy_obj_hook(dct):

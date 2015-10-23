@@ -73,6 +73,10 @@ class TestUtils(unittest.TestCase):
         data_serialized = json.dumps(data, cls=utils.NumpyEncoder)
         data_deserialized = json.loads(data_serialized, object_hook=utils.json_numpy_obj_hook)
         self.assertTrue((data['array'] == data_deserialized['array']).all())
+        # No valid numpy array
+        data = {'array', (1, 2, 3)}
+        with self.assertRaises(TypeError):
+            json.dumps(data, cls=utils.NumpyEncoder)
 
     def test_factory(self):
         receiver = utils._factory('online_monitor.converter.forwarder', base_class_type=Forwarder, *(), **{'receive_address': '0',

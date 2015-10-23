@@ -65,6 +65,8 @@ class TestConverter(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):  # remove created files
+        settings.delete_converter_path(r'examples/converter')
+        settings.delete_receiver_path(r'examples/receiver')
         os.remove('tmp_cfg_5_producer.yml')
 
     def test_converter_communication(self):  # start 5 producer and check if they send data, then check shutdows

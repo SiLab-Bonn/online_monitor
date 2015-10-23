@@ -153,7 +153,7 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
 #                 text.setPos(0.5, 0.5)
 #                 view.addItem(text)   
 
-def main():
+def main():  # pragma: no cover, cannot be tested in unittests due to qt event loop
     args = utils.parse_arguments()
     utils.setup_logging(args.log)
 
@@ -163,4 +163,4 @@ def main():
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
-    main()
+    main()  # pragma: no cover, cannot be tested in unittests due to qt event loop

@@ -1,4 +1,7 @@
-''' Script to check the online converter of the online monitor.
+''' Script to check the settings class of the online monitor.
+Since the settings change after the online monitor is used, this
+unittests only works on a new installation. The OnlineMonitor.ini
+should be untouched.
 '''
 
 import unittest
@@ -23,6 +26,9 @@ def create_forwarder_config_yaml(n_converter):
 class TestSettings(unittest.TestCase):
 
     def test_settings_set(self):
+        self.assertListEqual(settings.get_receiver_path(), ['online_monitor.receiver'])
+        self.assertListEqual(settings.get_converter_path(), ['online_monitor.converter'])
+
         settings.add_converter_path(r'test/converter/path')
         settings.add_receiver_path(r'test/receiver/path')
         settings.add_receiver_path(r'test/receiver/path')
@@ -35,6 +41,8 @@ class TestSettings(unittest.TestCase):
 
         self.assertFalse(r'test/converter/path' in settings.get_converter_path())
         self.assertFalse(r'test/receiver/path' in settings.get_receiver_path())
+
+        self.assertTupleEqual(settings.get_window_geometry(), (100, 100, 1024, 768), 'This can fail if you started the online monitor once and changed the windows size')
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestSettings)

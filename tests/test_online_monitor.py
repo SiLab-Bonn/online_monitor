@@ -23,24 +23,24 @@ def create_config_yaml():
     conf = {}
     # Add producer
     devices = {}
-    devices['DAQ0'] = {'send_address': 'tcp://127.0.0.1:5500',
+    devices['DAQ0'] = {'send_address': 'tcp://127.0.0.1:6500',
                        'data_type': 'test'}
-    devices['DAQ1'] = {'send_address': 'tcp://127.0.0.1:5501',
+    devices['DAQ1'] = {'send_address': 'tcp://127.0.0.1:6501',
                        'data_type': 'test'}
     conf['producer'] = devices
     # Add converter
     devices = {}
     devices['DUT0'] = {
         'data_type': 'example_converter',
-        'receive_address': 'tcp://127.0.0.1:5500',
-        'send_address': 'tcp://127.0.0.1:5600',
+        'receive_address': 'tcp://127.0.0.1:6500',
+        'send_address': 'tcp://127.0.0.1:6600',
         'max_cpu_load': None,
         'threshold': 8
     }
     devices['DUT1'] = {
         'data_type': 'forwarder',
-        'receive_address': 'tcp://127.0.0.1:5600',
-        'send_address': 'tcp://127.0.0.1:5601',
+        'receive_address': 'tcp://127.0.0.1:6600',
+        'send_address': 'tcp://127.0.0.1:6601',
         'max_cpu_load': None
     }
     conf['converter'] = devices
@@ -48,11 +48,11 @@ def create_config_yaml():
     devices = {}
     devices['DUT0'] = {
         'data_type': 'example_receiver',
-        'receive_address': 'tcp://127.0.0.1:5600'
+        'receive_address': 'tcp://127.0.0.1:6600'
     }
     devices['DUT1'] = {
         'data_type': 'example_receiver',
-        'receive_address': 'tcp://127.0.0.1:5601'
+        'receive_address': 'tcp://127.0.0.1:6601'
     }
     conf['receiver'] = devices
     return yaml.dump(conf, default_flow_style=False)
@@ -112,6 +112,8 @@ class TestOnlineMonitor(unittest.TestCase):
         kill(cls.producer_process)
         kill(cls.converter_manager_process)
         time.sleep(1)
+        settings.delete_converter_path(r'examples/converter')
+        settings.delete_receiver_path(r'examples/receiver')
         os.remove('tmp_cfg.yml')
         cls.online_monitor.close()
         time.sleep(1)
@@ -147,10 +149,6 @@ class TestOnlineMonitor(unittest.TestCase):
         data_received_2 = []
         for receiver in self.online_monitor.receivers:
             data_received_2.append(receiver.position_img.getHistogram())
-
-        print data_received_0
-        print data_received_1
-        print data_received_2
 
         self.assertListEqual(data_received_0, [(None, None), (None, None)])
         self.assertTrue(data_received_1[0][0] is not None)
