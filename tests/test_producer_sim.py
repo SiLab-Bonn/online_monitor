@@ -91,7 +91,7 @@ class TestConverter(unittest.TestCase):
         context.term()
         n_python_2 = get_python_processes()  # python instances after converter stop
         self.assertTrue(all(have_data), 'Did not receive any data')
-        self.assertEqual(n_python + 1 if os.name != 'nt' else n_python, n_python_2)
+        self.assertEqual(n_python, n_python_2)
 
 if __name__ == '__main__':
     producer_sim_script_path = r'../online_monitor/utils/producer_sim.py'
