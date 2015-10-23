@@ -9,7 +9,7 @@ import pyqtgraph as pg
 from pyqtgraph.dockarea import DockArea, Dock
 
 from online_monitor.utils import utils, settings
-from receiver.receiver import Receiver
+from online_monitor.receiver.receiver import Receiver
 
 
 class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):

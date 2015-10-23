@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from online_monitor.utils import utils
-from converter.converter_manager import ConverterManager
+from online_monitor.converter.converter_manager import ConverterManager
 
 
 def main():

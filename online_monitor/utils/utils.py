@@ -4,6 +4,7 @@ import yaml
 import blosc
 import json
 import base64
+import sys
 import numpy as np
 from importlib import import_module
 from inspect import getmembers, isclass
@@ -95,10 +96,12 @@ class NumpyEncoder(json.JSONEncoder):
                 obj_data = cont_obj.data
             obj_data = blosc.compress(obj_data, typesize=8)
             data_b64 = base64.b64encode(obj_data)
+            if sys.version_info >= (3, 0):  # http://stackoverflow.com/questions/24369666/typeerror-b1-is-not-json-serializable
+                data_b64 = data_b64.decode('utf-8')
             return dict(__ndarray__=data_b64,
                         dtype=str(obj.dtype),
                         shape=obj.shape)
-        raise TypeError('Only numpy arrays ca be converted with the numpy encoder')
+        return json.JSONEncoder.default(self, obj)
 
 
 def json_numpy_obj_hook(dct):
@@ -109,7 +112,10 @@ def json_numpy_obj_hook(dct):
     :return: (ndarray) if input was an encoded ndarray
     """
     if isinstance(dct, dict) and '__ndarray__' in dct:
-        data = base64.b64decode(dct['__ndarray__'])
+        array = dct['__ndarray__']
+        if sys.version_info >= (3, 0):  # http://stackoverflow.com/questions/24369666/typeerror-b1-is-not-json-serializable
+            array = array.encode('utf-8')
+        data = base64.b64decode(array)
         data = blosc.decompress(data)
         return np.frombuffer(data, dct['dtype']).reshape(dct['shape'])
 

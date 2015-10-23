@@ -10,7 +10,9 @@ import zmq
 import psutil
 import signal
 
+
 converter_script_path = r'online_monitor/start_converter.py'
+
 
 # creates a yaml config describing n_converter of type forwarder that are all connection to each other
 def create_forwarder_config_yaml(n_converter, one_io=True):
@@ -89,7 +91,7 @@ class TestConverter(unittest.TestCase):
         sender.bind(r'tcp://127.0.0.1:5500')
         receiver = context.socket(zmq.SUB)  # subscriber to the last transveiver in the chain
         receiver.connect(r'tcp://127.0.0.1:5510')
-        receiver.setsockopt(zmq.SUBSCRIBE, '')  # do not filter any data
+        receiver.setsockopt_string(zmq.SUBSCRIBE, u'')  # do not filter any data
         time.sleep(0.5)
         msg = 'This is a test message'
         sender.send_json(msg)
@@ -123,10 +125,10 @@ class TestConverter(unittest.TestCase):
         sender_2.bind(r'tcp://127.0.0.1:5600')
         receiver = context.socket(zmq.SUB)  # subscriber to the last transveiver in the chain
         receiver.connect(r'tcp://127.0.0.1:5503')
-        receiver.setsockopt(zmq.SUBSCRIBE, '')
+        receiver.setsockopt_string(zmq.SUBSCRIBE, u'')
         receiver_2 = context.socket(zmq.SUB)  # subscriber to the last transveiver in the chain
         receiver_2.connect(r'tcp://127.0.0.1:5603')
-        receiver_2.setsockopt(zmq.SUBSCRIBE, '')  # do not filter any data
+        receiver_2.setsockopt_string(zmq.SUBSCRIBE, u'')  # do not filter any data
         time.sleep(0.5)
         msg = 'This is a test message'
         msg_2 = 'This is another test message'

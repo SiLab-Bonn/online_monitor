@@ -79,7 +79,7 @@ class TestConverter(unittest.TestCase):
         for index in range(5):
             receiver = context.socket(zmq.SUB)  # subscriber to the last transveiver in the chain
             receiver.connect(r'tcp://127.0.0.1:55%02d' % index,)
-            receiver.setsockopt(zmq.SUBSCRIBE, '')  # do not filter any data
+            receiver.setsockopt_string(zmq.SUBSCRIBE, u'')  # do not filter any data
             time.sleep(0.5)
             try:
                 receiver.recv_json(flags=zmq.NOBLOCK)

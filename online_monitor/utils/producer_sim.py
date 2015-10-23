@@ -63,7 +63,7 @@ def main():
     daqs = []
     for (actual_producer_name, actual_producer_cfg) in configuration['producer'].items():
         actual_producer_cfg['name'] = actual_producer_name
-        if actual_producer_cfg['data_type'] != 'test':  # only take pybar producers
+        if actual_producer_cfg['data_type'] != 'test':  # only take test producers
             continue
         daq = ProducerSim(loglevel=args.log,
                           **actual_producer_cfg)

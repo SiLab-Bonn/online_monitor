@@ -18,7 +18,7 @@ class DataWorker(QtCore.QObject):
     def connect(self, receive_address):
         self.context = zmq.Context()
         self.receiver = self.context.socket(zmq.SUB)  # subscriber
-        self.receiver.setsockopt(zmq.SUBSCRIBE, '')  # do not filter any data
+        self.receiver.setsockopt_string(zmq.SUBSCRIBE, u'')  # do not filter any data
         self.receiver.connect(receive_address)
 
     def receive_data(self):  # pragma: no cover; infinite loop via QObject.moveToThread(), does not block event loop, is shown as not covered in unittests due to qt event loop

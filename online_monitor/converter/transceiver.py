@@ -69,7 +69,7 @@ class Transceiver(multiprocessing.Process):
         for actual_receive_address in self.receive_address:
             actual_receiver = self.context.socket(zmq.SUB)  # subscriber
             actual_receiver.connect(actual_receive_address)
-            actual_receiver.setsockopt(zmq.SUBSCRIBE, '')  # do not filter any data
+            actual_receiver.setsockopt_string(zmq.SUBSCRIBE, u'')  # do not filter any data
             self.receivers.append(actual_receiver)
 
     def setup_transceiver(self):
