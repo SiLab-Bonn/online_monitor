@@ -99,7 +99,7 @@ class TestOnlineMonitor(unittest.TestCase):
         # Start the simulation producer to create some fake data
         cls.producer_process = run_script_in_shell(producer_path, 'tmp_cfg.yml')
         # Start converter
-        cls.converter_manager_process = run_script_in_shell('', 'tmp_cfg.yml', command='start_converter')
+        cls.converter_manager_process = run_script_in_shell(converter_manager_path, 'tmp_cfg.yml')
         # Create Gui
         time.sleep(2)
         cls.app = QApplication(sys.argv)
