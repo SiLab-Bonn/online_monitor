@@ -14,16 +14,17 @@ converter :
         send_address : tcp://127.0.0.1:5600
         max_cpu_load : 30
         threshold : 8
-#    DUT1 :
- #       data_type : forwarder
-  #      receive_address : tcp://127.0.0.1:5600
-   #     send_address : tcp://127.0.0.1:5601
-    #    max_cpu_load : 30
-#    DUT2 :
- #       data_type : example_converter
-  #      receive_address : tcp://127.0.0.1:5501
-   #     send_address : tcp://127.0.0.1:5602
-    #    max_cpu_load : 30
+    DUT1 :
+        data_type : forwarder
+        receive_address : tcp://127.0.0.1:5600
+        send_address : tcp://127.0.0.1:5601
+        max_cpu_load : 30
+    DUT2 :
+        data_type : example_converter
+        receive_address : tcp://127.0.0.1:5501
+        send_address : tcp://127.0.0.1:5602
+        max_cpu_load : 30
+        threshold : 8
     PosCorr :
         data_type : position_correlator
         receive_address : 
