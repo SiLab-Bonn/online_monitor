@@ -1,7 +1,4 @@
 import sys
-import time
-import numpy as np
-import argparse
 import logging
 
 from PyQt4 import Qt
@@ -42,6 +39,10 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
 
     def start_receivers(self):
         receivers = []
+        try:
+            self.configuration['receiver']
+        except KeyError:
+            return receivers
         if self.configuration['receiver']:
             logging.info('Starting %d receivers', len(self.configuration['receiver']))
             for (receiver_name, receiver_settings) in self.configuration['receiver'].items():
@@ -80,6 +81,10 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
         status_graphics_widget = pg.GraphicsLayoutWidget()
         status_graphics_widget.show()
         self.status_dock.addWidget(status_graphics_widget)
+        try:
+            self.configuration['receiver']
+        except KeyError:
+            return
         # Create nodes with links from configuration file for converter/receiver
         for receiver_index, (receiver_name, receiver_settings) in enumerate(self.configuration['receiver'].items()):
             # Add receiver info
@@ -152,6 +157,7 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
 #                 text = pg.TextItem('---->', anchor=(0.5, 0.5), color=(0, 0, 0, 200))
 #                 text.setPos(0.5, 0.5)
 #                 view.addItem(text)   
+
 
 def main():  # pragma: no cover, cannot be tested in unittests due to qt event loop
     args = utils.parse_arguments()
