@@ -26,8 +26,10 @@ setup(
     keywords=['online monitor', 'real time', 'plots'],
     entry_points={
         'console_scripts': [
-            'online_monitor = online_monitor.OnlineMonitor:main',
-            'start_converter = online_monitor.start_converter:main'
+            'online_monitor = online_monitor.OnlineMonitor:main',  # starts the online monitor application; blocking until app exit
+            'start_converter = online_monitor.start_converter:main',  # starts the converters; blocking until CRTL-C
+            'start_producer_sim = online_monitor.utils.producer_sim:main',  # starts the producer simulatiion; blocking until CRTL-C
+            'start_online_monitor = online_monitor.start_online_monitor:main',  # starts the online monitor application + covnerters + producer simulation defined on the configuration.yaml
         ]
     },
     platforms='any'
