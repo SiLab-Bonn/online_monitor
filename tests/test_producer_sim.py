@@ -70,8 +70,8 @@ class TestConverter(unittest.TestCase):
         os.remove('tmp_cfg_5_producer.yml')
 
     def test_converter_communication(self):  # start 5 producer and check if they send data, then check shutdows
-        n_python = get_python_processes()  # python instances before converter start
-        # Forward receivers with single in/out
+        n_python = get_python_processes()  # python instances before producer start
+        # 5 test producers
         producer_process = run_script_in_shell(producer_sim_script_path, 'tmp_cfg_5_producer.yml')
         time.sleep(1.5)  # 10 converter in 10 processes + ZMQ thread take time to start up
         have_data = []
@@ -91,7 +91,8 @@ class TestConverter(unittest.TestCase):
         kill(producer_process)
         time.sleep(1)
         context.term()
-        n_python_2 = get_python_processes()  # python instances after converter stop
+        time.sleep(2)
+        n_python_2 = get_python_processes()  # python instances after producer stop
         self.assertTrue(all(have_data), 'Did not receive any data')
         self.assertEqual(n_python, n_python_2)
 
