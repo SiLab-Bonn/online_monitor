@@ -1,8 +1,10 @@
 producer :
     DAQ0 :
         send_address : tcp://127.0.0.1:5500
+        data_type : test
     DAQ1 :
         send_address : tcp://127.0.0.1:5501
+        data_type : test
 
 
 converter :
