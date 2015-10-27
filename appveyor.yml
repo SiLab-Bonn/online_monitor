@@ -1,17 +1,16 @@
 environment:
-  matrix:
-    - PYTHON: 2.7
-    - PYTHON: 3.5
-
-  platform:
-  - x86
-  - x64
-
   global:
     # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
     # /E:ON and /V:ON options are not enabled in the batch script intepreter
     # See: http://stackoverflow.com/a/13751649/163740
     WITH_COMPILER: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_compiler.cmd"
+  matrix:
+    - PYTHON: 2.7
+    - PYTHON: 3.5
+
+platform:
+  - x86
+  - x64
 
 matrix:
   fast_finish: true
