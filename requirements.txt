@@ -1,6 +1,5 @@
 pyzmq
 pyyaml
-blosc
 psutil
 pyqtgraph#
 nose # unittests
