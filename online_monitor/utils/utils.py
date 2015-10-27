@@ -1,14 +1,18 @@
 import logging
 import argparse
 import yaml
-import blosc
 import json
 import base64
 import sys
 import numpy as np
 from importlib import import_module
 from inspect import getmembers, isclass
-import sys
+
+try:  # installing blosc can be troublesome under windows
+    import blosc
+    has_blosc = True
+except ImportError:
+    has_blosc = False
 
 from online_monitor.utils import settings
 
@@ -94,7 +98,8 @@ class NumpyEncoder(json.JSONEncoder):
                 cont_obj = np.ascontiguousarray(obj)
                 assert(cont_obj.flags['C_CONTIGUOUS'])
                 obj_data = cont_obj.data
-            obj_data = blosc.compress(obj_data, typesize=8)
+            if has_blosc:
+                obj_data = blosc.compress(obj_data, typesize=8)
             data_b64 = base64.b64encode(obj_data)
             if sys.version_info >= (3, 0):  # http://stackoverflow.com/questions/24369666/typeerror-b1-is-not-json-serializable
                 data_b64 = data_b64.decode('utf-8')
@@ -116,7 +121,8 @@ def json_numpy_obj_hook(dct):
         if sys.version_info >= (3, 0):  # http://stackoverflow.com/questions/24369666/typeerror-b1-is-not-json-serializable
             array = array.encode('utf-8')
         data = base64.b64decode(array)
-        data = blosc.decompress(data)
+        if has_blosc:
+            data = blosc.decompress(data)
         return np.frombuffer(data, dct['dtype']).reshape(dct['shape'])
 
     return dct
