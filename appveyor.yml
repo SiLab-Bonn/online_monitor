@@ -12,8 +12,8 @@ platform:
   - x86
   - x64
 
-matrix:
-  fast_finish: true
+#matrix:
+#  fast_finish: true
 
 init:
   - cmd: ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
@@ -22,6 +22,7 @@ install:
   # Miniconda setup + necessary external packages
   - set PATH=C:\Miniconda;C:\Miniconda\Scripts;%PATH%  # miniconda is already installed on appveyor: https://github.com/appveyor/ci/issues/359
   - conda install --yes pyqt pyyaml pyzmq blosc numpy
+  - conda update --all --yes
   - pip install -r requirements.txt
   - "%WITH_COMPILER% %PYTHON%/python setup.py develop"
 
