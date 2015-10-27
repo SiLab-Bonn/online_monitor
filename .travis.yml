@@ -34,8 +34,13 @@ install:
 script:
   # Hack to allow tests coverage in multi processes, http://coverage.readthedocs.org/en/latest/subprocess.html
   - export COVERAGE_PROCESS_START=$PWD/.coveragerc
-  - touch $HOME/miniconda/lib/python2.7/site-packages/converage.pth
-  - printf "import coverage; coverage.process_startup()" > $HOME/miniconda/lib/python2.7/site-packages/converage.pth
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      touch $HOME/miniconda/lib/python2.7/site-packages/converage.pth
+      printf "import coverage; coverage.process_startup()" > $HOME/miniconda/lib/python2.7/site-packages/converage.pth
+    else
+      touch $HOME/miniconda/lib/python3.5/site-packages/converage.pth
+      printf "import coverage; coverage.process_startup()" > $HOME/miniconda/lib/python3.5/site-packages/converage.pth
+    fi
   - nosetests --with-coverage --cover-package=online_monitor
 
 after_success:
