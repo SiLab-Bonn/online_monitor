@@ -25,15 +25,12 @@ install:
   - conda install --yes pyqt pyyaml pyzmq numpy
   - conda update --all --yes
   - pip install -r requirements.txt
-  - "%WITH_COMPILER% python setup.py develop"
+  - python setup.py develop
 
 build: off
 
 test_script:
-  - "%WITH_COMPILER% nosetests"
-
-after_test:
-  - "%WITH_COMPILER% python setup.py bdist_wheel"
+  - nosetests
 
 artifacts:
   - path: dist\*
