@@ -25,7 +25,7 @@ def main():
     utils.setup_logging(args.log)
 
     # Start the simulation producer to create some fake data
-    producer_process = run_script_in_shell('', args.config_file, 'start_producer_simulation')
+    producer_process = run_script_in_shell('', args.config_file, 'start_producer_sim')
 
     # Start the converter
     converter_manager_process = run_script_in_shell('', args.config_file, 'start_converter')
