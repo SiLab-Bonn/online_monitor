@@ -24,7 +24,7 @@ install:
   - conda update conda --yes
   - conda install --yes pyqt pyyaml pyzmq numpy
   - conda update --all --yes
-  - "%WITH_COMPILER% pip install -r requirements.txt"
+  - pip install -r requirements.txt
   - "%WITH_COMPILER% %PYTHON%/python setup.py develop"
 
 build: off
