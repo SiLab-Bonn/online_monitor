@@ -9,10 +9,7 @@ import os
 import zmq
 import psutil
 
-from online_monitor.utils import settings
-
-
-producer_sim_script_path = r'online_monitor/utils/producer_sim.py'
+producer_sim_script_path = r'online_monitor/start_producer_sim.py'
 
 
 # creates a yaml config describing n_converter of type forwarder that are all connection to each other
@@ -21,9 +18,9 @@ def create_producer_config_yaml(n_producer):
     for index in range(n_producer):
         devices['DAQ%s' % index] = {
             'send_address': 'tcp://127.0.0.1:55%02d' % index,
-            'data_type' : 'test'
+            'data_type': 'example_producer_sim'
         }
-    conf['producer'] = devices
+    conf['producer_sim'] = devices
     return yaml.dump(conf, default_flow_style=False)
 
 
@@ -57,16 +54,12 @@ class TestConverter(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        settings.add_converter_path(r'examples/converter')
-        settings.add_receiver_path(r'examples/receiver')
         with open('tmp_cfg_5_producer.yml', 'w') as outfile:  # 10 forwarder converters connected in a chain
             config_file = create_producer_config_yaml(5)
             outfile.write(config_file)
 
     @classmethod
     def tearDownClass(cls):  # remove created files
-        settings.delete_converter_path(r'examples/converter')
-        settings.delete_receiver_path(r'examples/receiver')
         os.remove('tmp_cfg_5_producer.yml')
 
     def test_converter_communication(self):  # start 5 producer and check if they send data, then check shutdows
@@ -97,6 +90,6 @@ class TestConverter(unittest.TestCase):
         self.assertEqual(n_python, n_python_2)
 
 if __name__ == '__main__':
-    producer_sim_script_path = r'../online_monitor/utils/producer_sim.py'
+    producer_sim_script_path = r'../online_monitor/start_producer_sim.py'
     suite = unittest.TestLoader().loadTestsFromTestCase(TestConverter)
     unittest.TextTestRunner(verbosity=2).run(suite)
