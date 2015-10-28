@@ -61,17 +61,6 @@ def kill(proc):
     process.kill()
 
 
-def get_n_processes(name):  # return the number of python processes
-    n_processes = 0
-    for proc in psutil.process_iter():
-        try:
-            if name in proc.name():
-                n_processes += 1
-        except psutil.AccessDenied:
-            pass
-    return n_processes
-
-
 def run_script_in_shell(script, arguments, command=None):
     return subprocess.Popen("%s %s %s" % ('python' if not command else command, script, arguments), shell=True, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0)
 
@@ -95,40 +84,32 @@ class TestStartScripts(unittest.TestCase):
         time.sleep(1)
 
     def test_start_converter(self):
-        n_python = get_n_processes('start_converter')  # python instances before converter start
         converter_process = run_script_in_shell('', 'tmp_cfg_2.yml', 'start_converter')
         time.sleep(0.5)
         kill(converter_process)
         time.sleep(0.5)
-        n_python_2 = get_n_processes('start_converter')  # python instances after converter stop
-        self.assertEqual(n_python, n_python_2)
+        self.assertNotEqual(converter_process.poll(), None)
 
     def test_start_producer_sim(self):
-        n_python = get_n_processes('start_producer_sim')  # python instances before converter start
         producer_sim_process = run_script_in_shell('', 'tmp_cfg_2.yml', 'start_producer_sim')
         time.sleep(0.5)
         kill(producer_sim_process)
         time.sleep(0.5)
-        n_python_2 = get_n_processes('start_producer_sim')  # python instances after converter stop
-        self.assertEqual(n_python, n_python_2)
+        self.assertNotEqual(producer_sim_process.poll(), None)
 
     def test_start_online_monitor(self):
-        n_python = get_n_processes('start_online_monitor')  # python instances before converter start
         online_monitor_process = run_script_in_shell('', 'tmp_cfg_2.yml', 'start_online_monitor')
         time.sleep(1)
         kill(online_monitor_process)
         time.sleep(1)
-        n_python_2 = get_n_processes('start_online_monitor')  # python instances after converter stop
-        self.assertEqual(n_python, n_python_2)
+        self.assertNotEqual(online_monitor_process.poll(), None)
 
     def test_online_monitor(self):
-        n_python = get_n_processes('online_monitor')  # python instances before converter start
         online_monitor_process = run_script_in_shell('', 'tmp_cfg_2.yml', 'online_monitor')
         time.sleep(0.5)
         kill(online_monitor_process)
         time.sleep(0.5)
-        n_python_2 = get_n_processes('online_monitor')  # python instances after converter stop
-        self.assertEqual(n_python, n_python_2)
+        self.assertNotEqual(online_monitor_process.poll(), None)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestStartScripts)

@@ -31,17 +31,6 @@ def kill(proc):  # kill process by id, including subprocesses; works for linux a
     process.kill()
 
 
-def get_python_processes():  # return the number of python processes
-    n_python = 0
-    for proc in psutil.process_iter():
-        try:
-            if 'python' in proc.name():
-                n_python += 1
-        except psutil.AccessDenied:  # pragma: no cover
-            pass
-    return n_python
-
-
 def run_script_in_shell(script, arguments):
     return subprocess.Popen("python %s %s" % (script, arguments), shell=True, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0)
 
@@ -63,7 +52,6 @@ class TestConverter(unittest.TestCase):
         os.remove('tmp_cfg_5_producer.yml')
 
     def test_converter_communication(self):  # start 5 producer and check if they send data, then check shutdows
-        n_python = get_python_processes()  # python instances before producer start
         # 5 test producers
         producer_process = run_script_in_shell(producer_sim_script_path, 'tmp_cfg_5_producer.yml')
         time.sleep(1.5)  # 10 converter in 10 processes + ZMQ thread take time to start up
@@ -85,9 +73,8 @@ class TestConverter(unittest.TestCase):
         time.sleep(1)
         context.term()
         time.sleep(2)
-        n_python_2 = get_python_processes()  # python instances after producer stop
         self.assertTrue(all(have_data), 'Did not receive any data')
-        self.assertEqual(n_python, n_python_2)
+        self.assertNotEqual(producer_process.poll(), None)
 
 if __name__ == '__main__':
     producer_sim_script_path = r'../online_monitor/start_producer_sim.py'

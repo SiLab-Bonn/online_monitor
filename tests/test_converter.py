@@ -44,17 +44,6 @@ def kill(proc):  # kill process by id, including subprocesses; works for linux a
     process.kill()
 
 
-def get_python_processes():  # return the number of python processes
-    n_python = 0
-    for proc in psutil.process_iter():
-        try:
-            if 'python' in proc.name():
-                n_python += 1
-        except psutil.AccessDenied:
-            pass
-    return n_python
-
-
 def run_script_in_shell(script, arguments, command=None):
     return subprocess.Popen("%s %s %s" % ('python' if not command else command, script, arguments), shell=True, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0)
 
@@ -80,7 +69,6 @@ class TestConverter(unittest.TestCase):
         os.remove('tmp_cfg_3_converter_multi.yml')
 
     def test_converter_communication(self):  # start 10 forwarder in a chain and do "whisper down the lane"
-        n_python = get_python_processes()  # python instances before converter start
         # Forward receivers with single in/out
         converter_manager_process = run_script_in_shell(converter_script_path, 'tmp_cfg_10_converter.yml')
         time.sleep(1.5)  # 10 converter in 10 processes + ZMQ thread take time to start up
@@ -108,12 +96,10 @@ class TestConverter(unittest.TestCase):
         receiver.close()
         context.term()
         time.sleep(0.5)
-        n_python_2 = get_python_processes()  # python instances after converter stop
         self.assertFalse(no_data, 'Did not receive any data')
-        self.assertEqual(n_python, n_python_2)
+        self.assertNotEqual(converter_manager_process.poll(), None)
 
     def test_converter_communication_2(self):  # start 3 forwarder in a chain with 2 i/o each and do "whisper down the lane"
-        n_python = get_python_processes()  # python instances before converter start
         # Forward receivers with 2 in/out
         converter_manager_process = run_script_in_shell(converter_script_path, 'tmp_cfg_3_converter_multi.yml')
         time.sleep(1.5)  # 10 converter in 10 processes + ZMQ thread take time to start up
@@ -191,20 +177,18 @@ class TestConverter(unittest.TestCase):
         sender_2.close()
         context.term()
 
-        n_python_2 = get_python_processes()  # python instances after converter stop
         self.assertTrue(all(item is False for item in no_data), 'Did not receive enough data')
         self.assertTrue(all(item is False for item in no_data_2), 'Did not receive enough data')
-        self.assertEqual(n_python, n_python_2)  # check if all processes are closed
+        self.assertNotEqual(converter_manager_process.poll(), None)  # check if all processes are closed
 
     @unittest.skipIf(os.name == 'nt', "Test requires to send CRTL event; That is difficult under windows.")
     def test_converter_crtl(self):  # test the setup and close of converter processes handled by the converter manager; initiated by crtl
-        n_expected_processes = get_python_processes() + 1  # +1 needed under linux
         for _ in range(5):  # setup and delete 5 times 10 converter processes
             converter_manager_process = run_script_in_process(converter_script_path, 'tmp_cfg_10_converter.yml')  # start script in process that captures SIGINT
             time.sleep(1.0)  # 10 converter in 10 processes + ZMQ thread take time to start up
             converter_manager_process.send_signal(signal.SIGINT)
             time.sleep(2.0)
-            self.assertEqual(get_python_processes(), n_expected_processes)
+            self.assertNotEqual(converter_manager_process.poll(), None)  # check if all processes are closed
 
 if __name__ == '__main__':
     converter_script_path = r'../online_monitor/start_converter.py'
