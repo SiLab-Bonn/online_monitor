@@ -2,7 +2,6 @@ import multiprocessing
 import zmq
 import logging
 import signal
-import numpy as np
 import time
 
 from online_monitor.utils import utils
@@ -55,8 +54,7 @@ class ProducerSim(multiprocessing.Process):
         self.exit.set()
 
     def send_data(self):
-        random_data = {'position': np.random.randint(0, 10, 100 * 100).reshape((100, 100))}
-        self.sender.send_json(random_data, cls=utils.NumpyEncoder)
+        raise NotImplemented('This function has to be defined in derived simulation producer')
 
 
 def main():
