@@ -26,13 +26,10 @@ class ProducerSim(multiprocessing.Process):
         logging.info("Initialize %s producer %s at %s", self.data_type, self.name, self.send_address)
 
     def setup_producer_device(self):
-        # ignore SIGTERM; signal shutdown() is used for controlled process
-        # termination
+        # ignore SIGTERM; signal shutdown() is used for controlled process termination
         signal.signal(signal.SIGINT, signal.SIG_IGN)
-        # Setup ZeroMQ connetions, has to be within run; otherwise zMQ does not
-        # work
+        # Setup ZeroMQ connetions, has to be within run; otherwise zMQ does not work
         self.context = zmq.Context()
-
         # Send socket facing services (e.g. online monitor)
         self.sender = self.context.socket(zmq.PUB)
         self.sender.bind(self.send_address)
