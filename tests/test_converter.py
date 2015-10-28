@@ -110,7 +110,7 @@ class TestConverter(unittest.TestCase):
         time.sleep(0.5)
         n_python_2 = get_python_processes()  # python instances after converter stop
         self.assertFalse(no_data, 'Did not receive any data')
-        self.assertEqual(n_python, n_python_2)  # check if all processes are closed, Linux has extra python process (why?)
+        self.assertEqual(n_python, n_python_2)
 
     def test_converter_communication_2(self):  # start 3 forwarder in a chain with 2 i/o each and do "whisper down the lane"
         n_python = get_python_processes()  # python instances before converter start
