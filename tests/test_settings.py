@@ -26,9 +26,9 @@ def create_forwarder_config_yaml(n_converter):
 class TestSettings(unittest.TestCase):
 
     def test_settings_set(self):
-        self.assertListEqual(settings.get_receiver_path(), ['online_monitor/receiver', 'examples/receiver'])
-        self.assertListEqual(settings.get_converter_path(), ['examples/converter', 'online_monitor/converter'])
-        self.assertListEqual(settings.get_producer_sim_path(), ['examples/producer_sim'])
+        self.assertListEqual(sorted(settings.get_receiver_path()), sorted(['online_monitor/receiver', 'examples/receiver']))
+        self.assertListEqual(sorted(settings.get_converter_path()), sorted(['examples/converter', 'online_monitor/converter']))
+        self.assertListEqual(sorted(settings.get_producer_sim_path()), sorted(['examples/producer_sim']))
 
         settings.add_converter_path(r'test/converter/path')
         settings.add_receiver_path(r'test/receiver/path')
