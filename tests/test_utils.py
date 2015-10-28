@@ -9,7 +9,7 @@ import json
 
 from testfixtures import log_capture
 
-from online_monitor.utils import utils, settings, producer_sim
+from online_monitor.utils import utils, producer_sim
 from online_monitor.converter.transceiver import Transceiver
 from online_monitor.converter.forwarder import Forwarder
 

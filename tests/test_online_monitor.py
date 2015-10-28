@@ -65,17 +65,6 @@ def kill(proc):
     process.kill()
 
 
-def get_python_processes():  # return the number of python processes
-    n_python = 0
-    for proc in psutil.process_iter():
-        try:
-            if 'python' in proc.name():
-                n_python += 1
-        except psutil.AccessDenied:
-            pass
-    return n_python
-
-
 def run_script_in_shell(script, arguments, command=None):
     return subprocess.Popen("%s %s %s" % ('python' if not command else command, script, arguments), shell=True, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0)
 
