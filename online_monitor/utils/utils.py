@@ -64,6 +64,16 @@ def _factory(importname, base_class_type, *args, **kargs):  # load module from s
     return cls(*args, **kargs)
 
 
+def load_producer_sim(importname, base_class_type, *args, **kargs):  # search under all producer simulation paths for module with the name importname; return first occurence
+    for producer_sim_path in settings.get_producer_sim_path():
+        producer_sim_path = producer_sim_path.replace(r'/', '.')
+        try:
+            return _factory(producer_sim_path + '.' + importname, base_class_type, *args, **kargs)
+        except ImportError:  # module not found in actual path
+            pass
+    raise RuntimeError('Producer simulation %s in paths %s not found!', importname, settings.get_producer_sim_path())
+
+
 def load_converter(importname, base_class_type, *args, **kargs):  # search under all converter paths for module with the name importname; return first occurence
     for converter_path in settings.get_converter_path():
         converter_path = converter_path.replace(r'/', '.')
