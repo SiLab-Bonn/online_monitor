@@ -28,4 +28,5 @@ class ExampleReceiver(Receiver):
         return jsonapi.loads(data, object_hook=utils.json_numpy_obj_hook)
 
     def handle_data(self, data):
-        self.position_img.setImage(data['position_with_threshold'][:], autoDownsample=True)
+        _, data = data.popitem()  # returns name, array as the only entry of the data dict
+        self.position_img.setImage(data[:], autoDownsample=True)
