@@ -6,6 +6,7 @@ should be untouched.
 
 import unittest
 import yaml
+import configparser
 
 from online_monitor.utils import settings
 
@@ -26,21 +27,26 @@ def create_forwarder_config_yaml(n_converter):
 class TestSettings(unittest.TestCase):
 
     def test_settings_set(self):
-        self.assertListEqual(settings.get_receiver_path(), ['online_monitor.receiver'])
-        self.assertListEqual(settings.get_converter_path(), ['online_monitor.converter'])
+        self.assertListEqual(settings.get_receiver_path(), ['online_monitor/receiver', 'examples/receiver'])
+        self.assertListEqual(settings.get_converter_path(), ['examples/converter', 'online_monitor/converter'])
+        self.assertListEqual(settings.get_producer_sim_path(), ['examples/producer_sim'])
 
         settings.add_converter_path(r'test/converter/path')
         settings.add_receiver_path(r'test/receiver/path')
         settings.add_receiver_path(r'test/receiver/path')
+        settings.add_producer_sim_path(r'test/producer_sim/path')
 
         self.assertTrue(r'test/converter/path' in settings.get_converter_path())
         self.assertTrue(r'test/receiver/path' in settings.get_receiver_path())
+        self.assertTrue(r'test/producer_sim/path' in settings.get_producer_sim_path())
 
         settings.delete_converter_path(r'test/converter/path')
         settings.delete_receiver_path(r'test/receiver/path')
+        settings.delete_producer_sim_path(r'test/producer_sim/path')
 
         self.assertFalse(r'test/converter/path' in settings.get_converter_path())
         self.assertFalse(r'test/receiver/path' in settings.get_receiver_path())
+        self.assertFalse(r'test/producer_sim/path' in settings.get_producer_sim_path())
 
         self.assertTupleEqual(settings.get_window_geometry(), (100, 100, 1024, 768), 'This can fail if you started the online monitor once and changed the windows size')
 
