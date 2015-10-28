@@ -9,7 +9,7 @@ import json
 
 from testfixtures import log_capture
 
-from online_monitor.utils import utils, settings
+from online_monitor.utils import utils, settings, producer_sim
 from online_monitor.converter.transceiver import Transceiver
 from online_monitor.converter.forwarder import Forwarder
 
@@ -36,9 +36,6 @@ class TestUtils(unittest.TestCase):
             outfile.write(cls.configuration)
         cls.configuration = yaml.load(cls.configuration)
         cls.config_file = 'tmp_cfg_10_converter.yml'
-        # Examples are needed for testing
-        settings.add_converter_path(r'examples/converter')
-        settings.add_receiver_path(r'examples/receiver')
 
     @classmethod
     def tearDownClass(cls):  # remove created files
@@ -99,6 +96,9 @@ class TestUtils(unittest.TestCase):
         utils.load_receiver('example_receiver', base_class_type=Transceiver, *(), **{'receive_address': '0',
                                                                                      'data_type': 'example_receiver',
                                                                                      'name': 'DUT'})
+        utils.load_producer_sim('example_producer_sim', base_class_type=producer_sim.ProducerSim, *(), **{'send_address': '0',
+                                                                                                          'data_type': 'example_producer_sim',
+                                                                                                          'name': 'DUT'})
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestUtils)
