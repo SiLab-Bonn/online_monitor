@@ -6,7 +6,6 @@ should be untouched.
 
 import unittest
 import yaml
-import configparser
 
 from online_monitor.utils import settings
 
