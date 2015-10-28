@@ -10,10 +10,9 @@ import os
 import psutil
 from PyQt4.QtGui import QApplication
 
-from online_monitor.utils import settings
 from online_monitor import OnlineMonitor
 
-producer_path = r'online_monitor/utils/producer_sim.py'
+producer_manager_path = r'online_monitor/start_producer_sim.py'
 converter_manager_path = r'online_monitor/start_converter.py'
 
 
@@ -24,10 +23,10 @@ def create_config_yaml():
     # Add producer
     devices = {}
     devices['DAQ0'] = {'send_address': 'tcp://127.0.0.1:6500',
-                       'data_type': 'test'}
+                       'data_type': 'example_producer_sim'}
     devices['DAQ1'] = {'send_address': 'tcp://127.0.0.1:6501',
-                       'data_type': 'test'}
-    conf['producer'] = devices
+                       'data_type': 'example_producer_sim'}
+    conf['producer_sim'] = devices
     # Add converter
     devices = {}
     devices['DUT0'] = {
@@ -94,10 +93,8 @@ class TestOnlineMonitor(unittest.TestCase):
             from xvfbwrapper import Xvfb
             cls.vdisplay = Xvfb()
             cls.vdisplay.start()
-        settings.add_converter_path(r'examples/converter')
-        settings.add_receiver_path(r'examples/receiver')
         # Start the simulation producer to create some fake data
-        cls.producer_process = run_script_in_shell(producer_path, 'tmp_cfg.yml')
+        cls.producer_process = run_script_in_shell(producer_manager_path, 'tmp_cfg.yml')
         # Start converter
         cls.converter_manager_process = run_script_in_shell(converter_manager_path, 'tmp_cfg.yml')
         # Create Gui
@@ -112,8 +109,6 @@ class TestOnlineMonitor(unittest.TestCase):
         kill(cls.producer_process)
         kill(cls.converter_manager_process)
         time.sleep(1)
-        settings.delete_converter_path(r'examples/converter')
-        settings.delete_receiver_path(r'examples/receiver')
         os.remove('tmp_cfg.yml')
         cls.online_monitor.close()
         time.sleep(1)
@@ -160,7 +155,7 @@ class TestOnlineMonitor(unittest.TestCase):
         self.assertEqual(self.online_monitor.tab_widget.count(), 3, 'Number of tab widgets wrong')  # 2 receiver + status widget expected
 
 if __name__ == '__main__':
-    producer_path = r'../online_monitor/utils/producer_sim.py'
+    producer_manager_path = r'../online_monitor/start_producer_sim.py'
     converter_manager_path = r'../online_monitor/start_converter.py'
     suite = unittest.TestLoader().loadTestsFromTestCase(TestOnlineMonitor)
     unittest.TextTestRunner(verbosity=2).run(suite)
