@@ -80,10 +80,10 @@ class TestConverter(unittest.TestCase):
         receiver = context.socket(zmq.SUB)  # subscriber to the last transveiver in the chain
         receiver.connect(r'tcp://127.0.0.1:5510')
         receiver.setsockopt_string(zmq.SUBSCRIBE, u'')  # do not filter any data
-        time.sleep(0.5)
+        time.sleep(1.5)
         msg = 'This is a test message'
         sender.send_json(msg)
-        time.sleep(0.5)
+        time.sleep(1.5)
         try:
             ret_msg = receiver.recv_json(flags=zmq.NOBLOCK)
             no_data = False
@@ -115,12 +115,12 @@ class TestConverter(unittest.TestCase):
         receiver_2 = context.socket(zmq.SUB)  # subscriber to the last transveiver in the chain
         receiver_2.connect(r'tcp://127.0.0.1:5603')
         receiver_2.setsockopt_string(zmq.SUBSCRIBE, u'')  # do not filter any data
-        time.sleep(0.5)
+        time.sleep(1.5)
         msg = 'This is a test message'
         msg_2 = 'This is another test message'
 
         sender.send_json(msg)
-        time.sleep(0.5)
+        time.sleep(1.5)
         no_data = []
         for _ in range(4):  # forwarder forwards all inputs to all outputs; for 3 forwarder in a chain with 2 i/o each you expect 2**3 times the input message
             no_data_out_1, no_data_out_2 = True, True  # flag set to False if data is received
@@ -145,7 +145,7 @@ class TestConverter(unittest.TestCase):
             ret_msg = receiver_2.recv_json(flags=zmq.NOBLOCK)
 
         sender_2.send_json(msg_2)
-        time.sleep(0.5)
+        time.sleep(1.5)
         no_data_2 = []
         for _ in range(4):
             no_data_out_1, no_data_out_2 = True, True  # flag set to False if data is received

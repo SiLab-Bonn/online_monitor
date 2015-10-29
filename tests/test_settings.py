@@ -6,6 +6,7 @@ should be untouched.
 
 import unittest
 import yaml
+import os
 
 from online_monitor.utils import settings
 
@@ -25,7 +26,7 @@ def create_forwarder_config_yaml(n_converter):
 
 class TestSettings(unittest.TestCase):
 
-    def test_settings_set(self):
+    def test_entities_settings(self):
         self.assertListEqual(sorted(settings.get_receiver_path()), sorted(['online_monitor/receiver', 'examples/receiver']))
         self.assertListEqual(sorted(settings.get_converter_path()), sorted(['examples/converter', 'online_monitor/converter']))
         self.assertListEqual(sorted(settings.get_producer_sim_path()), sorted(['examples/producer_sim']))
@@ -47,6 +48,8 @@ class TestSettings(unittest.TestCase):
         self.assertFalse(r'test/receiver/path' in settings.get_receiver_path())
         self.assertFalse(r'test/producer_sim/path' in settings.get_producer_sim_path())
 
+    @unittest.skipIf(os.name == 'nt', "This tests is only true on virtual windows server operating systems. Otherwise result value depends on test environment.")
+    def test_interface_settings(self):
         self.assertTupleEqual(settings.get_window_geometry(), (100, 100, 1024, 768), 'This can fail if you started the online monitor once and changed the windows size')
 
 if __name__ == '__main__':
