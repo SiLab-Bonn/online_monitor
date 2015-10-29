@@ -11,6 +11,8 @@ environment:
 platform:
   - x86
   - x64
+  
+os: unstable  # add desktop support
 
 #matrix:
 #  fast_finish: true
