@@ -5,9 +5,35 @@ TBD
 
 # Installation
 
-TBD
+The last stable code is hosted on PyPi. Thus for installation just type:
+
+pip install online_monitor
 
 # Usage
 
-TBD
+This package is a meta package providing all tools to convert data in real time distributed on several PCs and to visulize them in real time (> 20 Hz). The online monitor is based on a concept with these enitites:
+
+- Producer:
+  This is your DAQ system that sends data via a ZMQ PUB socket. The data format is your choise. The producer is not part of the online_monitor. For testing / debugging a simulation producer is provided that can generate fake data.
+
+- Converter:
+  A converter converts data from one (ore more) producers (e.g. histogramming) and publishes the converted data as a ZMQ PUB socket. Since the converter is specific to your data type you have to define the converter! Take a look at the example folder.
+
+- Receiver:
+A receiver connects to a converter and defines the plots to be shown. 
+
+Complex chains are possible with several parallel converters, receivers and producers. One *. yaml file defines
+your system. Take a look at the example folder or the main folder for a configuration.yaml example. Since the receiver is specific to your wished / data you have to define the receiver! Take a look at the example folder.
+
+Everythink is tested with high coverage and supposed to work under Linux/Windows 32/64 bit and Python 2/3.
+A more detailed documention will follow the next release.
+
+There are start script to start the online monitor and/or the converters.
+
+To start the online monitor including simulation producers / converters just type:
+start_online_monitor configuration.yaml
+
+To start the converters including just type:
+start_converters configuration.yaml
+
 
