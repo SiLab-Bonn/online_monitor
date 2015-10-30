@@ -9,6 +9,10 @@ The last stable code is hosted on PyPi. Thus for installation just type:
 
 pip install online_monitor
 
+Otherwise download the code and
+
+python setup.py develop
+
 # Usage
 
 This package is a meta package providing all tools to convert data in real time distributed on several PCs and to visulize them in real time (> 20 Hz). The online monitor is based on a concept with these enitites:
