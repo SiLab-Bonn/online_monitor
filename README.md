@@ -34,10 +34,10 @@ A more detailed documention will follow the next release.
 
 There are start script to start the online monitor and/or the converters.
 
-To start the online monitor including simulation producers / converters just type:
+To start the online monitor including simulation producers / converters type into the console:
 start_online_monitor configuration.yaml
 
-To start the converters including just type:
+To start the converters type:
 start_converters configuration.yaml
 
 
