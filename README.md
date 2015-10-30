@@ -20,10 +20,10 @@ This package is a meta package providing all tools to convert data in real time 
   A converter converts data from one (ore more) producers (e.g. histogramming) and publishes the converted data as a ZMQ PUB socket. Since the converter is specific to your data type you have to define the converter! Take a look at the example folder.
 
 - Receiver:
-A receiver connects to a converter and defines the plots to be shown. 
+A receiver connects to a converter and defines the plots to be shown. Since the receiver is specific to your wished / data you have to define the receiver! Take a look at the example folder.
 
-Complex chains are possible with several parallel converters, receivers and producers. One *. yaml file defines
-your system. Take a look at the example folder or the main folder for a configuration.yaml example. Since the receiver is specific to your wished / data you have to define the receiver! Take a look at the example folder.
+Complex chains are possible with several parallel/interconnected converters, receivers and producers. One *. yaml file defines
+your system. Take a look at the example folder or the main folder for a configuration.yaml example.
 
 Everythink is tested with high coverage and supposed to work under Linux/Windows 32/64 bit and Python 2/3.
 A more detailed documention will follow the next release.
