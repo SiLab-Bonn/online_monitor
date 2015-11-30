@@ -16,7 +16,7 @@ def create_forwarder_config_yaml(n_converter):
     conf, devices = {}, {}
     for index in range(n_converter):
         devices['DUT%s' % index] = {
-            'data_type': 'forwarder',
+            'kind': 'forwarder',
             'receive_address': 'tcp://127.0.0.1:55%02d' % index,
             'send_address': 'tcp://127.0.0.1:55%02d' % (index + 1)
         }

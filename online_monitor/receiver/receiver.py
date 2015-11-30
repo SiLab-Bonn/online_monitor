@@ -42,9 +42,9 @@ class Receiver(QtCore.QObject):
 
     Usage:
     '''
-    def __init__(self, receive_address, data_type, name='Undefined', max_cpu_load=100, loglevel='INFO', **kwarg):
+    def __init__(self, receive_address, kind, name='Undefined', max_cpu_load=100, loglevel='INFO', **kwarg):
         QtCore.QObject.__init__(self)
-        self.data_type = data_type
+        self.kind = kind
         self.receive_address = receive_address
         self.max_cpu_load = max_cpu_load
         self.name = name  # name of the DAQ/device
@@ -52,11 +52,11 @@ class Receiver(QtCore.QObject):
         self._active = False  # flag to tell receiver if its active (viewed int the foreground)
 
         utils.setup_logging(loglevel)
-        logging.debug("Initialize %s receiver %s at %s", self.data_type, self.name, self.receive_address)
+        logging.debug("Initialize %s receiver %s at %s", self.kind, self.name, self.receive_address)
         self.setup_receiver_device()
 
     def setup_receiver_device(self):  # start new receiver thread
-        logging.info("Start %s receiver %s at %s", self.data_type, self.name, self.receive_address)
+        logging.info("Start %s receiver %s at %s", self.kind, self.name, self.receive_address)
         self.thread = QtCore.QThread()  # no parent
 
         self.worker = DataWorker(self.deserialze_data)  # no parent
@@ -80,7 +80,7 @@ class Receiver(QtCore.QObject):
         self.thread.wait(500)  # delay needed if thread did not exit yet, otherwise message: QThread: Destroyed while thread is still running
 
     def finished_info(self):  # called when thread finished successfully
-        logging.info("Close %s receiver %s at %s", self.data_type, self.name, self.receive_address)
+        logging.info("Close %s receiver %s at %s", self.kind, self.name, self.receive_address)
 
     def setup_plots(self, parent):
         raise NotImplementedError("You have to implement a setup_plots method!")

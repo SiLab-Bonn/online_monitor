@@ -32,7 +32,7 @@ class ProducerSimManager(object):
 
         for (producer_sim_name, producer_sim_settings) in self.configuration['producer_sim'].items():
             producer_sim_settings['name'] = producer_sim_name
-            producer_sim = utils.load_producer_sim(producer_sim_settings['data_type'], base_class_type=ProducerSim, *(), **producer_sim_settings)
+            producer_sim = utils.load_producer_sim(producer_sim_settings['kind'], base_class_type=ProducerSim, *(), **producer_sim_settings)
             producer_sim.start()
             process_infos.append((producer_sim_name, psutil.Process(producer_sim.ident)))
             producer_sims.append(producer_sim)

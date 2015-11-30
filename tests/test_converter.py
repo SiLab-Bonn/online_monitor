@@ -20,7 +20,7 @@ def create_forwarder_config_yaml(n_converter, one_io=True):
     if one_io:  # just one incoming outgoing connection
         for index in range(n_converter):
             devices['DUT%s' % index] = {
-                'data_type': 'forwarder',
+                'kind': 'forwarder',
                 'receive_address': 'tcp://127.0.0.1:55%02d' % index,
                 'send_address': 'tcp://127.0.0.1:55%02d' % (index + 1),
                 'max_cpu_load': None
@@ -28,7 +28,7 @@ def create_forwarder_config_yaml(n_converter, one_io=True):
     else:  # 2 / 2 incoming/outgoing connections
         for index in range(n_converter):
             devices['DUT%s' % index] = {
-                'data_type': 'forwarder',
+                'kind': 'forwarder',
                 'receive_address': ['tcp://127.0.0.1:55%02d' % index, 'tcp://127.0.0.1:56%02d' % index],
                 'send_address': ['tcp://127.0.0.1:55%02d' % (index + 1), 'tcp://127.0.0.1:56%02d' % (index + 1)],
                 'max_cpu_load': None

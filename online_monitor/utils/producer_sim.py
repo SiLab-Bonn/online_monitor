@@ -8,14 +8,15 @@ from online_monitor.utils import utils
 
 
 class ProducerSim(multiprocessing.Process):
+
     ''' For testing we have to generate some random data to fake a DAQ. This is done with this Producer Simulation'''
 
-    def __init__(self, send_address, data_type='Test', name='Undefined', loglevel='INFO', **kwarg):
+    def __init__(self, send_address, kind='Test', name='Undefined', loglevel='INFO', **kwarg):
         multiprocessing.Process.__init__(self)
 
         self.send_address = send_address
         self.name = name  # name of the DAQ/device
-        self.data_type = data_type
+        self.kind = kind
         self.config = kwarg
         self.send_address = send_address
 
@@ -23,7 +24,7 @@ class ProducerSim(multiprocessing.Process):
         self.exit = multiprocessing.Event()  # exit signal
         utils.setup_logging(loglevel)
 
-        logging.info("Initialize %s producer %s at %s", self.data_type, self.name, self.send_address)
+        logging.info("Initialize %s producer %s at %s", self.kind, self.name, self.send_address)
 
     def setup_producer_device(self):
         # ignore SIGTERM; signal shutdown() is used for controlled process termination
@@ -38,14 +39,14 @@ class ProducerSim(multiprocessing.Process):
         utils.setup_logging(self.loglevel)
         self.setup_producer_device()
 
-        logging.info("Start %s producer %s at %s", self.data_type, self.name, self.send_address)
+        logging.info("Start %s producer %s at %s", self.kind, self.name, self.send_address)
         while not self.exit.wait(0.2):
             self.send_data()
 
         # Close connections
         self.sender.close()
         self.context.term()
-        logging.info("Close %s producer %s at %s", self.data_type, self.name, self.send_address)
+        logging.info("Close %s producer %s at %s", self.kind, self.name, self.send_address)
 
     def shutdown(self):
         self.exit.set()
@@ -63,7 +64,7 @@ def main():
         for (actual_producer_name, actual_producer_cfg) in configuration['producer'].items():
             actual_producer_cfg['name'] = actual_producer_name
             # only take test producers
-            if actual_producer_cfg['data_type'] != 'test':
+            if actual_producer_cfg['kind'] != 'test':
                 continue
             daq = ProducerSim(loglevel=args.log, **actual_producer_cfg)
             daqs.append(daq)

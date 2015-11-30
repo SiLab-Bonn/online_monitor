@@ -47,7 +47,7 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
             logging.info('Starting %d receivers', len(self.configuration['receiver']))
             for (receiver_name, receiver_settings) in self.configuration['receiver'].items():
                 receiver_settings['name'] = receiver_name
-                receiver = utils.load_receiver(receiver_settings['data_type'], base_class_type=Receiver, *(), **receiver_settings)
+                receiver = utils.load_receiver(receiver_settings['kind'], base_class_type=Receiver, *(), **receiver_settings)
                 receiver.setup_plots(self.tab_widget, name=receiver_name)
                 receiver.start()
                 receivers.append(receiver)
@@ -107,7 +107,7 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
                 except KeyError:  # no converter for receiver
                     pass
             
-#             nodes = ['Producer\n%s' % converter_name, 'Converter\n%s' % converter_settings['data_type'], 'Receiver\n%s' % converter_settings['data_type']]
+#             nodes = ['Producer\n%s' % converter_name, 'Converter\n%s' % converter_settings['kind'], 'Receiver\n%s' % converter_settings['kind']]
             
 #             links = [converter_settings['receive_address'], converter_settings['send_address']]
 #             for node_index, node in enumerate(nodes):
@@ -134,7 +134,7 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
 #             
 #         # Create nodes with links from configuration file for converter/receiver
 #         for receiver_index, (receiver_name, receiver_settings) in enumerate(self.configuration['converter'].items()):
-#             nodes = ['Producer\n%s' % converter_name, 'Converter\n%s' % converter_settings['data_type']]
+#             nodes = ['Producer\n%s' % converter_name, 'Converter\n%s' % converter_settings['kind']]
 #             links = [converter_settings['receive_address'], converter_settings['send_address']]
 #             for node_index, node in enumerate(nodes):
 #                 view = status_graphics_widget.addViewBox(row=converter_index, col=node_index * 2, lockAspect=True, enableMouse=False)
@@ -163,7 +163,7 @@ def main():  # pragma: no cover, cannot be tested in unittests due to qt event l
     args = utils.parse_arguments()
     utils.setup_logging(args.log)
 
-    app = Qt.QApplication(sys.argv) ## r'../examples/full_example/configuration.yaml'
+    app = Qt.QApplication(sys.argv)
     win = OnlineMonitorApplication(args.config_file)  # enter remote IP to connect to the other side listening
     win.show()
     sys.exit(app.exec_())

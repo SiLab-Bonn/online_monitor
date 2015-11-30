@@ -29,7 +29,7 @@ class ConverterManager(object):
 
         for (converter_name, converter_settings) in self.configuration['converter'].items():
             converter_settings['name'] = converter_name
-            converter = utils.load_converter(converter_settings['data_type'], base_class_type=Transceiver, *(), **converter_settings)
+            converter = utils.load_converter(converter_settings['kind'], base_class_type=Transceiver, *(), **converter_settings)
             converter.start()
             process_infos.append((converter_name, psutil.Process(converter.ident)))
             converters.append(converter)

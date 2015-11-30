@@ -16,6 +16,7 @@ class Transceiver(multiprocessing.Process):
     Usage:
     To specify a converter for a certain data type, inherit from this base class and define these methods accordingly:
         - setup_interpretation()
+        - deserialze_data()
         - interpret_data()
         - serialze_data()
     New methods/objects that are not called/created within these function will not work!
@@ -27,18 +28,18 @@ class Transceiver(multiprocessing.Process):
         Address or list of adresses of the publishing device(s)
     send_address : str
         Address where the converter publishes the converted data
-    data_type : str
-        String describing the data type to convert (e.g. pybar_fei4)
+    kind : str
+        String describing the kind of converter (e.g. forwarder)
     max_cpu_load : number
         Maximum CPU load of the conversion process in percent. Otherwise data is discarded to drop below max_cpu_load.
     loglevel : str
         The verbosity level for the logging (e.g. INFO, WARNING)
     '''
 
-    def __init__(self, receive_address, send_address, data_type, name='Undefined', max_cpu_load=100, loglevel='INFO', **kwarg):
+    def __init__(self, receive_address, send_address, kind, name='Undefined', max_cpu_load=100, loglevel='INFO', **kwarg):
         multiprocessing.Process.__init__(self)
 
-        self.data_type = data_type
+        self.kind = kind  # kind of transeiver (e.g. forwarder)
         self.receive_address = receive_address
         self.send_address = send_address
         self.max_cpu_load = max_cpu_load
@@ -62,7 +63,7 @@ class Transceiver(multiprocessing.Process):
         self.loglevel = loglevel
         utils.setup_logging(self.loglevel)
 
-        logging.debug("Initialize %s converter %s at %s", self.data_type, self.name, self.receive_address)
+        logging.debug("Initialize %s converter %s at %s", self.kind, self.name, self.receive_address)
 
     def setup_receivers(self):
         # Receiver sockets facing clients (DAQ systems)
@@ -96,10 +97,19 @@ class Transceiver(multiprocessing.Process):
                 actual_raw_data = actual_receiver.recv(flags=zmq.NOBLOCK)
                 if sys.version_info >= (3, 0):  # http://stackoverflow.com/questions/24369666/typeerror-b1-is-not-json-serializable
                     actual_raw_data = actual_raw_data.decode('utf-8')
-                raw_data.extend([actual_raw_data])
+                raw_data.append(self.deserialze_data(actual_raw_data))
             except zmq.Again:  # no data
                 pass
         return raw_data
+
+    def send_data(self, data):
+        # This function can be overwritten in derived class; std function is to broadcast the all receiver data to all senders
+        for receiver_data in data:
+            serialized_data = self.serialze_data(receiver_data)
+            if sys.version_info >= (3, 0):
+                serialized_data = serialized_data.encode('utf-8')
+            for actual_sender in self.senders:
+                actual_sender.send(serialized_data)
 
     def run(self):  # the receiver loop
         utils.setup_logging(self.loglevel)
@@ -109,7 +119,7 @@ class Transceiver(multiprocessing.Process):
         process = psutil.Process(self.ident)  # access this process info
         self.cpu_load = 0.
 
-        logging.debug("Start %s transceiver %s at %s", self.data_type, self.name, self.receive_address)
+        logging.debug("Start %s transceiver %s at %s", self.kind, self.name, self.receive_address)
         while not self.exit.wait(0.01):
             raw_data = self.recv_data()
 
@@ -121,10 +131,9 @@ class Transceiver(multiprocessing.Process):
             if not self.max_cpu_load or self.cpu_load < self.max_cpu_load:  # check if already too much CPU is used by the conversion, then omit data
                 data = self.interpret_data(raw_data)
                 if data is not None and len(data) != 0:  # data is None if the data cannot be converted (e.g. is incomplete, broken, etc.)
-                    serialized_data = self.serialze_data(data)
-                    self.send_data(serialized_data)
+                    self.send_data(data)
             else:
-                logging.warning('CPU load of %s converter %s is with %1.2f > %1.2f too high, omit data!', self.data_type, self.name, self.cpu_load, self.max_cpu_load)
+                logging.warning('CPU load of %s converter %s is with %1.2f > %1.2f too high, omit data!', self.kind, self.name, self.cpu_load, self.max_cpu_load)
 
         # Close connections
         for actual_receiver in self.receivers:
@@ -133,7 +142,7 @@ class Transceiver(multiprocessing.Process):
         for actual_sender in self.senders:
             actual_sender.close()
         self.context.term()
-        logging.debug("Close %s transceiver %s at %s", self.data_type, self.name, self.receive_address)
+        logging.debug("Close %s transceiver %s at %s", self.kind, self.name, self.receive_address)
 
     def shutdown(self):
         self.exit.set()
@@ -146,15 +155,11 @@ class Transceiver(multiprocessing.Process):
         # This function has to be overwritten in derived class and should not throw exceptions
         # Invalid data and failed interpretations should return None
         # Valid data should return serializable data
+        # Data is iterable with one index per read inout connection.
         raise NotImplementedError("You have to implement a interpret_data method!")
+
+    def deserialze_data(self, data):
+        return data
 
     def serialze_data(self, data):
         return data
-
-    def send_data(self, serialized_data):
-        # This function can be overwritten in derived class; std function is to broadcast the all receiver data to all senders
-        for receiver_data in serialized_data:
-            if sys.version_info >= (3, 0):
-                receiver_data = receiver_data.encode('utf-8')
-            for actual_sender in self.senders:
-                actual_sender.send(receiver_data)

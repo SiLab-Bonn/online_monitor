@@ -1,32 +1,32 @@
-producer :
+producer_sim :
     DAQ0 :
+        kind : example_producer_sim
         send_address : tcp://127.0.0.1:5500
-        data_type : test
+        
     DAQ1 :
+        kind : example_producer_sim
         send_address : tcp://127.0.0.1:5501
-        data_type : test
-
 
 converter :
     DUT0 :
-        data_type : example_converter
+        kind : example_converter
         receive_address : tcp://127.0.0.1:5500
         send_address : tcp://127.0.0.1:5600
         max_cpu_load : 30
         threshold : 8
     DUT1 :
-        data_type : forwarder
+        kind : forwarder
         receive_address : tcp://127.0.0.1:5600
         send_address : tcp://127.0.0.1:5601
         max_cpu_load : 30
     DUT2 :
-        data_type : example_converter
+        kind : example_converter
         receive_address : tcp://127.0.0.1:5501
         send_address : tcp://127.0.0.1:5602
         max_cpu_load : 30
         threshold : 8
     PosCorr :
-        data_type : position_correlator
+        kind : position_correlator
         receive_address : 
             - tcp://127.0.0.1:5600
             - tcp://127.0.0.1:5601
@@ -37,20 +37,11 @@ converter :
 
 receiver :
     DUT0 :
-        data_type : example_receiver
+        kind : example_receiver
         receive_address : tcp://127.0.0.1:5600
     DUT1 :
-        data_type : example_receiver
+        kind : example_receiver
         receive_address : tcp://127.0.0.1:5601
     DUT2 :
-        data_type : example_receiver
+        kind : example_receiver
         receive_address : tcp://127.0.0.1:5602
-
-correlator :
-    hits :
-        on :
-            - event_number
-            - trigger_number 
-        devices : 
-            - DUT0
-            - DUT1

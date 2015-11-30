@@ -23,21 +23,21 @@ def create_config_yaml():
     # Add producer
     devices = {}
     devices['DAQ0'] = {'send_address': 'tcp://127.0.0.1:6500',
-                       'data_type': 'example_producer_sim'}
+                       'kind': 'example_producer_sim'}
     devices['DAQ1'] = {'send_address': 'tcp://127.0.0.1:6501',
-                       'data_type': 'example_producer_sim'}
+                       'kind': 'example_producer_sim'}
     conf['producer_sim'] = devices
     # Add converter
     devices = {}
     devices['DUT0'] = {
-        'data_type': 'example_converter',
+        'kind': 'example_converter',
         'receive_address': 'tcp://127.0.0.1:6500',
         'send_address': 'tcp://127.0.0.1:6600',
         'max_cpu_load': None,
         'threshold': 8
     }
     devices['DUT1'] = {
-        'data_type': 'forwarder',
+        'kind': 'forwarder',
         'receive_address': 'tcp://127.0.0.1:6600',
         'send_address': 'tcp://127.0.0.1:6601',
         'max_cpu_load': None
@@ -46,11 +46,11 @@ def create_config_yaml():
     # Add receiver
     devices = {}
     devices['DUT0'] = {
-        'data_type': 'example_receiver',
+        'kind': 'example_receiver',
         'receive_address': 'tcp://127.0.0.1:6600'
     }
     devices['DUT1'] = {
-        'data_type': 'example_receiver',
+        'kind': 'example_receiver',
         'receive_address': 'tcp://127.0.0.1:6601'
     }
     conf['receiver'] = devices

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from online_monitor.utils import utils
-from online_monitor.converter.producer_sim_manager import ProducerSimManager
+from online_monitor.utils.producer_sim_manager import ProducerSimManager
 
 
 def main():

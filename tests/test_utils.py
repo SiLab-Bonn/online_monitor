@@ -19,7 +19,7 @@ def create_forwarder_config_yaml(n_converter):
     conf, devices = {}, {}
     for index in range(n_converter):
         devices['DUT%s' % index] = {
-            'data_type': 'forwarder',
+            'kind': 'forwarder',
             'receive_address': 'tcp://127.0.0.1:55%02d' % index,
             'send_address': 'tcp://127.0.0.1:55%02d' % (index + 1)
         }
@@ -78,7 +78,7 @@ class TestUtils(unittest.TestCase):
     def test_factory(self):
         receiver = utils._factory('online_monitor.converter.forwarder', base_class_type=Forwarder, *(), **{'receive_address': '0',
                                                                                                            'send_address': '1',
-                                                                                                           'data_type': 'forwarder',
+                                                                                                           'kind': 'forwarder',
                                                                                                            'name': 'DUT'})
         self.assertEqual(receiver.__str__(), '<Forwarder(DUT, initial)>')
         with self.assertRaises(ImportError):
@@ -87,17 +87,17 @@ class TestUtils(unittest.TestCase):
     def test_entity_loader(self):
         utils.load_converter('forwarder', base_class_type=Transceiver, *(), **{'receive_address': '0',
                                                                                'send_address': '1',
-                                                                               'data_type': 'forwarder',
+                                                                               'kind': 'forwarder',
                                                                                'name': 'DUT'})
         utils.load_converter('example_converter', base_class_type=Transceiver, *(), **{'receive_address': '0',
                                                                                        'send_address': '1',
-                                                                                       'data_type': 'example_converter',
+                                                                                       'kind': 'example_converter',
                                                                                        'name': 'DUT'})
         utils.load_receiver('example_receiver', base_class_type=Transceiver, *(), **{'receive_address': '0',
-                                                                                     'data_type': 'example_receiver',
+                                                                                     'kind': 'example_receiver',
                                                                                      'name': 'DUT'})
         utils.load_producer_sim('example_producer_sim', base_class_type=producer_sim.ProducerSim, *(), **{'send_address': '0',
-                                                                                                          'data_type': 'example_producer_sim',
+                                                                                                          'kind': 'example_producer_sim',
                                                                                                           'name': 'DUT'})
 
 if __name__ == '__main__':
