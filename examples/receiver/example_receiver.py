@@ -28,6 +28,6 @@ class ExampleReceiver(Receiver):
         return jsonapi.loads(data, object_hook=utils.json_numpy_obj_hook)
 
     def handle_data(self, data):
-        for actual_data_type, actual_data in data.iteritems():
+        for actual_data_type, actual_data in data.items():
             if 'time_stamp' not in actual_data_type:  # time stamp info is not plotted
                 self.position_img.setImage(actual_data[:], autoDownsample=True)
