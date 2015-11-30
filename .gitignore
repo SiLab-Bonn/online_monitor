@@ -59,3 +59,6 @@ target/
 # PyDev files
 .project
 .pydevproject
+
+# Tmp files
+*tmp*
