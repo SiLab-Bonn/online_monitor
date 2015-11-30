@@ -69,9 +69,9 @@ class Transceiver(multiprocessing.Process):
         # Receiver sockets facing clients (DAQ systems)
         self.receivers = []
         for actual_receive_address in self.receive_address:
-            actual_receiver = self.context.socket(zmq.SUB)  # subscriber
-            actual_receiver.connect(actual_receive_address)
-            actual_receiver.setsockopt_string(zmq.SUBSCRIBE, u'')  # do not filter any data
+            actual_receiver = (actual_receive_address, self.context.socket(zmq.SUB))  # subscriber
+            actual_receiver[1].connect(actual_receive_address)
+            actual_receiver[1].setsockopt_string(zmq.SUBSCRIBE, u'')  # do not filter any data
             self.receivers.append(actual_receiver)
 
     def setup_transceiver(self):
@@ -94,16 +94,16 @@ class Transceiver(multiprocessing.Process):
         # Loop over all receivers
         for actual_receiver in self.receivers:
             try:
-                actual_raw_data = actual_receiver.recv(flags=zmq.NOBLOCK)
+                actual_raw_data = actual_receiver[1].recv(flags=zmq.NOBLOCK)
                 if sys.version_info >= (3, 0):  # http://stackoverflow.com/questions/24369666/typeerror-b1-is-not-json-serializable
                     actual_raw_data = actual_raw_data.decode('utf-8')
-                raw_data.append(self.deserialze_data(actual_raw_data))
+                raw_data.append((actual_receiver[0], self.deserialze_data(actual_raw_data)))
             except zmq.Again:  # no data
                 pass
         return raw_data
 
     def send_data(self, data):
-        # This function can be overwritten in derived class; std function is to broadcast the all receiver data to all senders
+        # This function can be overwritten in derived class; std function is to broadcast all receiver data to all senders
         for receiver_data in data:
             serialized_data = self.serialze_data(receiver_data)
             if sys.version_info >= (3, 0):
@@ -152,10 +152,10 @@ class Transceiver(multiprocessing.Process):
         pass
 
     def interpret_data(self, data):
+        # Data is a list of tuples, with the input address in the first place and the data at the second.
         # This function has to be overwritten in derived class and should not throw exceptions
         # Invalid data and failed interpretations should return None
         # Valid data should return serializable data
-        # Data is iterable with one index per read inout connection.
         raise NotImplementedError("You have to implement a interpret_data method!")
 
     def deserialze_data(self, data):
