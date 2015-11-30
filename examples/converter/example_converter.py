@@ -12,7 +12,7 @@ class ExampleConverter(Transceiver):
         return json.loads(data, object_hook=utils.json_numpy_obj_hook)
 
     def interpret_data(self, data):  # apply a threshold to the data
-        data = data[0]  # we expect only data from one device
+        data = data[0][1]
         position_with_thr = data['position'].copy()
         position_with_thr[position_with_thr < self.config['threshold']] = 0
         data_with_threshold = {'time_stamp': data['time_stamp'],
