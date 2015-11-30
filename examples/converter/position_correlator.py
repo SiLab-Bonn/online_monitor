@@ -1,26 +1,28 @@
 from online_monitor.converter.correlator import Correlator
 import json
+import logging
 
 from online_monitor.utils import utils
 
 
 class PositionCorrelator(Correlator):
 
+    def deserialze_data(self, data):
+        return json.loads(data, object_hook=utils.json_numpy_obj_hook)
+
     def setup_interpretation(self):
-        self.data_buffer = {}  # the data does not have to arrive at the same receive command since ZMQ buffers data
+        self.data_buffer = {}  # the data does not have to arrive at the same receive command since ZMQ buffers data and the DUT can have different time behavior
 
     def interpret_data(self, data):
-        for data_one_device in data:
-            actual_device, actual_data = json.loads(data_one_device, object_hook=utils.json_numpy_obj_hook).popitem()
-            self.data_buffer[actual_device] = actual_data
+        for actual_device_data in data:  # loop over all devices
+            print actual_device_data['time_stamp']
+            print actual_device_data['time_stamp']
+            for actual_data_type, actual_data in actual_device_data.iteritems():
+                print actual_data_type, actual_data
 
-        for name in self.config['Correlate']:
-            print name, 'in', self.data_buffer.keys()
-            if name in self.data_buffer.iterkeys():
-                print('FIND %s in data')
-        
+
 #         print actual_interpret_data
 #         intepreted_data = []
 #         for one_receiver_data in data:
 #             intepreted_data.append(yaml.load(one_receiver_data, object_hook=utils.json_numpy_obj_hook))
-        return data
+        return None
