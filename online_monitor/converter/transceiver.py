@@ -90,8 +90,8 @@ class Transceiver(multiprocessing.Process):
         # Send socket facing services (e.g. online monitor, other forwarders)
         self.backends = []
         for actual_backend_address in self.backend_address:
-            actual_backend = self.context.socket(self.backend_socket)  # publisher or client socket
-            actual_backend.bind(actual_backend_address)
+            actual_backend = (actual_backend_address, self.context.socket(self.backend_socket))  # publisher or client socket
+            actual_backend[1].bind(actual_backend_address)
             self.backends.append(actual_backend)
 
     def setup_transceiver(self):
@@ -123,7 +123,7 @@ class Transceiver(multiprocessing.Process):
             if sys.version_info >= (3, 0):
                 serialized_data = serialized_data.encode('utf-8')
             for actual_backend in self.backends:
-                actual_backend.send(serialized_data)
+                actual_backend[1].send(serialized_data)
 
     def run(self):  # the receiver loop
         utils.setup_logging(self.loglevel)
@@ -151,9 +151,9 @@ class Transceiver(multiprocessing.Process):
 
         # Close connections
         for actual_frontend in self.frontends:
-            actual_frontend.close()
+            actual_frontend[1].close()
         for actual_backend in self.backends:
-            actual_backend.close()
+            actual_backend[1].close()
         self.context.term()
 
         logging.debug("Close %s transceiver %s at %s", self.kind, self.name, self.backend_address)
