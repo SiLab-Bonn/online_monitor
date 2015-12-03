@@ -15,23 +15,25 @@ converter_script_path = r'online_monitor/start_converter.py'
 
 
 # creates a yaml config describing n_converter of type forwarder that are all connection to each other
-def create_forwarder_config_yaml(n_converter, one_io=True):
+def create_forwarder_config_yaml(n_converter, bidirectional=False, one_io=True):
     conf, devices = {}, {}
     if one_io:  # just one incoming outgoing connection
         for index in range(n_converter):
             devices['DUT%s' % index] = {
                 'kind': 'forwarder',
-                'receive_address': 'tcp://127.0.0.1:55%02d' % index,
-                'send_address': 'tcp://127.0.0.1:55%02d' % (index + 1),
-                'max_cpu_load': None
+                'frontend': 'tcp://127.0.0.1:55%02d' % index,
+                'backend': 'tcp://127.0.0.1:55%02d' % (index + 1),
+                'max_cpu_load': None,
+                'connection': 'bidirectional' if bidirectional else 'unidirectional'
             }
     else:  # 2 / 2 incoming/outgoing connections
         for index in range(n_converter):
             devices['DUT%s' % index] = {
                 'kind': 'forwarder',
-                'receive_address': ['tcp://127.0.0.1:55%02d' % index, 'tcp://127.0.0.1:56%02d' % index],
-                'send_address': ['tcp://127.0.0.1:55%02d' % (index + 1), 'tcp://127.0.0.1:56%02d' % (index + 1)],
-                'max_cpu_load': None
+                'frontend': ['tcp://127.0.0.1:55%02d' % index, 'tcp://127.0.0.1:56%02d' % index],
+                'backend': ['tcp://127.0.0.1:55%02d' % (index + 1), 'tcp://127.0.0.1:56%02d' % (index + 1)],
+                'max_cpu_load': None,
+                'connection': 'bidirectional' if bidirectional else 'unidirectional'
             }
     conf['converter'] = devices
     return yaml.dump(conf, default_flow_style=False)
@@ -62,11 +64,15 @@ class TestConverter(unittest.TestCase):
         with open('tmp_cfg_3_converter_multi.yml', 'w') as outfile:  # 3 forwarder converters with 2 in / 2 out connections, connected in a chain
             config_file = create_forwarder_config_yaml(3, one_io=False)
             outfile.write(config_file)
+        with open('tmp_cfg_3_converter_multi_bi.yml', 'w') as outfile:  # 3 forwarder converters with 2 in / 2 out connections, connected in a chain
+            config_file = create_forwarder_config_yaml(3, one_io=False, bidirectional=True)
+            outfile.write(config_file)
 
     @classmethod
     def tearDownClass(cls):  # remove created files
         os.remove('tmp_cfg_10_converter.yml')
         os.remove('tmp_cfg_3_converter_multi.yml')
+        os.remove('tmp_cfg_3_converter_multi_bi.yml')
 
     def test_converter_communication(self):  # start 10 forwarder in a chain and do "whisper down the lane"
         # Forward receivers with single in/out
@@ -90,7 +96,7 @@ class TestConverter(unittest.TestCase):
             self.assertEqual(msg, ret_msg)
         except zmq.Again:  # pragma: no cover
             pass
-
+ 
         kill(converter_manager_process)
         sender.close()
         receiver.close()
@@ -98,7 +104,7 @@ class TestConverter(unittest.TestCase):
         time.sleep(0.5)
         self.assertFalse(no_data, 'Did not receive any data')
         self.assertNotEqual(converter_manager_process.poll(), None)
-
+ 
     def test_converter_communication_2(self):  # start 3 forwarder in a chain with 2 i/o each and do "whisper down the lane"
         # Forward receivers with 2 in/out
         converter_manager_process = run_script_in_shell(converter_script_path, 'tmp_cfg_3_converter_multi.yml')
@@ -115,6 +121,87 @@ class TestConverter(unittest.TestCase):
         receiver_2 = context.socket(zmq.SUB)  # subscriber to the last transveiver in the chain
         receiver_2.connect(r'tcp://127.0.0.1:5603')
         receiver_2.setsockopt_string(zmq.SUBSCRIBE, u'')  # do not filter any data
+        time.sleep(1.5)
+        msg = 'This is a test message'
+        msg_2 = 'This is another test message'
+ 
+        sender.send_json(msg)
+        time.sleep(1.5)
+        no_data = []
+        for _ in range(4):  # forwarder forwards all inputs to all outputs; for 3 forwarder in a chain with 2 i/o each you expect 2**3 times the input message
+            no_data_out_1, no_data_out_2 = True, True  # flag set to False if data is received
+            try:
+                ret_msg = receiver.recv_json(flags=zmq.NOBLOCK)
+                no_data_out_1 = False
+                self.assertEqual(msg, ret_msg)
+            except zmq.Again:
+                pass
+            try:
+                ret_msg = receiver_2.recv_json(flags=zmq.NOBLOCK)
+                no_data_out_2 = False
+                self.assertEqual(msg, ret_msg)
+            except zmq.Again:
+                pass
+            no_data.append(no_data_out_1)
+            no_data.append(no_data_out_2)
+ 
+        with self.assertRaises(zmq.Again):  # should have no data
+            ret_msg = receiver.recv_json(flags=zmq.NOBLOCK)
+        with self.assertRaises(zmq.Again):  # should have no data
+            ret_msg = receiver_2.recv_json(flags=zmq.NOBLOCK)
+ 
+        sender_2.send_json(msg_2)
+        time.sleep(1.5)
+        no_data_2 = []
+        for _ in range(4):
+            no_data_out_1, no_data_out_2 = True, True  # flag set to False if data is received
+            try:
+                ret_msg = receiver.recv_json(flags=zmq.NOBLOCK)
+                no_data_out_1 = False
+                self.assertEqual(msg_2, ret_msg)
+            except zmq.Again:  # pragma: no cover
+                pass
+            try:
+                ret_msg = receiver_2.recv_json(flags=zmq.NOBLOCK)
+                no_data_out_2 = False
+                self.assertEqual(msg_2, ret_msg)
+            except zmq.Again:  # pragma: no cover
+                pass
+            no_data_2.append(no_data_out_1)
+            no_data_2.append(no_data_out_2)
+ 
+        with self.assertRaises(zmq.Again):  # should have no data
+            ret_msg = receiver.recv_json(flags=zmq.NOBLOCK)
+        with self.assertRaises(zmq.Again):  # should have no data
+            ret_msg = receiver_2.recv_json(flags=zmq.NOBLOCK)
+ 
+        kill(converter_manager_process)
+        time.sleep(0.5)
+        receiver.close()
+        receiver_2.close()
+        sender.close()
+        sender_2.close()
+        context.term()
+ 
+        self.assertTrue(all(item is False for item in no_data), 'Did not receive enough data')
+        self.assertTrue(all(item is False for item in no_data_2), 'Did not receive enough data')
+        self.assertNotEqual(converter_manager_process.poll(), None)  # check if all processes are closed
+
+    @unittest.skip
+    def test_converter_bidirectional_communication_2(self):  # start 3 forwarder in a chain with 2 i/o each and do "whisper down the lane"
+        # Forward receivers with 2 in/out
+        converter_manager_process = run_script_in_shell(converter_script_path, 'tmp_cfg_3_converter_multi_bi.yml')
+        time.sleep(1.5)  # 10 converter in 10 processes + ZMQ thread take time to start up
+        context = zmq.Context()
+        # Sockets facing last converter inputs
+        sender = context.socket(zmq.REQ)  # publish data where first transveiver listens to
+        sender.bind(r'tcp://127.0.0.1:5500')
+        sender_2 = context.socket(zmq.REQ)  # publish data where first transveiver 2nd input listens to
+        sender_2.bind(r'tcp://127.0.0.1:5600')
+        receiver = context.socket(zmq.REP)  # subscriber to the last transveiver in the chain
+        receiver.connect(r'tcp://127.0.0.1:5503')
+        receiver_2 = context.socket(zmq.REP)  # subscriber to the last transveiver in the chain
+        receiver_2.connect(r'tcp://127.0.0.1:5603')
         time.sleep(1.5)
         msg = 'This is a test message'
         msg_2 = 'This is another test message'

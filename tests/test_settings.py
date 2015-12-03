@@ -17,8 +17,8 @@ def create_forwarder_config_yaml(n_converter):
     for index in range(n_converter):
         devices['DUT%s' % index] = {
             'kind': 'forwarder',
-            'receive_address': 'tcp://127.0.0.1:55%02d' % index,
-            'send_address': 'tcp://127.0.0.1:55%02d' % (index + 1)
+            'frontend': 'tcp://127.0.0.1:55%02d' % index,
+            'backend': 'tcp://127.0.0.1:55%02d' % (index + 1)
         }
     conf['converter'] = devices
     return yaml.dump(conf, default_flow_style=False)
@@ -48,7 +48,7 @@ class TestSettings(unittest.TestCase):
         self.assertFalse(r'test/receiver/path' in settings.get_receiver_path())
         self.assertFalse(r'test/producer_sim/path' in settings.get_producer_sim_path())
 
-    @unittest.skipIf(os.name == 'nt', "This tests is only true on virtual windows server operating systems. Otherwise result value depends on test environment.")
+    @unittest.skipIf(os.name == 'nt', "This tests is only true on virtual linux x-server systems. Otherwise result value depends on test environment.")
     def test_interface_settings(self):
         self.assertTupleEqual(settings.get_window_geometry(), (100, 100, 1024, 768), 'This can fail if you started the online monitor once and changed the windows size')
 

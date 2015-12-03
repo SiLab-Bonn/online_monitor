@@ -17,8 +17,9 @@ def create_producer_config_yaml(n_producer):
     conf, devices = {}, {}
     for index in range(n_producer):
         devices['DAQ%s' % index] = {
-            'send_address': 'tcp://127.0.0.1:55%02d' % index,
-            'kind': 'example_producer_sim'
+            'backend': 'tcp://127.0.0.1:55%02d' % index,
+            'kind': 'example_producer_sim',
+            'delay': 0.02
         }
     conf['producer_sim'] = devices
     return yaml.dump(conf, default_flow_style=False)

@@ -15,11 +15,11 @@ class DataWorker(QtCore.QObject):
         self.deserialzer = deserialzer
         self._stop_readout = Event()
 
-    def connect(self, receive_address):
+    def connect(self, frontend_address, socket_type):
         self.context = zmq.Context()
-        self.receiver = self.context.socket(zmq.SUB)  # subscriber
+        self.receiver = self.context.socket(socket_type)  # subscriber
         self.receiver.setsockopt_string(zmq.SUBSCRIBE, u'')  # do not filter any data
-        self.receiver.connect(receive_address)
+        self.receiver.connect(frontend_address)
 
     def receive_data(self):  # pragma: no cover; infinite loop via QObject.moveToThread(), does not block event loop, is shown as not covered in unittests due to qt event loop
         while(not self._stop_readout.wait(0.01)):  # use wait(), do not block here
@@ -42,21 +42,26 @@ class Receiver(QtCore.QObject):
 
     Usage:
     '''
-    def __init__(self, receive_address, kind, name='Undefined', max_cpu_load=100, loglevel='INFO', **kwarg):
+    def __init__(self, frontend, kind, name='Undefined', max_cpu_load=100, loglevel='INFO', **kwarg):
         QtCore.QObject.__init__(self)
         self.kind = kind
-        self.receive_address = receive_address
+        self.frontend_address = frontend
         self.max_cpu_load = max_cpu_load
         self.name = name  # name of the DAQ/device
         self.config = kwarg
         self._active = False  # flag to tell receiver if its active (viewed int the foreground)
 
+        self.socket_type = zmq.SUB  # atandard is unidirectional communication with PUB/SUB pattern
+        if 'connection' in self.config.keys():
+            if 'bidirectional' in self.config['connection'] or 'duplex' in self.config['connection']:
+                self.socket_type = zmq.REP  # Client / Server pattern to allow bidirectional communication
+
         utils.setup_logging(loglevel)
-        logging.debug("Initialize %s receiver %s at %s", self.kind, self.name, self.receive_address)
+        logging.debug("Initialize %s receiver %s at %s", self.kind, self.name, self.frontend_address)
         self.setup_receiver_device()
 
     def setup_receiver_device(self):  # start new receiver thread
-        logging.info("Start %s receiver %s at %s", self.kind, self.name, self.receive_address)
+        logging.info("Start %s receiver %s at %s", self.kind, self.name, self.frontend_address)
         self.thread = QtCore.QThread()  # no parent
 
         self.worker = DataWorker(self.deserialze_data)  # no parent
@@ -66,7 +71,7 @@ class Receiver(QtCore.QObject):
         self._active = value
 
     def start(self):
-        self.worker.connect(self.receive_address)  # connect to ZMQ publisher
+        self.worker.connect(self.frontend_address, self.socket_type)  # connect to ZMQ publisher
         self.worker.finished.connect(self.thread.quit)  # quit thread on worker finished
         self.worker.data.connect(self.handle_data_if_active)  # activate data handle
 
@@ -80,7 +85,7 @@ class Receiver(QtCore.QObject):
         self.thread.wait(500)  # delay needed if thread did not exit yet, otherwise message: QThread: Destroyed while thread is still running
 
     def finished_info(self):  # called when thread finished successfully
-        logging.info("Close %s receiver %s at %s", self.kind, self.name, self.receive_address)
+        logging.info("Close %s receiver %s at %s", self.kind, self.name, self.frontend_address)
 
     def setup_plots(self, parent):
         raise NotImplementedError("You have to implement a setup_plots method!")

@@ -12,6 +12,7 @@ from testfixtures import log_capture
 from online_monitor.utils import utils, producer_sim
 from online_monitor.converter.transceiver import Transceiver
 from online_monitor.converter.forwarder import Forwarder
+from online_monitor.receiver.receiver import Receiver
 
 
 # creates a yaml config describing n_converter of type forwarder that are all connection to each other
@@ -20,8 +21,8 @@ def create_forwarder_config_yaml(n_converter):
     for index in range(n_converter):
         devices['DUT%s' % index] = {
             'kind': 'forwarder',
-            'receive_address': 'tcp://127.0.0.1:55%02d' % index,
-            'send_address': 'tcp://127.0.0.1:55%02d' % (index + 1)
+            'frontend': 'tcp://127.0.0.1:55%02d' % index,
+            'backend': 'tcp://127.0.0.1:55%02d' % (index + 1)
         }
     conf['converter'] = devices
     return yaml.dump(conf, default_flow_style=False)
@@ -76,27 +77,28 @@ class TestUtils(unittest.TestCase):
             json.dumps(data, cls=utils.NumpyEncoder)
 
     def test_factory(self):
-        receiver = utils._factory('online_monitor.converter.forwarder', base_class_type=Forwarder, *(), **{'receive_address': '0',
-                                                                                                           'send_address': '1',
+        receiver = utils._factory('online_monitor.converter.forwarder', base_class_type=Forwarder, *(), **{'frontend': '0',
+                                                                                                           'backend': '1',
                                                                                                            'kind': 'forwarder',
                                                                                                            'name': 'DUT'})
         self.assertEqual(receiver.__str__(), '<Forwarder(DUT, initial)>')
+        # Load not existing converter to check exception
         with self.assertRaises(ImportError):
             utils._factory('online_monitor.converter.notexisting', base_class_type=Forwarder)
 
     def test_entity_loader(self):
-        utils.load_converter('forwarder', base_class_type=Transceiver, *(), **{'receive_address': '0',
-                                                                               'send_address': '1',
+        utils.load_converter('forwarder', base_class_type=Transceiver, *(), **{'frontend': '0',
+                                                                               'backend': '1',
                                                                                'kind': 'forwarder',
                                                                                'name': 'DUT'})
-        utils.load_converter('example_converter', base_class_type=Transceiver, *(), **{'receive_address': '0',
-                                                                                       'send_address': '1',
+        utils.load_converter('example_converter', base_class_type=Transceiver, *(), **{'frontend': '0',
+                                                                                       'backend': '1',
                                                                                        'kind': 'example_converter',
                                                                                        'name': 'DUT'})
-        utils.load_receiver('example_receiver', base_class_type=Transceiver, *(), **{'receive_address': '0',
-                                                                                     'kind': 'example_receiver',
-                                                                                     'name': 'DUT'})
-        utils.load_producer_sim('example_producer_sim', base_class_type=producer_sim.ProducerSim, *(), **{'send_address': '0',
+        utils.load_receiver('example_receiver', base_class_type=Receiver, *(), **{'frontend': '0',
+                                                                                  'kind': 'example_receiver',
+                                                                                  'name': 'DUT'})
+        utils.load_producer_sim('example_producer_sim', base_class_type=producer_sim.ProducerSim, *(), **{'backend': '0',
                                                                                                           'kind': 'example_producer_sim',
                                                                                                           'name': 'DUT'})
 

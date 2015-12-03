@@ -22,24 +22,26 @@ def create_config_yaml():
     conf = {}
     # Add producer
     devices = {}
-    devices['DAQ0'] = {'send_address': 'tcp://127.0.0.1:6500',
-                       'kind': 'example_producer_sim'}
-    devices['DAQ1'] = {'send_address': 'tcp://127.0.0.1:6501',
-                       'kind': 'example_producer_sim'}
+    devices['DAQ0'] = {'backend': 'tcp://127.0.0.1:6500',
+                       'kind': 'example_producer_sim',
+                       'delay': 0.02}
+    devices['DAQ1'] = {'backend': 'tcp://127.0.0.1:6501',
+                       'kind': 'example_producer_sim',
+                       'delay': 0.02}
     conf['producer_sim'] = devices
     # Add converter
     devices = {}
     devices['DUT0'] = {
         'kind': 'example_converter',
-        'receive_address': 'tcp://127.0.0.1:6500',
-        'send_address': 'tcp://127.0.0.1:6600',
+        'frontend': 'tcp://127.0.0.1:6500',
+        'backend': 'tcp://127.0.0.1:6600',
         'max_cpu_load': None,
         'threshold': 8
     }
     devices['DUT1'] = {
         'kind': 'forwarder',
-        'receive_address': 'tcp://127.0.0.1:6600',
-        'send_address': 'tcp://127.0.0.1:6601',
+        'frontend': 'tcp://127.0.0.1:6600',
+        'backend': 'tcp://127.0.0.1:6601',
         'max_cpu_load': None
     }
     conf['converter'] = devices
@@ -47,11 +49,11 @@ def create_config_yaml():
     devices = {}
     devices['DUT0'] = {
         'kind': 'example_receiver',
-        'receive_address': 'tcp://127.0.0.1:6600'
+        'frontend': 'tcp://127.0.0.1:6600'
     }
     devices['DUT1'] = {
         'kind': 'example_receiver',
-        'receive_address': 'tcp://127.0.0.1:6601'
+        'frontend': 'tcp://127.0.0.1:6601'
     }
     conf['receiver'] = devices
     return yaml.dump(conf, default_flow_style=False)
@@ -104,7 +106,7 @@ class TestOnlineMonitor(unittest.TestCase):
 
     def test_receiver(self):
         self.app.processEvents()
-        self.assertEqual(len(self.online_monitor.receivers), 2, 'Number of receivers wrong')
+        self.assertEqual(len(self.online_monitor.receivers), 2, 'Number of frontends wrong')
         self.app.processEvents()  # clear event queue
         # activate status widget, no data should be received
         self.online_monitor.tab_widget.setCurrentIndex(0)

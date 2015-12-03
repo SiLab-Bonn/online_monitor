@@ -11,42 +11,42 @@ class ProducerSim(multiprocessing.Process):
 
     ''' For testing we have to generate some random data to fake a DAQ. This is done with this Producer Simulation'''
 
-    def __init__(self, send_address, kind='Test', name='Undefined', loglevel='INFO', **kwarg):
+    def __init__(self, backend, kind='Test', name='Undefined', loglevel='INFO', **kwarg):
         multiprocessing.Process.__init__(self)
 
-        self.send_address = send_address
+        self.backend_address = backend
         self.name = name  # name of the DAQ/device
         self.kind = kind
         self.config = kwarg
-        self.send_address = send_address
 
         self.loglevel = loglevel
         self.exit = multiprocessing.Event()  # exit signal
         utils.setup_logging(loglevel)
 
-        logging.info("Initialize %s producer %s at %s", self.kind, self.name, self.send_address)
+        logging.info("Initialize %s producer %s at %s", self.kind, self.name, self.backend_address)
 
     def setup_producer_device(self):
         # ignore SIGTERM; signal shutdown() is used for controlled process termination
         signal.signal(signal.SIGINT, signal.SIG_IGN)
-        # Setup ZeroMQ connetions, has to be within run; otherwise zMQ does not work
+        # Setup ZeroMQ connetions, has to be within run; otherwise ZMQ does not work
         self.context = zmq.Context()
         # Send socket facing services (e.g. online monitor)
         self.sender = self.context.socket(zmq.PUB)
-        self.sender.bind(self.send_address)
+        self.sender.bind(self.backend_address)
 
     def run(self):  # the receiver loop
         utils.setup_logging(self.loglevel)
+        logging.info("Start %s producer %s at %s", self.kind, self.name, self.backend_address)
+
         self.setup_producer_device()
 
-        logging.info("Start %s producer %s at %s", self.kind, self.name, self.send_address)
-        while not self.exit.wait(0.2):
+        while not self.exit.wait(0.02):
             self.send_data()
 
         # Close connections
         self.sender.close()
         self.context.term()
-        logging.info("Close %s producer %s at %s", self.kind, self.name, self.send_address)
+        logging.info("Close %s producer %s at %s", self.kind, self.name, self.backend_address)
 
     def shutdown(self):
         self.exit.set()
