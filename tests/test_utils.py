@@ -9,7 +9,7 @@ import json
 
 from testfixtures import log_capture
 
-from online_monitor.utils import utils, producer_sim
+from online_monitor.utils import utils, settings, producer_sim
 from online_monitor.converter.transceiver import Transceiver
 from online_monitor.converter.forwarder import Forwarder
 from online_monitor.receiver.receiver import Receiver
@@ -58,7 +58,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(configuration, self.configuration)
         utils.parse_config_file(self.config_file, expect_receiver=True)
         log.check(('root', 'WARNING', 'No receiver specified, thus no data can be plotted. Change tmp_cfg_10_converter.yml!'))  # check the logging output
-
+ 
     @log_capture()
     def test_numpy_serializer(self):
         # C_CONTIGUOUS : True
@@ -75,16 +75,6 @@ class TestUtils(unittest.TestCase):
         data = {'array', (1, 2, 3)}
         with self.assertRaises(TypeError):
             json.dumps(data, cls=utils.NumpyEncoder)
-
-    def test_factory(self):
-        receiver = utils._factory('online_monitor.converter.forwarder', base_class_type=Forwarder, *(), **{'frontend': '0',
-                                                                                                           'backend': '1',
-                                                                                                           'kind': 'forwarder',
-                                                                                                           'name': 'DUT'})
-        self.assertEqual(receiver.__str__(), '<Forwarder(DUT, initial)>')
-        # Load not existing converter to check exception
-        with self.assertRaises(ImportError):
-            utils._factory('online_monitor.converter.notexisting', base_class_type=Forwarder)
 
     def test_entity_loader(self):
         utils.load_converter('forwarder', base_class_type=Transceiver, *(), **{'frontend': '0',
