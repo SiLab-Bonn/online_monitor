@@ -187,8 +187,8 @@ class TestConverter(unittest.TestCase):
         self.assertTrue(all(item is False for item in no_data_2), 'Did not receive enough data')
         self.assertNotEqual(converter_manager_process.poll(), None)  # check if all processes are closed
 
-    @unittest.skip
-    def test_converter_bidirectional_communication_2(self):  # start 3 forwarder in a chain with 2 i/o each and do "whisper down the lane"
+    @unittest.skip('Not implemented yet')
+    def test_converter_bidirectional_communication(self):  # start 3 forwarder in a chain with 2 i/o each and do "whisper down the lane"
         # Forward receivers with 2 in/out
         converter_manager_process = run_script_in_shell(converter_script_path, 'tmp_cfg_3_converter_multi_bi.yml')
         time.sleep(1.5)  # 10 converter in 10 processes + ZMQ thread take time to start up
