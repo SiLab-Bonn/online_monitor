@@ -1,34 +1,36 @@
 producer_sim :
     DAQ0 :
-        send_address : tcp://127.0.0.1:5500
+        backend : tcp://127.0.0.1:5500
+        delay : 0.5
         kind : example_producer_sim
     DAQ1 :
-        send_address : tcp://127.0.0.1:5501
+        backend : tcp://127.0.0.1:5501
+        delay : 0.5
         kind : example_producer_sim
 
 converter :
     DUT0 :
         kind : example_converter
-        receive_address : tcp://127.0.0.1:5500
-        send_address : tcp://127.0.0.1:5680
+        frontend : tcp://127.0.0.1:5500
+        backend : tcp://127.0.0.1:5680
         max_cpu_load : 30
         threshold : 8
     DUT1 :
          kind : forwarder
-         receive_address : tcp://127.0.0.1:5680
-         send_address : tcp://127.0.0.1:5581
-    DUT1 :
+         frontend : tcp://127.0.0.1:5680
+         backend : tcp://127.0.0.1:5581
+    DUT2 :
          kind : forwarder
-         receive_address : tcp://127.0.0.1:5500
-         send_address : tcp://127.0.0.1:5582
+         frontend : tcp://127.0.0.1:5500
+         backend : tcp://127.0.0.1:5582
      
 receiver :
     DUT0 :
         kind : example_receiver
-        receive_address : tcp://127.0.0.1:5680
-   # DUT1 :
-    #    kind : example_receiver
-     #   receive_address : tcp://127.0.0.1:5581
-   # DUT2 :
-    #    kind : example_receiver
-     #   receive_address : tcp://127.0.0.1:5582
+        frontend : tcp://127.0.0.1:5680
+    DUT1 :
+        kind : example_receiver
+        frontend : tcp://127.0.0.1:5581
+    DUT2 :
+        kind : example_receiver
+        frontend : tcp://127.0.0.1:5582

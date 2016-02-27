@@ -1,47 +1,49 @@
 producer_sim :
     DAQ0 :
         kind : example_producer_sim
-        send_address : tcp://127.0.0.1:5500
+        delay : 1
+        backend : tcp://127.0.0.1:5500
         
     DAQ1 :
         kind : example_producer_sim
-        send_address : tcp://127.0.0.1:5501
+        delay : 1
+        backend : tcp://127.0.0.1:5501
 
 converter :
     DUT0 :
         kind : example_converter
-        receive_address : tcp://127.0.0.1:5500
-        send_address : tcp://127.0.0.1:5600
+        frontend : tcp://127.0.0.1:5500
+        backend : tcp://127.0.0.1:5600
         max_cpu_load : 30
         threshold : 8
     DUT1 :
         kind : forwarder
-        receive_address : tcp://127.0.0.1:5600
-        send_address : tcp://127.0.0.1:5601
+        frontend : tcp://127.0.0.1:5600
+        backend : tcp://127.0.0.1:5601
         max_cpu_load : 30
     DUT2 :
         kind : example_converter
-        receive_address : tcp://127.0.0.1:5501
-        send_address : tcp://127.0.0.1:5602
+        frontend : tcp://127.0.0.1:5501
+        backend : tcp://127.0.0.1:5602
         max_cpu_load : 30
         threshold : 8
-    PosCorr :
-        kind : position_correlator
-        receive_address : 
-            - tcp://127.0.0.1:5600
-            - tcp://127.0.0.1:5601
-            - tcp://127.0.0.1:5602
-        send_address : tcp://127.0.0.1:5681
-        max_cpu_load : 30
+#    PosCorr :
+#        kind : position_correlator
+#        receive_address : 
+#            - tcp://127.0.0.1:5600
+#            - tcp://127.0.0.1:5601
+#            - tcp://127.0.0.1:5602
+#        send_address : tcp://127.0.0.1:5681
+#        max_cpu_load : 30
 
 
 receiver :
     DUT0 :
         kind : example_receiver
-        receive_address : tcp://127.0.0.1:5600
+        frontend : tcp://127.0.0.1:5600
     DUT1 :
         kind : example_receiver
-        receive_address : tcp://127.0.0.1:5601
+        frontend : tcp://127.0.0.1:5601
     DUT2 :
         kind : example_receiver
-        receive_address : tcp://127.0.0.1:5602
+        frontend : tcp://127.0.0.1:5602
