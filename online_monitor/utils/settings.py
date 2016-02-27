@@ -13,7 +13,13 @@ _file_name = os.path.dirname(sys.modules[__name__].__file__) + r'/../OnlineMonit
 def add_converter_path(path):  # path where to search for converter modules
     config = ConfigParser.SafeConfigParser()
     config.read(_file_name)
-    paths = get_converter_path()
+    try:
+        paths = get_converter_path()
+    except ConfigParser.NoOptionError:
+        config.set('converter', 'path', str([path])[1:-1])  # On first call the path section does not exist
+        with open(_file_name, 'w') as f:
+            config.write(f)
+            return
     paths.append(path)  # append actual path
     paths = list(set(paths))  # remove duplicates
     config.set('converter', 'path', str(paths)[1:-1])  # store new string representation
@@ -24,7 +30,13 @@ def add_converter_path(path):  # path where to search for converter modules
 def add_receiver_path(path):  # path where to search for converter modules
     config = ConfigParser.SafeConfigParser()
     config.read(_file_name)
-    paths = get_receiver_path()
+    try:
+        paths = get_receiver_path()
+    except ConfigParser.NoOptionError:
+        config.set('receiver', 'path', str([path])[1:-1])  # On first call the path section does not exist
+        with open(_file_name, 'w') as f:
+            config.write(f)
+            return
     paths.append(path)  # append actual path
     paths = list(set(paths))  # remove duplicates
     config.set('receiver', 'path', str(paths)[1:-1])  # store new string representation
@@ -35,7 +47,13 @@ def add_receiver_path(path):  # path where to search for converter modules
 def add_producer_sim_path(path):  # path where to search for converter modules
     config = ConfigParser.SafeConfigParser()
     config.read(_file_name)
-    paths = get_producer_sim_path()
+    try:
+        paths = get_producer_sim_path()
+    except ConfigParser.NoOptionError:
+        config.set('producer_sim', 'path', str([path])[1:-1])  # On first call the path section does not exist
+        with open(_file_name, 'w') as f:
+            config.write(f)
+            return
     paths.append(path)  # append actual path
     paths = list(set(paths))  # remove duplicates
     config.set('producer_sim', 'path', str(paths)[1:-1])  # store new string representation
