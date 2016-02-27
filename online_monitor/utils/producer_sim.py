@@ -34,7 +34,7 @@ class ProducerSim(multiprocessing.Process):
         self.sender = self.context.socket(zmq.PUB)
         self.sender.bind(self.backend_address)
 
-    def run(self):  # the receiver loop
+    def run(self):  # The receiver loop running in extra process; is called after start() method
         utils.setup_logging(self.loglevel)
         logging.info("Start %s producer %s at %s", self.kind, self.name, self.backend_address)
 
@@ -61,11 +61,8 @@ def main():
 
     try:
         daqs = []
-        for (actual_producer_name, actual_producer_cfg) in configuration['producer'].items():
+        for (actual_producer_name, actual_producer_cfg) in configuration['producer_sim'].items():
             actual_producer_cfg['name'] = actual_producer_name
-            # only take test producers
-            if actual_producer_cfg['kind'] != 'test':
-                continue
             daq = ProducerSim(loglevel=args.log, **actual_producer_cfg)
             daqs.append(daq)
 
