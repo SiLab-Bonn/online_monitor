@@ -1,3 +1,4 @@
+import os
 import logging
 import argparse
 import yaml
@@ -8,7 +9,10 @@ import numpy as np
 from importlib import import_module
 from inspect import getmembers, isclass
 
-try:  # installing blosc can be troublesome under windows
+
+import imp  # Only available in python 2
+
+try:  # Installing blosc can be troublesome under windows, thus do not requiere it
     import blosc
     has_blosc = True
 except ImportError:
@@ -51,12 +55,14 @@ def setup_logging(loglevel):  # set logging level of this module
     logging.basicConfig(level=numeric_level)
 
 
-def _factory(importname, base_class_type, *args, **kargs):  # load module from string
+def _factory(path, importname, base_class_type, *args, **kargs):  # load module from string
     def is_base_class(item):
         return isclass(item) and item.__module__ == importname
 
-    mod = import_module(importname)
-    clsmembers = getmembers(mod, is_base_class)
+    sys.path.append(path)  # Needed to find the module in forked processes
+    absolute_path = os.path.join(path, importname) + '.py'  # Absolute full path of python module
+    module = imp.load_source(importname, absolute_path)
+    clsmembers = getmembers(module, is_base_class)  # Get the defined base class in the loaded module to be name indendend
     if not len(clsmembers):
         raise ValueError('Found no matching class in %s.' % importname)
     else:
@@ -65,31 +71,28 @@ def _factory(importname, base_class_type, *args, **kargs):  # load module from s
 
 
 def load_producer_sim(importname, base_class_type, *args, **kargs):  # search under all producer simulation paths for module with the name importname; return first occurence
-    for producer_sim_path in settings.get_producer_sim_path():
-        producer_sim_path = producer_sim_path.replace(r'/', '.')
+    for producer_sim_path in settings.get_producer_sim_path():  # Loop over all paths
         try:
-            return _factory(producer_sim_path + '.' + importname, base_class_type, *args, **kargs)
-        except ImportError:  # module not found in actual path
+            return _factory(producer_sim_path, importname, base_class_type, *args, **kargs)
+        except IOError:  # Module not found in actual path
             pass
     raise RuntimeError('Producer simulation %s in paths %s not found!', importname, settings.get_producer_sim_path())
 
 
 def load_converter(importname, base_class_type, *args, **kargs):  # search under all converter paths for module with the name importname; return first occurence
     for converter_path in settings.get_converter_path():
-        converter_path = converter_path.replace(r'/', '.')
         try:
-            return _factory(converter_path + '.' + importname, base_class_type, *args, **kargs)
-        except ImportError:  # module not found in actual path
+            return _factory(converter_path, importname, base_class_type, *args, **kargs)
+        except IOError:  # Module not found in actual path
             pass
     raise RuntimeError('Converter %s in paths %s not found!', importname, settings.get_converter_path())
 
 
 def load_receiver(importname, base_class_type, *args, **kargs):  # search under all receiver paths for module with the name importname; return first occurence
     for receiver_path in settings.get_receiver_path():
-        receiver_path = receiver_path.replace(r'/', '.')
         try:
-            return _factory(receiver_path + '.' + importname, base_class_type, *args, **kargs)
-        except ImportError:  # module not found in actual path
+            return _factory(receiver_path, importname, base_class_type, *args, **kargs)
+        except IOError:  # Module not found in actual path
             pass
     raise RuntimeError('Receiver %s in paths %s not found!', importname, settings.get_receiver_path())
 
