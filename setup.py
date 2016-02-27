@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+import os
 from setuptools import setup, find_packages  # This setup relies on setuptools since distutils is insufficient and badly hacked code
 
-version = '0.1.2'
+version = '0.2.0'
 author = 'David-Leon Pohl'
 author_email = 'pohl@physik.uni-bonn.de'
 
@@ -34,3 +35,16 @@ setup(
     },
     platforms='any'
 )
+
+# Add the examples to the online_monitor search paths
+from online_monitor.utils import settings
+
+# Add std. paths with the std. modules
+settings.add_producer_sim_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)) + r'/online_monitor/producer_sim')))
+settings.add_converter_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)) + r'/online_monitor/converter')))
+settings.add_receiver_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)) + r'/online_monitor/receiver')))
+
+# Add examples folder
+settings.add_producer_sim_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)) + r'/examples/producer_sim')))
+settings.add_converter_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)) + r'/examples/converter')))
+settings.add_receiver_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)) + r'/examples/receiver')))
