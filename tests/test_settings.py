@@ -27,25 +27,20 @@ def create_forwarder_config_yaml(n_converter):
 class TestSettings(unittest.TestCase):
 
     def test_entities_settings(self):
-        self.assertListEqual(sorted(settings.get_receiver_path()), sorted(['online_monitor/receiver', 'examples/receiver']))
-        self.assertListEqual(sorted(settings.get_converter_path()), sorted(['examples/converter', 'online_monitor/converter']))
-        self.assertListEqual(sorted(settings.get_producer_sim_path()), sorted(['examples/producer_sim']))
-
-        settings.add_converter_path(r'test/converter/path')
-        settings.add_receiver_path(r'test/receiver/path')
-        settings.add_receiver_path(r'test/receiver/path')
+        settings.add_converter_path(r'C:\\test\\converter\\path')
+        settings.add_receiver_path(r'/home/receiver/path')
         settings.add_producer_sim_path(r'test/producer_sim/path')
-
-        self.assertTrue(r'test/converter/path' in settings.get_converter_path())
-        self.assertTrue(r'test/receiver/path' in settings.get_receiver_path())
+ 
+        self.assertTrue(r'C:\\test\\converter\\path' in settings.get_converter_path())
+        self.assertTrue(r'/home/receiver/path' in settings.get_receiver_path())
         self.assertTrue(r'test/producer_sim/path' in settings.get_producer_sim_path())
-
-        settings.delete_converter_path(r'test/converter/path')
-        settings.delete_receiver_path(r'test/receiver/path')
+ 
+        settings.delete_converter_path(r'C:\\test\\converter\\path')
+        settings.delete_receiver_path(r'/home/receiver/path')
         settings.delete_producer_sim_path(r'test/producer_sim/path')
-
-        self.assertFalse(r'test/converter/path' in settings.get_converter_path())
-        self.assertFalse(r'test/receiver/path' in settings.get_receiver_path())
+ 
+        self.assertFalse(r'C:\\test\\converter\\path' in settings.get_converter_path())
+        self.assertFalse(r'/home/receiver/path' in settings.get_receiver_path())
         self.assertFalse(r'test/producer_sim/path' in settings.get_producer_sim_path())
 
     @unittest.skipIf(os.name == 'nt', "This tests is only true on virtual linux x-server systems. Otherwise result value depends on test environment.")
