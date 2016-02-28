@@ -9,4 +9,4 @@ exclude_lines =
 
 omit = 
     */__init__.py
-    tests/*
+    online_monitor/testsing/*
