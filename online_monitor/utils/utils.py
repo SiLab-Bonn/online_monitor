@@ -55,13 +55,33 @@ def setup_logging(loglevel):  # set logging level of this module
     logging.basicConfig(level=numeric_level)
 
 
-def _factory(path, importname, base_class_type, *args, **kargs):  # load module from string
+def _factory(importname, base_class_type, path=None, *args, **kargs):  #  
+    ''' Load a module of a given base class type
+        Parameter
+        --------
+        importname: string
+            Name of the module, etc. converter
+        base_class_type: class type
+            E.g converter
+        path: Absoulte path of the module
+            Neede for extensions. If not given module is in online_monitor package
+        *args, **kargs:
+            Arguments to pass at the object init
+        Return
+        ------
+        Object of given base class type
+    '''
+            
     def is_base_class(item):
         return isclass(item) and item.__module__ == importname
 
-    sys.path.append(path)  # Needed to find the module in forked processes
-    absolute_path = os.path.join(path, importname) + '.py'  # Absolute full path of python module
-    module = imp.load_source(importname, absolute_path)
+    if path:
+        sys.path.append(path)  # Needed to find the module in forked processes; if you know a better way tell me!
+        absolute_path = os.path.join(path, importname) + '.py'  # Absolute full path of python module
+        module = imp.load_source(importname, absolute_path)
+    else:
+        module = import_module(importname)
+    
     clsmembers = getmembers(module, is_base_class)  # Get the defined base class in the loaded module to be name indendend
     if not len(clsmembers):
         raise ValueError('Found no matching class in %s.' % importname)
@@ -71,27 +91,40 @@ def _factory(path, importname, base_class_type, *args, **kargs):  # load module 
 
 
 def load_producer_sim(importname, base_class_type, *args, **kargs):  # search under all producer simulation paths for module with the name importname; return first occurence
+    # Try to find converter in given sim producer paths
     for producer_sim_path in settings.get_producer_sim_path():  # Loop over all paths
         try:
-            return _factory(producer_sim_path, importname, base_class_type, *args, **kargs)
+            return _factory(importname, base_class_type, producer_sim_path, *args, **kargs)
         except IOError:  # Module not found in actual path
             pass
     raise RuntimeError('Producer simulation %s in paths %s not found!', importname, settings.get_producer_sim_path())
 
 
 def load_converter(importname, base_class_type, *args, **kargs):  # search under all converter paths for module with the name importname; return first occurence
+    # Try to load converter from online_monitor package
+    try:
+        return _factory('converter.' + importname, base_class_type, path=None, *args, **kargs)
+    except ImportError:  # converter is not defined in online_monitor
+        pass
+    # Module not is not a online monitor module, try to find converter in given converter paths
     for converter_path in settings.get_converter_path():
         try:
-            return _factory(converter_path, importname, base_class_type, *args, **kargs)
+            return _factory(importname, base_class_type, converter_path, *args, **kargs)
         except IOError:  # Module not found in actual path
             pass
     raise RuntimeError('Converter %s in paths %s not found!', importname, settings.get_converter_path())
 
 
 def load_receiver(importname, base_class_type, *args, **kargs):  # search under all receiver paths for module with the name importname; return first occurence
+    # Try to load receiver from online_monitor package
+    try:
+        return _factory('receiver.' + importname, base_class_type, path=None, *args, **kargs)
+    except ImportError:  # converter is not defined in online_monitor
+        pass
+    # Module not is not a online monitor module, try to find receiver in given converter paths
     for receiver_path in settings.get_receiver_path():
         try:
-            return _factory(receiver_path, importname, base_class_type, *args, **kargs)
+            return _factory(importname, base_class_type, receiver_path, *args, **kargs)
         except IOError:  # Module not found in actual path
             pass
     raise RuntimeError('Receiver %s in paths %s not found!', importname, settings.get_receiver_path())
