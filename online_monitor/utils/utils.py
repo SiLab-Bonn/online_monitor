@@ -103,7 +103,7 @@ def load_producer_sim(importname, base_class_type, *args, **kargs):  # search un
 def load_converter(importname, base_class_type, *args, **kargs):  # search under all converter paths for module with the name importname; return first occurence
     # Try to load converter from online_monitor package
     try:
-        return _factory('converter.' + importname, base_class_type, path=None, *args, **kargs)
+        return _factory('online_monitor.converter.' + importname, base_class_type, path=None, *args, **kargs)
     except ImportError:  # converter is not defined in online_monitor
         pass
     # Module not is not a online monitor module, try to find converter in given converter paths
@@ -118,7 +118,7 @@ def load_converter(importname, base_class_type, *args, **kargs):  # search under
 def load_receiver(importname, base_class_type, *args, **kargs):  # search under all receiver paths for module with the name importname; return first occurence
     # Try to load receiver from online_monitor package
     try:
-        return _factory('receiver.' + importname, base_class_type, path=None, *args, **kargs)
+        return _factory('online_monitor.receiver.' + importname, base_class_type, path=None, *args, **kargs)
     except ImportError:  # converter is not defined in online_monitor
         pass
     # Module not is not a online monitor module, try to find receiver in given converter paths
