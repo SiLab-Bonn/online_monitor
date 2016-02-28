@@ -16,6 +16,12 @@ Otherwise download the code and
 python setup.py develop
 ```
 
+You can run the unit tests to check the installation
+
+```
+nosetests online_monitor
+```
+
 # Usage
 
 For a demo type into the console:
