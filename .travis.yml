@@ -26,6 +26,7 @@ install:
   - conda update --yes conda
   - conda install --yes pyqt pyyaml pyzmq blosc coverage
   - pip install xvfbwrapper  # virtual x server for Qt gui tests
+  - pip install coveralls  # coverage testing
   # Install instructions valid for all python versions
   - pip install --upgrade pip
   - pip install -r requirements.txt --cache-dir $HOME/.pip-cache
