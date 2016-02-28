@@ -24,7 +24,7 @@ install:
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda update --yes conda
-  - conda install --yes pyqt pyyaml pyzmq blosc
+  - conda install --yes pyqt pyyaml pyzmq blosc coverage
   - pip install xvfbwrapper  # virtual x server for Qt gui tests
   # Install instructions valid for all python versions
   - pip install --upgrade pip
