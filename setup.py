@@ -2,7 +2,7 @@
 import os
 from setuptools import setup, find_packages  # This setup relies on setuptools since distutils is insufficient and badly hacked code
 
-version = '0.2.1'
+version = '0.2.2'
 author = 'David-Leon Pohl'
 author_email = 'pohl@physik.uni-bonn.de'
 
@@ -23,7 +23,7 @@ setup(
     maintainer_email=author_email,
     install_requires=install_requires,
     packages=find_packages(),
-    include_package_data=True,  # accept all data files and directories matched by MANIFEST.in or found in source control
+    include_package_data=True,  # Accept all data files and directories matched by MANIFEST.in or found in source control
     keywords=['online monitor', 'real time', 'plots'],
     entry_points={
         'console_scripts': [
