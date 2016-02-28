@@ -78,9 +78,8 @@ class TestOnlineMonitor(unittest.TestCase):
         with open('tmp_cfg.yml', 'w') as outfile:
             config_file = create_config_yaml()
             outfile.write(config_file)
-        # linux CIs run usually headless, thus virtual x server is needed for
-        # gui testing
-        if os.name != 'nt':
+        # linux CI travis runs headless, thus virtual x server is needed for gui testing
+        if os.getenv('TRAVIS', False):
             from xvfbwrapper import Xvfb
             cls.vdisplay = Xvfb()
             cls.vdisplay.start()
