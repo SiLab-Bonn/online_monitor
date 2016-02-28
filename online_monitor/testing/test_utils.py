@@ -33,6 +33,8 @@ class TestUtils(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        # Set the config file path to the test folder, otherwise they are created where nosetests are called
+        cls.config_path = os.path.join(os.path.dirname(__file__), 'tmp_cfg_10_converter.yml')
         # Add examples folder to entity search paths
         package_path = os.path.dirname(online_monitor.__file__)  # Get the absoulte path of the online_monitor installation
         settings.add_producer_sim_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/producer_sim')))
@@ -40,14 +42,13 @@ class TestUtils(unittest.TestCase):
         settings.add_receiver_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/receiver')))
 
         cls.configuration = create_forwarder_config_yaml(10)
-        with open('tmp_cfg_10_converter.yml', 'w') as outfile:
+        with open(cls.config_path, 'w') as outfile:
             outfile.write(cls.configuration)
         cls.configuration = yaml.load(cls.configuration)
-        cls.config_file = 'tmp_cfg_10_converter.yml'
 
     @classmethod
     def tearDownClass(cls):  # remove created files
-        os.remove('tmp_cfg_10_converter.yml')
+        os.remove(cls.config_path)
 
     @log_capture()  # to be able to inspect logging messages
     def test_argument_parser(self, log):
@@ -62,10 +63,10 @@ class TestUtils(unittest.TestCase):
         # Function parse_config_file
         with self.assertRaises(IOError):
             utils.parse_config_file('Does_not_exist')  # open not existin file
-        configuration = utils.parse_config_file(self.config_file)  # parse config and check result
+        configuration = utils.parse_config_file(self.config_path)  # parse config and check result
         self.assertEqual(configuration, self.configuration)
-        utils.parse_config_file(self.config_file, expect_receiver=True)
-        log.check(('root', 'WARNING', 'No receiver specified, thus no data can be plotted. Change tmp_cfg_10_converter.yml!'))  # check the logging output
+        utils.parse_config_file(self.config_path, expect_receiver=True)
+        log.check(('root', 'WARNING', 'No receiver specified, thus no data can be plotted. Change %s!' % self.config_path))  # check the logging output
  
     @log_capture()
     def test_numpy_serializer(self):

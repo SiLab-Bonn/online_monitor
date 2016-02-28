@@ -81,13 +81,15 @@ class TestOnlineMonitor(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        # Set the config file path to the test folder, otherwise they are created where nosetests are called
+        cls.config_path = os.path.join(os.path.dirname(__file__), 'tmp_cfg.yml')
         # Add examples folder to entity search paths
         package_path = os.path.dirname(online_monitor.__file__)  # Get the absoulte path of the online_monitor installation
         settings.add_producer_sim_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/producer_sim')))
         settings.add_converter_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/converter')))
         settings.add_receiver_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/receiver')))
         
-        with open('tmp_cfg.yml', 'w') as outfile:
+        with open(cls.config_path, 'w') as outfile:
             config_file = create_config_yaml()
             outfile.write(config_file)
         # linux CI travis runs headless, thus virtual x server is needed for gui testing
@@ -96,13 +98,13 @@ class TestOnlineMonitor(unittest.TestCase):
             cls.vdisplay = Xvfb()
             cls.vdisplay.start()
         # Start the simulation producer to create some fake data
-        cls.producer_process = run_script_in_shell(producer_manager_path, 'tmp_cfg.yml')
+        cls.producer_process = run_script_in_shell(producer_manager_path, cls.config_path)
         # Start converter
-        cls.converter_manager_process = run_script_in_shell(converter_manager_path, 'tmp_cfg.yml')
+        cls.converter_manager_process = run_script_in_shell(converter_manager_path, cls.config_path)
         # Create Gui
         time.sleep(2)
         cls.app = QApplication(sys.argv)
-        cls.online_monitor = OnlineMonitor.OnlineMonitorApplication('tmp_cfg.yml')
+        cls.online_monitor = OnlineMonitor.OnlineMonitorApplication(cls.config_path)
         time.sleep(2)
 
     @classmethod
@@ -111,7 +113,7 @@ class TestOnlineMonitor(unittest.TestCase):
         kill(cls.producer_process)
         kill(cls.converter_manager_process)
         time.sleep(1)
-        os.remove('tmp_cfg.yml')
+        os.remove(cls.config_path)
         cls.online_monitor.close()
         time.sleep(1)
 
@@ -157,7 +159,7 @@ class TestOnlineMonitor(unittest.TestCase):
         self.assertEqual(self.online_monitor.tab_widget.count(), 3, 'Number of tab widgets wrong')  # 2 receiver + status widget expected
 
 if __name__ == '__main__':
-    producer_manager_path = r'../online_monitor/start_producer_sim.py'
-    converter_manager_path = r'../online_monitor/start_converter.py'
+    producer_manager_path = r'../start_producer_sim.py'
+    converter_manager_path = r'../start_converter.py'
     suite = unittest.TestLoader().loadTestsFromTestCase(TestOnlineMonitor)
     unittest.TextTestRunner(verbosity=2).run(suite)

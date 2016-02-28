@@ -18,7 +18,6 @@ package_path = os.path.dirname(online_monitor.__file__)  # Get the absoulte path
 # Set the converter script path
 converter_script_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/online_monitor/start_converter.py'))
 
-
 # creates a yaml config describing n_converter of type forwarder that are all connection to each other
 def create_forwarder_config_yaml(n_converter, bidirectional=False, one_io=True):
     conf, devices = {}, {}
@@ -63,25 +62,29 @@ class TestConverter(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with open('tmp_cfg_10_converter.yml', 'w') as outfile:  # 10 forwarder converters connected in a chain
+        # Set the config file path to the test folder, otherwise they are created where nosetests are called
+        cls.configs_path = [os.path.join(os.path.dirname(__file__), path) for path in ('tmp_cfg_10_converter.yml', 
+                                                                                   'tmp_cfg_3_converter_multi.yml', 
+                                                                                   'tmp_cfg_3_converter_multi_bi.yml')]
+        
+        with open(cls.configs_path[0], 'w') as outfile:  # 10 forwarder converters connected in a chain
             config_file = create_forwarder_config_yaml(10)
             outfile.write(config_file)
-        with open('tmp_cfg_3_converter_multi.yml', 'w') as outfile:  # 3 forwarder converters with 2 in / 2 out connections, connected in a chain
+        with open(cls.configs_path[1], 'w') as outfile:  # 3 forwarder converters with 2 in / 2 out connections, connected in a chain
             config_file = create_forwarder_config_yaml(3, one_io=False)
             outfile.write(config_file)
-        with open('tmp_cfg_3_converter_multi_bi.yml', 'w') as outfile:  # 3 forwarder converters with 2 in / 2 out connections, connected in a chain
+        with open(cls.configs_path[2], 'w') as outfile:  # 3 forwarder converters with 2 in / 2 out connections, connected in a chain
             config_file = create_forwarder_config_yaml(3, one_io=False, bidirectional=True)
             outfile.write(config_file)
 
     @classmethod
     def tearDownClass(cls):  # remove created files
-        os.remove('tmp_cfg_10_converter.yml')
-        os.remove('tmp_cfg_3_converter_multi.yml')
-        os.remove('tmp_cfg_3_converter_multi_bi.yml')
+        for config_path in cls.configs_path:
+            os.remove(config_path)
 
     def test_converter_communication(self):  # start 10 forwarder in a chain and do "whisper down the lane"
         # Forward receivers with single in/out
-        converter_manager_process = run_script_in_shell(converter_script_path, 'tmp_cfg_10_converter.yml')
+        converter_manager_process = run_script_in_shell(converter_script_path, self.configs_path[0])
         time.sleep(1.5)  # 10 converter in 10 processes + ZMQ thread take time to start up
         no_data = True  # flag set to False if data is received
         context = zmq.Context()
@@ -112,7 +115,7 @@ class TestConverter(unittest.TestCase):
  
     def test_converter_communication_2(self):  # start 3 forwarder in a chain with 2 i/o each and do "whisper down the lane"
         # Forward receivers with 2 in/out
-        converter_manager_process = run_script_in_shell(converter_script_path, 'tmp_cfg_3_converter_multi.yml')
+        converter_manager_process = run_script_in_shell(converter_script_path, self.configs_path[1])
         time.sleep(1.5)  # 10 converter in 10 processes + ZMQ thread take time to start up
         context = zmq.Context()
         # Sockets facing last converter inputs
@@ -195,7 +198,7 @@ class TestConverter(unittest.TestCase):
     @unittest.skip('Not implemented yet')
     def test_converter_bidirectional_communication(self):  # start 3 forwarder in a chain with 2 i/o each and do "whisper down the lane"
         # Forward receivers with 2 in/out
-        converter_manager_process = run_script_in_shell(converter_script_path, 'tmp_cfg_3_converter_multi_bi.yml')
+        converter_manager_process = run_script_in_shell(converter_script_path, self.configs_path[2])
         time.sleep(1.5)  # 10 converter in 10 processes + ZMQ thread take time to start up
         context = zmq.Context()
         # Sockets facing last converter inputs
@@ -276,13 +279,13 @@ class TestConverter(unittest.TestCase):
     @unittest.skipIf(os.name == 'nt', "Test requires to send CRTL event; That is difficult under windows.")
     def test_converter_crtl(self):  # test the setup and close of converter processes handled by the converter manager; initiated by crtl
         for _ in range(5):  # setup and delete 5 times 10 converter processes
-            converter_manager_process = run_script_in_process(converter_script_path, 'tmp_cfg_10_converter.yml')  # start script in process that captures SIGINT
+            converter_manager_process = run_script_in_process(converter_script_path, self.configs_path[0])  # start script in process that captures SIGINT
             time.sleep(1.0)  # 10 converter in 10 processes + ZMQ thread take time to start up
             converter_manager_process.send_signal(signal.SIGINT)
             time.sleep(2.0)
             self.assertNotEqual(converter_manager_process.poll(), None)  # check if all processes are closed
 
 if __name__ == '__main__':
-    converter_script_path = r'../online_monitor/start_converter.py'
+    converter_script_path = r'../start_converter.py'
     suite = unittest.TestLoader().loadTestsFromTestCase(TestConverter)
     unittest.TextTestRunner(verbosity=2).run(suite)
