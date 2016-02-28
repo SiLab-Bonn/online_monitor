@@ -9,7 +9,14 @@ import os
 import zmq
 import psutil
 
-producer_sim_script_path = r'online_monitor/start_producer_sim.py'
+import online_monitor
+from online_monitor.utils import settings
+
+# Get package path
+package_path = os.path.dirname(online_monitor.__file__)  # Get the absoulte path of the online_monitor installation
+
+# Set the producer script path
+producer_sim_script_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/online_monitor/start_producer_sim.py'))
 
 
 # creates a yaml config describing n_converter of type forwarder that are all connection to each other
@@ -44,6 +51,13 @@ class TestConverter(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        print 'package_path', package_path
+        
+        # Add examples folder to entity search paths
+        settings.add_producer_sim_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/producer_sim')))
+        settings.add_converter_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/converter')))
+        settings.add_receiver_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/receiver')))
+        
         with open('tmp_cfg_5_producer.yml', 'w') as outfile:  # 10 forwarder converters connected in a chain
             config_file = create_producer_config_yaml(5)
             outfile.write(config_file)

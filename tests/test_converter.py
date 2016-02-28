@@ -10,8 +10,13 @@ import zmq
 import psutil
 import signal
 
+import online_monitor
 
-converter_script_path = r'online_monitor/start_converter.py'
+# Get package path
+package_path = os.path.dirname(online_monitor.__file__)  # Get the absoulte path of the online_monitor installation
+
+# Set the converter script path
+converter_script_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/online_monitor/start_converter.py'))
 
 
 # creates a yaml config describing n_converter of type forwarder that are all connection to each other

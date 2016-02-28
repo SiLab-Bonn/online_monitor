@@ -10,10 +10,16 @@ import os
 import psutil
 from PyQt4.QtGui import QApplication
 
+import online_monitor
 from online_monitor import OnlineMonitor
+from online_monitor.utils import settings
 
-producer_manager_path = r'online_monitor/start_producer_sim.py'
-converter_manager_path = r'online_monitor/start_converter.py'
+# Get package path
+package_path = os.path.dirname(online_monitor.__file__)  # Get the absoulte path of the online_monitor installation
+
+# Set the script paths
+converter_manager_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/online_monitor/start_converter.py'))
+producer_manager_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/online_monitor/start_producer_sim.py'))
 
 
 # creates a yaml config describing n_converter of type forwarder that are
@@ -75,6 +81,12 @@ class TestOnlineMonitor(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        # Add examples folder to entity search paths
+        package_path = os.path.dirname(online_monitor.__file__)  # Get the absoulte path of the online_monitor installation
+        settings.add_producer_sim_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/producer_sim')))
+        settings.add_converter_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/converter')))
+        settings.add_receiver_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/receiver')))
+        
         with open('tmp_cfg.yml', 'w') as outfile:
             config_file = create_config_yaml()
             outfile.write(config_file)
