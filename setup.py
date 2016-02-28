@@ -2,7 +2,7 @@
 import os
 from setuptools import setup, find_packages  # This setup relies on setuptools since distutils is insufficient and badly hacked code
 
-version = '0.2.0'
+version = '0.2.1'
 author = 'David-Leon Pohl'
 author_email = 'pohl@physik.uni-bonn.de'
 
@@ -36,15 +36,19 @@ setup(
     platforms='any'
 )
 
-# Add the examples to the online_monitor search paths
-from online_monitor.utils import settings
+# Add the examples and the entity base classes to the online_monitor search paths
+# To do that much logic in the setup.py is bad; better ideas welcome
+
+import online_monitor
+from  online_monitor.utils import settings
+package_path = os.path.dirname(online_monitor.__file__)
 
 # Add std. paths with the std. modules
-settings.add_producer_sim_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)) + r'/online_monitor/producer_sim')))
-settings.add_converter_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)) + r'/online_monitor/converter')))
-settings.add_receiver_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)) + r'/online_monitor/receiver')))
+settings.add_producer_sim_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/online_monitor/producer_sim')))
+settings.add_converter_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/online_monitor/converter')))
+settings.add_receiver_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/online_monitor/receiver')))
 
 # Add examples folder
-settings.add_producer_sim_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)) + r'/examples/producer_sim')))
-settings.add_converter_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)) + r'/examples/converter')))
-settings.add_receiver_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)) + r'/examples/receiver')))
+settings.add_producer_sim_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/producer_sim')))
+settings.add_converter_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/converter')))
+settings.add_receiver_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/receiver')))
