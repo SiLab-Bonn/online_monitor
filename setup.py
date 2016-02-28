@@ -35,20 +35,3 @@ setup(
     },
     platforms='any'
 )
-
-# Add the examples and the entity base classes to the online_monitor search paths
-# To do that much logic in the setup.py is bad; better ideas welcome
-
-import online_monitor
-from  online_monitor.utils import settings
-package_path = os.path.dirname(online_monitor.__file__)
-
-# Add std. paths with the std. modules
-settings.add_producer_sim_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/online_monitor/producer_sim')))
-settings.add_converter_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/online_monitor/converter')))
-settings.add_receiver_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/online_monitor/receiver')))
-
-# Add examples folder
-settings.add_producer_sim_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/producer_sim')))
-settings.add_converter_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/converter')))
-settings.add_receiver_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/receiver')))
