@@ -6,6 +6,8 @@ import subprocess
 import logging
 from PyQt4 import Qt
 
+import online_monitor
+from online_monitor.utils import settings
 from online_monitor.OnlineMonitor import OnlineMonitorApplication
 from online_monitor.utils import utils
 
@@ -26,6 +28,12 @@ def main():
     if sys.argv[1:]:
         args = utils.parse_arguments()
     else:
+        # Add examples folder to entity search paths to be able to show DEMO using the examples
+        package_path = os.path.dirname(online_monitor.__file__)  # Get the absoulte path of the online_monitor installation
+        settings.add_producer_sim_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/producer_sim')))
+        settings.add_converter_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/converter')))
+        settings.add_receiver_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/receiver')))
+
         class Dummy(object):
 
             def __init__(self):
