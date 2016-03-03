@@ -9,7 +9,7 @@ from online_monitor.utils import utils
 
 class ExampleReceiver(Receiver):
 
-    def setup_plots(self, parent, name):
+    def setup_widgets(self, parent, name):
         dock_area = DockArea()
         parent.addTab(dock_area, name)
 
