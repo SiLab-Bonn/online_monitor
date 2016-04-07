@@ -3,6 +3,7 @@ import logging
 import argparse
 import yaml
 import json
+import ast
 import base64
 import sys
 import numpy as np
@@ -169,6 +170,12 @@ def json_numpy_obj_hook(dct):
         data = base64.b64decode(array)
         if has_blosc:
             data = blosc.decompress(data)
-        return np.frombuffer(data, dct['dtype']).reshape(dct['shape'])
+
+        try:
+            dtype = np.dtype(ast.literal_eval(dct['dtype']))
+        except ValueError:  # If the array is not a recarray
+            dtype = dct['dtype']
+
+        return np.frombuffer(data, dtype).reshape(dct['shape'])
 
     return dct
