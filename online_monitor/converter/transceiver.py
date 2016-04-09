@@ -5,8 +5,6 @@ import signal
 import psutil
 import sys
 
-from zmq.eventloop import ioloop, zmqstream
-
 from online_monitor.utils import utils
 
 
@@ -72,7 +70,7 @@ class Transceiver(multiprocessing.Process):
         logging.debug("Initialize %s converter %s with frontends %s and backends %s", self.kind, self.name, self.frontend_address, self.backend_address)
 
     def set_bidirectional_communication(self):
-        logging.info('Set bidirectional communication for convverter %s backend', self.name)
+        logging.info('Set bidirectional communication for converter %s backend', self.name)
         self.backend_socket_type = zmq.DEALER
 
     def _setup_frontend(self):
@@ -147,7 +145,7 @@ class Transceiver(multiprocessing.Process):
         logging.debug("Start %s transceiver %s at %s", self.kind, self.name, self.backend_address)
         while not self.exit.wait(0.01):
             raw_data = self.recv_data()
-            
+
             commands = self.recv_commands()
             if commands:
                 self.handle_command(commands)
@@ -156,7 +154,9 @@ class Transceiver(multiprocessing.Process):
                 continue
 
             actual_cpu_load = process.cpu_percent()
-            self.cpu_load = 0.95 * self.cpu_load + 0.05 * actual_cpu_load  # filter cpu load by running mean since it changes rapidly; cpu load spikes can be filtered away since data queues up through ZMQ
+            # Filter cpu load by running mean since it changes rapidly; cpu load spikes can be filtered away since data queues up through ZMQ
+            # FIXME: To use a high water mark would be a better solution
+            self.cpu_load = 0.90 * self.cpu_load + 0.1 * actual_cpu_load
             if not self.max_cpu_load or self.cpu_load < self.max_cpu_load:  # check if already too much CPU is used by the conversion, then omit data
                 data = self.interpret_data(raw_data)
                 if data is not None and len(data) != 0:  # data is None if the data cannot be converted (e.g. is incomplete, broken, etc.)
