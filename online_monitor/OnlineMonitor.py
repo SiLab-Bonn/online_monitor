@@ -54,9 +54,8 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
             return receivers
 
     def on_tab_changed(self, value):
-        if value > 0:  # first index is status tab widget
-            for index, actual_receiver in enumerate(self.receivers):
-                actual_receiver.active(True if index == value - 1 else False)
+        for index, actual_receiver in enumerate(self.receivers, start=1):  # First index is status tab widget
+            actual_receiver.active(True if index == value else False)
 
     def stop_receivers(self):
         if self.receivers:
