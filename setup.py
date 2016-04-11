@@ -2,7 +2,7 @@
 import os
 from setuptools import setup, find_packages  # This setup relies on setuptools since distutils is insufficient and badly hacked code
 
-version = '0.2.2'
+version = '0.2.3'
 author = 'David-Leon Pohl'
 author_email = 'pohl@physik.uni-bonn.de'
 
