@@ -54,9 +54,14 @@ def main():
     def appExec():
         app.exec_()
         # Stop other processes
-        kill(converter_manager_process)
-        kill(producer_sim_process)
-
+        try:
+            kill(producer_sim_process)
+        except psutil.NoSuchProcess:  # If the process was never started it cannot be killed
+            pass
+        try:
+            kill(converter_manager_process)
+        except psutil.NoSuchProcess:  # If the process was never started it cannot be killed
+            pass
     # Start the online monitor
     app = Qt.QApplication(sys.argv)
     win = OnlineMonitorApplication(args.config_file)

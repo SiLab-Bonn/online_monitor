@@ -52,10 +52,10 @@ class TestUtils(unittest.TestCase):
 
     @log_capture()  # to be able to inspect logging messages
     def test_argument_parser(self, log):
-# FIXME: SystemExit not reliably raised if nosetest is started from console using installed package
-#         # Function utils.parse_arguments
-#         with self.assertRaises(SystemExit):  # no config file specified; thus expect parser error raising SystemExit; this does not work within nosetests
-#             utils.parse_arguments()
+        # FIXME: SystemExit not reliably raised if nosetest is started from console using installed package
+        # Function utils.parse_arguments
+        # with self.assertRaises(SystemExit):  # no config file specified; thus expect parser error raising SystemExit; this does not work within nosetests
+        #             utils.parse_arguments()
         # Function utils.parse_args
         arguments = utils.parse_args(['configfile.yaml', '-l DEBUG'])
         self.assertEqual(arguments.config_file, 'configfile.yaml', 'The non positional argument is parsed wrong')
@@ -67,7 +67,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(configuration, self.configuration)
         utils.parse_config_file(self.config_path, expect_receiver=True)
         log.check(('root', 'WARNING', 'No receiver specified, thus no data can be plotted. Change %s!' % self.config_path))  # check the logging output
- 
+
     @log_capture()
     def test_numpy_serializer(self):
         # C_CONTIGUOUS : True
@@ -84,6 +84,13 @@ class TestUtils(unittest.TestCase):
         data = {'array', (1, 2, 3)}
         with self.assertRaises(TypeError):
             json.dumps(data, cls=utils.NumpyEncoder)
+
+        # Check for recarray
+        data = {'array': np.ones((100, ), dtype=[('event_number', '<i8'),
+                                                 ('trigger_number', '<u4')])}
+        data_serialized = json.dumps(data, cls=utils.NumpyEncoder)
+        data_deserialized = json.loads(data_serialized, object_hook=utils.json_numpy_obj_hook)
+        self.assertTrue((data['array'] == data_deserialized['array']).all())
 
     def test_entity_loader(self):
         utils.load_converter('forwarder', base_class_type=Transceiver, *(), **{'frontend': '0',

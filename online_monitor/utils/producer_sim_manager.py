@@ -25,7 +25,8 @@ class ProducerSimManager(object):
         try:
             self.configuration['producer_sim']
         except KeyError:
-            logging.warning('No producer simulation defined in config file')
+            logging.info('No producer simulation defined in config file')
+            logging.info('Close producer simulation manager')
             return
         logging.info('Starting %d producer simulations', len(self.configuration['producer_sim']))
         producer_sims, process_infos = [], []

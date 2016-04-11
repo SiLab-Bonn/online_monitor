@@ -1,12 +1,12 @@
 producer_sim :
     DAQ0 :
         kind : example_producer_sim
-        delay : 1
+        delay : 0.2
         backend : tcp://127.0.0.1:5500
         
     DAQ1 :
         kind : example_producer_sim
-        delay : 1
+        delay : 0.2
         backend : tcp://127.0.0.1:5501
 
 converter :
@@ -14,36 +14,26 @@ converter :
         kind : example_converter
         frontend : tcp://127.0.0.1:5500
         backend : tcp://127.0.0.1:5600
-        max_cpu_load : 30
         threshold : 8
     DUT1 :
         kind : forwarder
-        frontend : tcp://127.0.0.1:5600
+        frontend : tcp://127.0.0.1:5500
         backend : tcp://127.0.0.1:5601
         max_cpu_load : 30
     DUT2 :
-        kind : example_converter
-        frontend : tcp://127.0.0.1:5501
-        backend : tcp://127.0.0.1:5602
-        max_cpu_load : 30
-        threshold : 8
-#    PosCorr :
-#        kind : position_correlator
-#        receive_address : 
-#            - tcp://127.0.0.1:5600
-#            - tcp://127.0.0.1:5601
-#            - tcp://127.0.0.1:5602
-#        send_address : tcp://127.0.0.1:5681
-#        max_cpu_load : 30
+        kind : bidirectional_converter
+        frontend : tcp://127.0.0.1:5500
+        backend : tcp://127.0.0.1:5602       
 
 
 receiver :
-    DUT0 :
-        kind : example_receiver
-        frontend : tcp://127.0.0.1:5600
     DUT1 :
         kind : example_receiver
-        frontend : tcp://127.0.0.1:5601
+        frontend : tcp://127.0.0.1:5600
+        
     DUT2 :
-        kind : example_receiver
+        kind : bidirectional_receiver
         frontend : tcp://127.0.0.1:5602
+ #   DUT2 :
+ #       kind : example_receiver
+  #      frontend : tcp://127.0.0.1:5602

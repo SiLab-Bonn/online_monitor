@@ -22,8 +22,12 @@ class ConverterManager(object):
         sys.stdout.flush()
 
     def start(self):
-        if not self.configuration['converter']:
-            raise RuntimeError('Cannot find any converters defined in the configuration')
+        try:
+            self.configuration['converter']
+        except KeyError:
+            logging.info('No converters defined in config file')
+            logging.info('Close converter manager')
+            return
         logging.info('Starting %d converters', len(self.configuration['converter']))
         converters, process_infos = [], []
 
