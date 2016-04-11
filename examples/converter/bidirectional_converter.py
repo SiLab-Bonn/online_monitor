@@ -9,8 +9,8 @@ from online_monitor.converter.transceiver import Transceiver
 class ExampleConverter(Transceiver):
 
     def setup_transceiver(self):  # Called at the beginning
-        self.threshold = 0
         self.set_bidirectional_communication()  # Sets bidirectional communication
+        self.threshold = 0
 
     def deserialze_data(self, data):
         return json.loads(data, object_hook=utils.json_numpy_obj_hook)
