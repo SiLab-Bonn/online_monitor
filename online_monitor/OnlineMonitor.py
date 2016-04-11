@@ -92,19 +92,22 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
             text.setPos(0.5, 0.5)
             view.addItem(text)
             # Add corresponding producer info
-            if self.configuration['converter']:
-                try:
-                    actual_converter = self.configuration['converter'][receiver_name]
-                    view = status_graphics_widget.addViewBox(row=receiver_index, col=1, lockAspect=True, enableMouse=False)
-                    text = pg.TextItem('Producer\n%s' % receiver_name, border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
-                    text.setPos(0.5, 0.5)
-                    view.addItem(text)
-                    view = status_graphics_widget.addViewBox(row=receiver_index, col=3, lockAspect=True, enableMouse=False)
-                    text = pg.TextItem('Converter\n%s' % receiver_settings, border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
-                    text.setPos(0.5, 0.5)
-                    view.addItem(text)
-                except KeyError:  # no converter for receiver
-                    pass
+            try:
+                if self.configuration['converter']:
+                    try:
+                        actual_converter = self.configuration['converter'][receiver_name]
+                        view = status_graphics_widget.addViewBox(row=receiver_index, col=1, lockAspect=True, enableMouse=False)
+                        text = pg.TextItem('Producer\n%s' % receiver_name, border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+                        text.setPos(0.5, 0.5)
+                        view.addItem(text)
+                        view = status_graphics_widget.addViewBox(row=receiver_index, col=3, lockAspect=True, enableMouse=False)
+                        text = pg.TextItem('Converter\n%s' % receiver_settings, border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
+                        text.setPos(0.5, 0.5)
+                        view.addItem(text)
+                    except KeyError:  # no converter for receiver
+                        pass
+            except KeyError:  # No converter defined in configruation
+                pass
             
 #             nodes = ['Producer\n%s' % converter_name, 'Converter\n%s' % converter_settings['kind'], 'Receiver\n%s' % converter_settings['kind']]
             
