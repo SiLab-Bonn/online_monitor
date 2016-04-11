@@ -81,7 +81,7 @@ class Receiver(QtCore.QObject):
         self.worker = DataWorker(self.deserialze_data)  # no parent
         self.worker.moveToThread(self.thread)  # move worker instance to new thread
 
-    def active(self, value):  # slot called if the receiver tab widget gets active
+    def active(self, value):  # Slot called if the receiver tab widget gets active
         self._active = value
 
     def start(self):
