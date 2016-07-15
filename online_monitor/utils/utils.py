@@ -11,7 +11,11 @@ from importlib import import_module
 from inspect import getmembers, isclass
 from array import *
 import struct
-import cPickle as pickle
+
+if sys.version_info < (3, 0):
+    import cPickle as pickle
+else:
+    import pickle as pickle
 
 import imp  # Only available in python 2
 
