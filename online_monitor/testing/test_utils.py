@@ -12,7 +12,6 @@ from testfixtures import log_capture
 import online_monitor
 from online_monitor.utils import utils, settings, producer_sim
 from online_monitor.converter.transceiver import Transceiver
-from online_monitor.converter.forwarder import Forwarder
 from online_monitor.receiver.receiver import Receiver
 
 
