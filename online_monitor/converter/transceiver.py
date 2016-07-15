@@ -36,7 +36,7 @@ class Transceiver(multiprocessing.Process):
         The verbosity level for the logging (e.g. INFO, WARNING)
     '''
 
-    def __init__(self, frontend, backend, kind, name='Undefined', max_cpu_load=100, loglevel='INFO', **kwarg):
+    def __init__(self, frontend, backend, kind, name='Undefined', max_cpu_load=None, loglevel='INFO', **kwarg):
         multiprocessing.Process.__init__(self)
 
         self.kind = kind  # kind of transeiver (e.g. forwarder)
@@ -79,6 +79,9 @@ class Transceiver(multiprocessing.Process):
         for actual_frontend_address in self.frontend_address:
             actual_frontend = (actual_frontend_address, self.context.socket(self.frontend_socket_type))  # subscriber or server socket
             actual_frontend[1].connect(actual_frontend_address)
+            actual_frontend[1].setsockopt(zmq.LINGER, 500)  # Wait 0.5 s before termating socket
+            actual_frontend[1].set_hwm(100)  # Buffer only 100 meassages, then throw data away
+            actual_frontend[1].connect(actual_frontend_address)
             if self.frontend_socket_type == zmq.SUB:  # A suscriber has to set to not filter any data
                 actual_frontend[1].setsockopt_string(zmq.SUBSCRIBE, u'')  # do not filter any data
             self.frontends.append(actual_frontend)
@@ -88,6 +91,8 @@ class Transceiver(multiprocessing.Process):
         self.backends = []
         for actual_backend_address in self.backend_address:
             actual_backend = (actual_backend_address, self.context.socket(self.backend_socket_type))  # publisher or client socket
+            actual_backend[1].setsockopt(zmq.LINGER, 500)  # Wait 0.5 s before termating socket
+            actual_backend[1].set_hwm(100)  # Buffer only 100 meassages, then throw data away
             actual_backend[1].bind(actual_backend_address)
             self.backends.append(actual_backend)
 
