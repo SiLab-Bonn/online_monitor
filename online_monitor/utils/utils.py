@@ -186,40 +186,42 @@ def json_numpy_obj_hook(dct):
 
     return dct
 
-def simple_enc(data=None, meta = {}):
 
-    buffer = array('B', [])
-    
+def simple_enc(data=None, meta={}):
+
+    data_buffer = array('B', [])
+
     if data is not None:
         meta['data_meta'] = {'dtype': data.dtype, 'shape': data.shape}
-        buffer.fromstring(data.data)
-        
+        data_buffer.fromstring(data.data)
+
     meta_json = pickle.dumps(meta)
     meta_json_buffer = array('B', [])
     meta_json_buffer.fromstring(meta_json)
-    
+
     meta_len = len(meta_json)
-    
+
     meta_len_byte = struct.unpack("4B", struct.pack("I", meta_len))
-    
-    buffer.extend(meta_json_buffer)
-    buffer.extend(meta_len_byte)
 
-    return buffer    
+    data_buffer.extend(meta_json_buffer)
+    data_buffer.extend(meta_len_byte)
 
-def simple_dec(buffer):
+    return data_buffer
 
-    len_buffer = buffer[-4:]
-    len = struct.unpack("I", len_buffer )[0]
-    
-    meta = pickle.loads(buffer[-4-len:-4])
-    
+
+def simple_dec(data_buffer):
+
+    len_buffer = data_buffer[-4:]
+    length = struct.unpack("I", len_buffer)[0]
+
+    meta = pickle.loads(data_buffer[-4 - length:-4])
+
     if 'data_meta' in meta:
         dtype = meta['data_meta']['dtype']
         shape = meta['data_meta']['shape']
-        data = np.frombuffer(buffer[:-4-len], dtype).reshape(shape)
+        data = np.frombuffer(data_buffer[:-4 - length], dtype).reshape(shape)
     else:
         data = None
-        
+
     return data, meta
 
