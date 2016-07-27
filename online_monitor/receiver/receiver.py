@@ -22,6 +22,7 @@ class DataWorker(QtCore.QObject):
         self.socket_type = socket_type
         if self.socket_type == zmq.SUB:  # A suscriber has to set to not filter any data
             self.receiver.setsockopt_string(zmq.SUBSCRIBE, u'')  # do not filter any data
+        self.receiver.set_hwm(10)  # Buffer only 100 meassages, then throw data away
         self.receiver.connect(frontend_address)
 
     def receive_data(self):  # pragma: no cover; infinite loop via QObject.moveToThread(), does not block event loop, is shown as not covered in unittests due to qt event loop

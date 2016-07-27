@@ -78,12 +78,11 @@ class Transceiver(multiprocessing.Process):
         self.frontends = []
         for actual_frontend_address in self.frontend_address:
             actual_frontend = (actual_frontend_address, self.context.socket(self.frontend_socket_type))  # subscriber or server socket
-            actual_frontend[1].connect(actual_frontend_address)
             actual_frontend[1].setsockopt(zmq.LINGER, 500)  # Wait 0.5 s before termating socket
-            actual_frontend[1].set_hwm(100)  # Buffer only 100 meassages, then throw data away
-            actual_frontend[1].connect(actual_frontend_address)
+            actual_frontend[1].set_hwm(10)  # Buffer only 100 meassages, then throw data away
             if self.frontend_socket_type == zmq.SUB:  # A suscriber has to set to not filter any data
                 actual_frontend[1].setsockopt_string(zmq.SUBSCRIBE, u'')  # do not filter any data
+            actual_frontend[1].connect(actual_frontend_address)
             self.frontends.append(actual_frontend)
 
     def _setup_backend(self):
@@ -92,7 +91,7 @@ class Transceiver(multiprocessing.Process):
         for actual_backend_address in self.backend_address:
             actual_backend = (actual_backend_address, self.context.socket(self.backend_socket_type))  # publisher or client socket
             actual_backend[1].setsockopt(zmq.LINGER, 500)  # Wait 0.5 s before termating socket
-            actual_backend[1].set_hwm(100)  # Buffer only 100 meassages, then throw data away
+            actual_backend[1].set_hwm(10)  # Buffer only 100 meassages, then throw data away
             actual_backend[1].bind(actual_backend_address)
             self.backends.append(actual_backend)
 
