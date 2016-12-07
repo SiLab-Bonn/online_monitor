@@ -1,7 +1,7 @@
 import sys
 import logging
 
-from PyQt4 import Qt
+from PyQt5 import Qt
 import pyqtgraph as pg
 from pyqtgraph.dockarea import DockArea, Dock
 
