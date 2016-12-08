@@ -18,7 +18,8 @@ package_path = os.path.dirname(online_monitor.__file__)  # Get the absoulte path
 # Set the converter script path
 converter_script_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/online_monitor/start_converter.py'))
 
-# creates a yaml config describing n_converter of type forwarder that are all connection to each other
+
+# Creates a yaml config describing n_converter of type forwarder that are all connection to each other
 def create_forwarder_config_yaml(n_converter, bidirectional=False, one_io=True):
     conf, devices = {}, {}
     if one_io:  # just one incoming outgoing connection
@@ -63,10 +64,10 @@ class TestConverter(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Set the config file path to the test folder, otherwise they are created where nosetests are called
-        cls.configs_path = [os.path.join(os.path.dirname(__file__), path) for path in ('tmp_cfg_10_converter.yml', 
-                                                                                   'tmp_cfg_3_converter_multi.yml', 
-                                                                                   'tmp_cfg_3_converter_multi_bi.yml')]
-        
+        cls.configs_path = [os.path.join(os.path.dirname(__file__), path) for path in ('tmp_cfg_10_converter.yml',
+                                                                                       'tmp_cfg_3_converter_multi.yml',
+                                                                                       'tmp_cfg_3_converter_multi_bi.yml')]
+
         with open(cls.configs_path[0], 'w') as outfile:  # 10 forwarder converters connected in a chain
             config_file = create_forwarder_config_yaml(10)
             outfile.write(config_file)
@@ -104,7 +105,7 @@ class TestConverter(unittest.TestCase):
             self.assertEqual(msg, ret_msg)
         except zmq.Again:  # pragma: no cover
             pass
- 
+
         kill(converter_manager_process)
         sender.close()
         receiver.close()
@@ -112,7 +113,7 @@ class TestConverter(unittest.TestCase):
         time.sleep(0.5)
         self.assertFalse(no_data, 'Did not receive any data')
         self.assertNotEqual(converter_manager_process.poll(), None)
- 
+
     def test_converter_communication_2(self):  # start 3 forwarder in a chain with 2 i/o each and do "whisper down the lane"
         # Forward receivers with 2 in/out
         converter_manager_process = run_script_in_shell(converter_script_path, self.configs_path[1])
@@ -132,7 +133,7 @@ class TestConverter(unittest.TestCase):
         time.sleep(1.5)
         msg = 'This is a test message'
         msg_2 = 'This is another test message'
- 
+
         sender.send_json(msg)
         time.sleep(1.5)
         no_data = []
@@ -152,12 +153,12 @@ class TestConverter(unittest.TestCase):
                 pass
             no_data.append(no_data_out_1)
             no_data.append(no_data_out_2)
- 
+
         with self.assertRaises(zmq.Again):  # should have no data
             ret_msg = receiver.recv_json(flags=zmq.NOBLOCK)
         with self.assertRaises(zmq.Again):  # should have no data
             ret_msg = receiver_2.recv_json(flags=zmq.NOBLOCK)
- 
+
         sender_2.send_json(msg_2)
         time.sleep(1.5)
         no_data_2 = []
@@ -177,12 +178,12 @@ class TestConverter(unittest.TestCase):
                 pass
             no_data_2.append(no_data_out_1)
             no_data_2.append(no_data_out_2)
- 
+
         with self.assertRaises(zmq.Again):  # should have no data
             ret_msg = receiver.recv_json(flags=zmq.NOBLOCK)
         with self.assertRaises(zmq.Again):  # should have no data
             ret_msg = receiver_2.recv_json(flags=zmq.NOBLOCK)
- 
+
         kill(converter_manager_process)
         time.sleep(0.5)
         receiver.close()
@@ -190,7 +191,7 @@ class TestConverter(unittest.TestCase):
         sender.close()
         sender_2.close()
         context.term()
- 
+
         self.assertTrue(all(item is False for item in no_data), 'Did not receive enough data')
         self.assertTrue(all(item is False for item in no_data_2), 'Did not receive enough data')
         self.assertNotEqual(converter_manager_process.poll(), None)  # check if all processes are closed
