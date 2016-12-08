@@ -8,7 +8,7 @@ import subprocess
 import time
 import os
 import psutil
-from PyQt5.QtGui import QApplication
+from PyQt5.QtWidgets import QApplication
 
 import online_monitor
 from online_monitor import OnlineMonitor
