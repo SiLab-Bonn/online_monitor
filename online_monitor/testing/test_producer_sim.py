@@ -16,8 +16,8 @@ from online_monitor.utils import settings
 package_path = os.path.dirname(online_monitor.__file__)
 
 # Set the producer script path
-producer_sim_script_path = os.path.join(
-    package_path, 'start_producer_sim.py')
+producer_sim_script_path = os.path.join(package_path,
+                                        'start_producer_sim.py')
 
 
 # creates a yaml config describing n_converter of type forwarder that are
@@ -70,9 +70,15 @@ class TestConverter(unittest.TestCase):
             os.path.dirname(__file__), 'tmp_cfg_5_producer.yml')
 
         # Add examples folder to entity search paths
-        settings.add_producer_sim_path(os.path.join(package_path, r'/examples/producer_sim'))
-        settings.add_converter_path(os.path.join(package_path, r'/examples/converter'))
-        settings.add_receiver_path(os.path.join(package_path, r'/examples/receiver'))
+        settings.add_producer_sim_path(os.path.join(package_path,
+                                                    'examples',
+                                                    'producer_sim'))
+        settings.add_converter_path(os.path.join(package_path,
+                                                 'examples',
+                                                 'converter'))
+        settings.add_receiver_path(os.path.join(package_path,
+                                                'examples',
+                                                'receiver'))
 
         # 10 forwarder converters connected in a chain
         with open(cls.config_path, 'w') as outfile:
@@ -114,6 +120,5 @@ class TestConverter(unittest.TestCase):
         self.assertNotEqual(producer_process.poll(), None)
 
 if __name__ == '__main__':
-    # producer_sim_script_path = r'../start_producer_sim.py'
     suite = unittest.TestLoader().loadTestsFromTestCase(TestConverter)
     unittest.TextTestRunner(verbosity=2).run(suite)
