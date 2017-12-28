@@ -14,9 +14,9 @@ class ProducerSimManager(object):
         self.configuration = utils.parse_config_file(configuration)
 
     def _info_output(self, process_infos):
-        info_str = 'INFO: Sytem CPU usage: %1.1f' % psutil.cpu_percent()
+        info_str = 'INFO: Sytem CPU: %1.1f' % psutil.cpu_percent()
         for process_info in process_infos:
-            info_str += ', %s CPU usage: %1.1f ' % (process_info[0], process_info[1].cpu_percent())
+            info_str += ', %s: %1.1f ' % (process_info[0], process_info[1].cpu_percent())
         info_str += '\r'
         sys.stdout.write(info_str)
         sys.stdout.flush()

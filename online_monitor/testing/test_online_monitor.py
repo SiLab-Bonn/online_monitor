@@ -8,18 +8,19 @@ import subprocess
 import time
 import os
 import psutil
-from PyQt4.QtGui import QApplication
+from PyQt5.QtWidgets import QApplication
 
 import online_monitor
 from online_monitor import OnlineMonitor
 from online_monitor.utils import settings
 
 # Get package path
-package_path = os.path.dirname(online_monitor.__file__)  # Get the absoulte path of the online_monitor installation
+# Get the absoulte path of the online_monitor installation
+package_path = os.path.dirname(online_monitor.__file__)
 
 # Set the script paths
-converter_manager_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/online_monitor/start_converter.py'))
-producer_manager_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/online_monitor/start_producer_sim.py'))
+converter_manager_path = os.path.join(package_path, 'start_converter.py')
+producer_manager_path = os.path.join(package_path, 'start_producer_sim.py')
 
 
 # creates a yaml config describing n_converter of type forwarder that are
@@ -74,37 +75,53 @@ def kill(proc):
 
 
 def run_script_in_shell(script, arguments, command=None):
-    return subprocess.Popen("%s %s %s" % ('python' if not command else command, script, arguments), shell=True, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0)
+    return subprocess.Popen("%s %s %s" % ('python' if not command else command, script, arguments),
+                            shell=True,
+                            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0)
 
 
 class TestOnlineMonitor(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # Set the config file path to the test folder, otherwise they are created where nosetests are called
-        cls.config_path = os.path.join(os.path.dirname(__file__), 'tmp_cfg.yml')
+        # Set the config file path to the test folder, otherwise they are
+        # created where nosetests are called
+        cls.config_path = os.path.join(
+            os.path.dirname(__file__), 'tmp_cfg.yml')
         # Add examples folder to entity search paths
-        package_path = os.path.dirname(online_monitor.__file__)  # Get the absoulte path of the online_monitor installation
-        settings.add_producer_sim_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/producer_sim')))
-        settings.add_converter_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/converter')))
-        settings.add_receiver_path(os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(package_path)) + r'/examples/receiver')))
-        
+        # Get the absoulte path of the online_monitor installation
+        package_path = os.path.dirname(online_monitor.__file__)
+        # Add examples folder to entity search paths
+        settings.add_producer_sim_path(os.path.join(package_path,
+                                                    'examples',
+                                                    'producer_sim'))
+        settings.add_converter_path(os.path.join(package_path,
+                                                 'examples',
+                                                 'converter'))
+        settings.add_receiver_path(os.path.join(package_path,
+                                                'examples',
+                                                'receiver'))
+
         with open(cls.config_path, 'w') as outfile:
             config_file = create_config_yaml()
             outfile.write(config_file)
-        # linux CI travis runs headless, thus virtual x server is needed for gui testing
+        # linux CI travis runs headless, thus virtual x server is needed for
+        # gui testing
         if os.getenv('TRAVIS', False):
             from xvfbwrapper import Xvfb
             cls.vdisplay = Xvfb()
             cls.vdisplay.start()
         # Start the simulation producer to create some fake data
-        cls.producer_process = run_script_in_shell(producer_manager_path, cls.config_path)
+        cls.producer_process = run_script_in_shell(
+            producer_manager_path, cls.config_path)
         # Start converter
-        cls.converter_manager_process = run_script_in_shell(converter_manager_path, cls.config_path)
+        cls.converter_manager_process = run_script_in_shell(
+            converter_manager_path, cls.config_path)
         # Create Gui
         time.sleep(2)
         cls.app = QApplication(sys.argv)
-        cls.online_monitor = OnlineMonitor.OnlineMonitorApplication(cls.config_path)
+        cls.online_monitor = OnlineMonitor.OnlineMonitorApplication(
+            cls.config_path)
         time.sleep(2)
 
     @classmethod
@@ -119,11 +136,14 @@ class TestOnlineMonitor(unittest.TestCase):
 
     def test_receiver(self):
         self.app.processEvents()
-        self.assertEqual(len(self.online_monitor.receivers), 2, 'Number of frontends wrong')
+        self.assertEqual(len(self.online_monitor.receivers),
+                         2, 'Number of frontends wrong')
         self.app.processEvents()  # clear event queue
         # activate status widget, no data should be received
         self.online_monitor.tab_widget.setCurrentIndex(0)
-        self.app.processEvents()  # event loop does not run in testss, thus we have to trigger the event queue manually
+        # event loop does not run in testss, thus we have to trigger the event
+        # queue manually
+        self.app.processEvents()
         time.sleep(3)
         self.app.processEvents()
         time.sleep(0.2)
@@ -138,7 +158,7 @@ class TestOnlineMonitor(unittest.TestCase):
         time.sleep(0.2)
         data_received_1 = []
         for receiver in self.online_monitor.receivers:
-            data_received_1.append(receiver.position_img.getHistogram())
+            data_received_1.append(receiver.position_img.getHistogram(step=1))
         # activate DUT widget, receiver 2 should show data
         self.online_monitor.tab_widget.setCurrentIndex(2)
         self.app.processEvents()
@@ -147,7 +167,9 @@ class TestOnlineMonitor(unittest.TestCase):
         time.sleep(0.2)
         data_received_2 = []
         for receiver in self.online_monitor.receivers:
-            data_received_2.append(receiver.position_img.getHistogram())
+            # Step has to be given to preven issue
+            # https://github.com/pyqtgraph/pyqtgraph/issues/469
+            data_received_2.append(receiver.position_img.getHistogram(step=1))
 
         self.assertListEqual(data_received_0, [(None, None), (None, None)])
         self.assertTrue(data_received_1[0][0] is not None)
@@ -156,10 +178,9 @@ class TestOnlineMonitor(unittest.TestCase):
 
     # start 10 forwarder in a chain and do "whisper down the lane"
     def test_ui(self):
-        self.assertEqual(self.online_monitor.tab_widget.count(), 3, 'Number of tab widgets wrong')  # 2 receiver + status widget expected
+        self.assertEqual(self.online_monitor.tab_widget.count(),
+                         3, 'Number of tab widgets wrong')  # 2 receiver + status widget expected
 
 if __name__ == '__main__':
-    producer_manager_path = r'../start_producer_sim.py'
-    converter_manager_path = r'../start_converter.py'
     suite = unittest.TestLoader().loadTestsFromTestCase(TestOnlineMonitor)
     unittest.TextTestRunner(verbosity=2).run(suite)

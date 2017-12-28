@@ -9,7 +9,13 @@ import sys
 import numpy as np
 from importlib import import_module
 from inspect import getmembers, isclass
+from array import *
+import struct
 
+if sys.version_info < (3, 0):
+    import cPickle as pickle
+else:
+    import pickle as pickle
 
 import imp  # Only available in python 2
 
@@ -179,3 +185,43 @@ def json_numpy_obj_hook(dct):
         return np.frombuffer(data, dtype).reshape(dct['shape'])
 
     return dct
+
+
+def simple_enc(data=None, meta={}):
+
+    data_buffer = array('B', [])
+
+    if data is not None:
+        meta['data_meta'] = {'dtype': data.dtype, 'shape': data.shape}
+        data_buffer.fromstring(data.data)
+
+    meta_json = pickle.dumps(meta)
+    meta_json_buffer = array('B', [])
+    meta_json_buffer.fromstring(meta_json)
+
+    meta_len = len(meta_json)
+
+    meta_len_byte = struct.unpack("4B", struct.pack("I", meta_len))
+
+    data_buffer.extend(meta_json_buffer)
+    data_buffer.extend(meta_len_byte)
+
+    return data_buffer
+
+
+def simple_dec(data_buffer):
+
+    len_buffer = data_buffer[-4:]
+    length = struct.unpack("I", len_buffer)[0]
+
+    meta = pickle.loads(data_buffer[-4 - length:-4])
+
+    if 'data_meta' in meta:
+        dtype = meta['data_meta']['dtype']
+        shape = meta['data_meta']['shape']
+        data = np.frombuffer(data_buffer[:-4 - length], dtype).reshape(shape)
+    else:
+        data = None
+
+    return data, meta
+

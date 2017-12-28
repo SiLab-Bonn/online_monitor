@@ -1,11 +1,11 @@
-''' Example how to define a receiver that sends a command (threshold value) to a covnerter '''
+''' Example how to define a receiver that sends a command (threshold value) to a converter '''
 from online_monitor.receiver.receiver import Receiver
 from zmq.utils import jsonapi
 
 import pyqtgraph as pg
 from pyqtgraph.dockarea import DockArea, Dock
 
-from PyQt4 import Qt
+from PyQt5 import Qt
 from pyqtgraph.Qt import QtGui
 
 
