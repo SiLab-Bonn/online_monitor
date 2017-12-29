@@ -10,7 +10,7 @@ import numpy as np
 from importlib import import_module
 from inspect import getmembers, isclass
 import struct
-import array
+from array import *
 
 if sys.version_info < (3, 0):
     import cPickle as pickle
