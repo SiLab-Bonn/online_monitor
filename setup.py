@@ -38,6 +38,8 @@ setup(
             # starts the online monitor application + converters + producer
             # simulation defined on the configuration.yaml
             'start_online_monitor = online_monitor.start_online_monitor:main',
+            # Helper function to clean up crashed instances
+            'stop_online_monitor = online_monitor.stop_online_monitor:main',
         ]
     },
     platforms='any'
