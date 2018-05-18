@@ -68,5 +68,6 @@ def main():
     win.show()
     sys.exit(appExec())
 
+
 if __name__ == '__main__':
     main()

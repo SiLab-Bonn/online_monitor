@@ -47,8 +47,8 @@ class Transceiver(multiprocessing.Process):
     kind : str
         String describing the kind of converter (e.g. forwarder)
     max_buffer : number
-        Maximum CPU load of the conversion process in percent.
-        Otherwise data is discarded to drop below max_buffer.
+        Maximum messages buffered for interpretation, if exeeded
+        data is discarded. If None no limit is applied.
     loglevel : str
         The verbosity level for the logging (e.g. INFO, WARNING)
     '''
@@ -60,7 +60,7 @@ class Transceiver(multiprocessing.Process):
         self.kind = kind  # kind of transeiver (e.g. forwarder)
         self.frontend_address = frontend  # socket facing a data publisher
         self.backend_address = backend  # socket facing a data receiver
-        # Maximum CPU load allowed, otherwise data omitted
+        # Maximum number of input messages buffered, otherwise data omitted
         self.max_buffer = max_buffer
         self.name = name  # name of the DAQ/device
         # Std. setting is unidirectional frondend communication
@@ -225,19 +225,15 @@ class Transceiver(multiprocessing.Process):
             # cpu load spikes can be filtered away since data queues up
             # through ZMQ
             self.cpu_load = 0.90 * self.cpu_load + 0.1 * actual_cpu_load
-            # Check if already too much CPU is used by the conversion
-            # then omit data
-            if not self.max_buffer or self.cpu_load < self.max_buffer:
+            # Check if already too many messages queued up then omit data
+            if not self.max_buffer or self.max_buffer < self.raw_data.qsize():
                 data = self.interpret_data(raw_data)
                 # Data is None if the data cannot be converted
                 # (e.g. is incomplete, broken, etc.)
                 if data is not None and len(data) != 0:
                     self.send_data(data)
             else:
-                logging.warning('CPU load of %s converter %s is with '
-                                '%1.2f > %1.2f too high, omit data!',
-                                self.kind, self.name, self.cpu_load,
-                                self.max_buffer)
+                logging.warning('Converter cannot keep up, omitting data for interpretation!')
 
         self.be_stop.set()
         be_thread.join()
