@@ -104,13 +104,13 @@ class TestConverter(unittest.TestCase):
         for config_path in cls.configs_path:
             os.remove(config_path)
 
-    # start 10 forwarder in a chain and do "whisper down the lane"
     def test_converter_communication(self):
+        ''' Start 10 forwarder in a chain and do "whisper down the lane '''
         # Forward receivers with single in/out
         converter_manager_process = run_script_in_shell(
             converter_script_path, self.configs_path[0])
         # 10 converter in 10 processes + ZMQ thread take time to start up
-        time.sleep(1.5)
+        time.sleep(4.5)
         no_data = True  # flag set to False if data is received
         context = zmq.Context()
         # Socket facing last converter
@@ -122,10 +122,10 @@ class TestConverter(unittest.TestCase):
         receiver.connect(r'tcp://127.0.0.1:5510')
         # do not filter any data
         receiver.setsockopt_string(zmq.SUBSCRIBE, u'')
-        time.sleep(1.5)
+        time.sleep(4.5)
         msg = 'This is a test message'
         sender.send_json(msg)
-        time.sleep(1.5)
+        time.sleep(4.5)
         try:
             ret_msg = receiver.recv_json(flags=zmq.NOBLOCK)
             no_data = False
@@ -141,14 +141,13 @@ class TestConverter(unittest.TestCase):
         self.assertFalse(no_data, 'Did not receive any data')
         self.assertNotEqual(converter_manager_process.poll(), None)
 
-    # start 3 forwarder in a chain with 2 i/o each and do "whisper down the
-    # lane"
     def test_converter_communication_2(self):
+        ''' Start 3 forwarder in a chain with 2 i/o each and do "whisper down the lane" '''
         # Forward receivers with 2 in/out
         converter_manager_process = run_script_in_shell(
             converter_script_path, self.configs_path[1])
         # 10 converter in 10 processes + ZMQ thread take time to start up
-        time.sleep(1.5)
+        time.sleep(4.5)
         context = zmq.Context()
         # Sockets facing last converter inputs
         # publish data where first transveiver listens to
@@ -166,7 +165,7 @@ class TestConverter(unittest.TestCase):
         receiver_2.connect(r'tcp://127.0.0.1:5603')
         # do not filter any data
         receiver_2.setsockopt_string(zmq.SUBSCRIBE, u'')
-        time.sleep(1.5)
+        time.sleep(4.5)
         msg = 'This is a test message'
         msg_2 = 'This is another test message'
 
@@ -199,7 +198,7 @@ class TestConverter(unittest.TestCase):
             ret_msg = receiver_2.recv_json(flags=zmq.NOBLOCK)
 
         sender_2.send_json(msg_2)
-        time.sleep(1.5)
+        time.sleep(4.5)
         no_data_2 = []
         for _ in range(4):
             # flag set to False if data is received
