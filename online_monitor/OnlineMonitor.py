@@ -170,5 +170,6 @@ def main():  # pragma: no cover, cannot be tested in unittests due to qt event l
     win.show()
     sys.exit(app.exec_())
 
+
 if __name__ == '__main__':
     main()  # pragma: no cover, cannot be tested in unittests due to qt event loop
