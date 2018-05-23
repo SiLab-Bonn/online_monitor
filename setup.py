@@ -44,3 +44,22 @@ setup(
     },
     platforms='any'
 )
+
+# FIXME: bad practice to put code into setup.py
+# Add the online_monitor bdaq53 plugins
+try:
+    import online_monitor
+    import os
+    from online_monitor.utils import settings
+    # Get the absoulte path of this package
+    package_path = os.path.dirname(online_monitor.__file__)
+    # Add online_monitor plugin folder to entity search paths
+    settings.add_producer_sim_path(os.path.join(package_path,
+                                                'utils'))
+    settings.add_converter_path(os.path.join(package_path,
+                                             'converter'))
+    settings.add_receiver_path(os.path.join(package_path,
+                                            'receiver'))
+except ImportError:
+    pass
+
