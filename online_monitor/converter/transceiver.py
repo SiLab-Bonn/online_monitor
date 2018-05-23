@@ -136,7 +136,7 @@ class Transceiver(multiprocessing.Process):
             actual_backend[1].set_hwm(10)
             actual_backend[1].bind(actual_backend_address)
             self.backends.append(actual_backend)
-            if self.backend_socket_type == zmq.DEALER:
+            if self.backend_socket_type != zmq.DEALER:
                 self.be_poller.register(actual_backend[1], zmq.POLLIN)
         self.be_stop = threading.Event()
 
@@ -170,7 +170,7 @@ class Transceiver(multiprocessing.Process):
 
     def recv_commands(self):
         if self.backend_socket_type == zmq.DEALER:
-            while not self.be_stop.is_set():
+            while not self.be_stop.wait(0.1):
                 self.be_poller.poll(1)  # max block 1 ms
                 commands = []
                 # Check for bidirectional communication
@@ -226,7 +226,7 @@ class Transceiver(multiprocessing.Process):
             # through ZMQ
             self.cpu_load = 0.90 * self.cpu_load + 0.1 * actual_cpu_load
             # Check if already too many messages queued up then omit data
-            if not self.max_buffer or self.max_buffer < self.raw_data.qsize():
+            if not self.max_buffer or self.max_buffer > self.raw_data.qsize():
                 data = self.interpret_data(raw_data)
                 # Data is None if the data cannot be converted
                 # (e.g. is incomplete, broken, etc.)
