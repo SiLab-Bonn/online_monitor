@@ -10,7 +10,6 @@ import zmq
 import psutil
 
 import online_monitor
-from online_monitor.utils import settings
 
 # Get the absoulte path of the online_monitor installation
 package_path = os.path.dirname(online_monitor.__file__)
@@ -68,17 +67,6 @@ class TestConverter(unittest.TestCase):
         # created where nosetests are called
         cls.config_path = os.path.join(
             os.path.dirname(__file__), 'tmp_cfg_5_producer.yml')
-
-        # Add examples folder to entity search paths
-        settings.add_producer_sim_path(os.path.join(package_path,
-                                                    'examples',
-                                                    'producer_sim'))
-        settings.add_converter_path(os.path.join(package_path,
-                                                 'examples',
-                                                 'converter'))
-        settings.add_receiver_path(os.path.join(package_path,
-                                                'examples',
-                                                'receiver'))
 
         # 10 forwarder converters connected in a chain
         with open(cls.config_path, 'w') as outfile:

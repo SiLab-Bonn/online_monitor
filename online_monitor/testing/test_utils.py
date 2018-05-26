@@ -9,8 +9,7 @@ import json
 
 from testfixtures import log_capture
 
-import online_monitor
-from online_monitor.utils import utils, settings, producer_sim
+from online_monitor.utils import utils, producer_sim
 from online_monitor.converter.transceiver import Transceiver
 from online_monitor.receiver.receiver import Receiver
 
@@ -37,19 +36,6 @@ class TestUtils(unittest.TestCase):
         # created where nosetests are called
         cls.config_path = os.path.join(os.path.dirname(__file__),
                                        'tmp_cfg_10_converter.yml')
-        # Get the absoulte path of the online_monitor installation
-        package_path = os.path.dirname(online_monitor.__file__)
-
-        # Add examples folder to entity search paths
-        settings.add_producer_sim_path(os.path.join(package_path,
-                                                    'examples',
-                                                    'producer_sim'))
-        settings.add_converter_path(os.path.join(package_path,
-                                                 'examples',
-                                                 'converter'))
-        settings.add_receiver_path(os.path.join(package_path,
-                                                'examples',
-                                                'receiver'))
 
         cls.configuration = create_forwarder_config_yaml(10)
         with open(cls.config_path, 'w') as outfile:
@@ -136,6 +122,7 @@ class TestUtils(unittest.TestCase):
                                 **{'backend': '0',
                                    'kind': 'example_producer_sim',
                                    'name': 'DUT'})
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestUtils)

@@ -254,6 +254,7 @@ class TestConverter(unittest.TestCase):
             # check if all processes are closed
             self.assertNotEqual(converter_manager_process.poll(), None)
 
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestConverter)
     unittest.TextTestRunner(verbosity=2).run(suite)
