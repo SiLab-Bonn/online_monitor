@@ -1,6 +1,5 @@
 import json
 import numpy as np
-import logging
 
 from online_monitor.utils import utils
 from online_monitor.converter.transceiver import Transceiver
