@@ -44,7 +44,7 @@ script:
   - nosetests --with-coverage --cover-package=online_monitor
 
 after_success:
-- coveralls
+  - coveralls --data_file .coverage.*
 
 deploy:
   provider: pypi
