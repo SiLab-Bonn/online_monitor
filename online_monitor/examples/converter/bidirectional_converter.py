@@ -12,7 +12,7 @@ class ExampleConverter(Transceiver):
         self.set_bidirectional_communication()  # Sets bidirectional communication
         self.threshold = 0
 
-    def deserialze_data(self, data):
+    def deserialize_data(self, data):
         return json.loads(data, object_hook=utils.json_numpy_obj_hook)
 
     def interpret_data(self, data):  # apply a threshold to the data
@@ -24,7 +24,7 @@ class ExampleConverter(Transceiver):
         if np.any(position_with_thr):  # only return data if any position info is above threshold
             return [data_with_threshold]
 
-    def serialze_data(self, data):
+    def serialize_data(self, data):
         return json.dumps(data, cls=utils.NumpyEncoder)
 
     def handle_command(self, command):

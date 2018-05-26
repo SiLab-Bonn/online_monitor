@@ -32,14 +32,12 @@ def create_config_yaml():
         'kind': 'example_converter',
         'frontend': 'tcp://127.0.0.1:6500',
         'backend': 'tcp://127.0.0.1:6600',
-        'max_cpu_load': None,
         'threshold': 8
     }
     devices['DUT1'] = {
         'kind': 'forwarder',
         'frontend': 'tcp://127.0.0.1:6600',
         'backend': 'tcp://127.0.0.1:6601',
-        'max_cpu_load': None
     }
     conf['converter'] = devices
     # Add receiver

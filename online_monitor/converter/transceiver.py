@@ -10,8 +10,6 @@ try:
     import queue as queue
 except ImportError:  # python 2
     import Queue as queue
-    
-import numpy as np
 
 
 from online_monitor.utils import utils
@@ -30,9 +28,9 @@ class Transceiver(multiprocessing.Process):
     To specify a converter for a certain data type, inherit from this base
     class and define these methods accordingly:
         - setup_interpretation()
-        - deserialze_data()
+        - deserialize_data()
         - interpret_data()
-        - serialze_data()
+        - serialize_data()
 
     New methods/objects that are not called/created within these function will
     not work! Since a new process is created that only knows the objects
@@ -67,6 +65,10 @@ class Transceiver(multiprocessing.Process):
         self.frontend_socket_type = zmq.SUB
         # Std. setting is unidirectional backend communication
         self.backend_socket_type = zmq.PUB
+
+        if 'max_cpu_load' in kwarg:
+            logging.warning('The parameter max_cpu_load is deprecated! Use max_buffer!')
+
         self.config = kwarg
 
         # Determine how many frontends/backends the converter has
@@ -162,7 +164,7 @@ class Transceiver(multiprocessing.Process):
                     if sys.version_info >= (3, 0):
                         actual_raw_data = actual_raw_data.decode('utf-8')
                     raw_data.append((actual_frontend[0],
-                                     self.deserialze_data(actual_raw_data)))
+                                     self.deserialize_data(actual_raw_data)))
                 except zmq.Again:  # no data
                     pass
             if raw_data:
@@ -193,7 +195,7 @@ class Transceiver(multiprocessing.Process):
             Std. function is to broadcast all receiver data to all backends
         '''
         for frontend_data in data:
-            serialized_data = self.serialze_data(frontend_data)
+            serialized_data = self.serialize_data(frontend_data)
             if sys.version_info >= (3, 0):
                 serialized_data = serialized_data.encode('utf-8')
             for actual_backend in self.backends:
@@ -265,7 +267,7 @@ class Transceiver(multiprocessing.Process):
         # once at the beginning
         pass
 
-    def deserialze_data(self, data):
+    def deserialize_data(self, data):
         return data
 
     def interpret_data(self, data):
@@ -277,7 +279,7 @@ class Transceiver(multiprocessing.Process):
         raise NotImplementedError("You have to implement a interpret_data "
                                   "method!")
 
-    def serialze_data(self, data):
+    def serialize_data(self, data):
         return data
 
     def handle_command(self, commands):

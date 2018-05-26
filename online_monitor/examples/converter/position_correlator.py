@@ -6,7 +6,7 @@ from online_monitor.utils import utils
 
 class PositionCorrelator(Correlator):
 
-    def deserialze_data(self, data):
+    def deserialize_data(self, data):
         return json.loads(data, object_hook=utils.json_numpy_obj_hook)
 
     def setup_interpretation(self):
