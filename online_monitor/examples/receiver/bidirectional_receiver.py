@@ -48,7 +48,7 @@ class ExampleReceiver(Receiver):
 
         self.spin_box.valueChanged.connect(lambda value: self.send_command(str(value)))
 
-    def deserialze_data(self, data):
+    def deserialize_data(self, data):
         return jsonapi.loads(data, object_hook=utils.json_numpy_obj_hook)
 
     def handle_data(self, data):

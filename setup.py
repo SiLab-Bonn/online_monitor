@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-version = '0.3.1'
+version = '0.4.0'
 author = 'David-Leon Pohl'
 author_email = 'pohl@physik.uni-bonn.de'
 
@@ -38,7 +38,30 @@ setup(
             # starts the online monitor application + converters + producer
             # simulation defined on the configuration.yaml
             'start_online_monitor = online_monitor.start_online_monitor:main',
+            # Helper function to clean up crashed instances
+            'stop_online_monitor = online_monitor.stop_online_monitor:main',
         ]
     },
     platforms='any'
 )
+
+# FIXME: bad practice to put code into setup.py
+# Add the online_monitor bdaq53 plugins
+try:
+    import online_monitor
+    import os
+    from online_monitor.utils import settings
+    # Get the absoulte path of this package
+    package_path = os.path.dirname(online_monitor.__file__)
+    # Add online_monitor plugin folder to entity search paths
+    settings.add_producer_sim_path(os.path.join(package_path, 'utils'))
+    settings.add_converter_path(os.path.join(package_path, 'converter'))
+    settings.add_receiver_path(os.path.join(package_path, 'receiver'))
+
+    # Add example online_monitor plugins to entity search paths
+    settings.add_producer_sim_path(os.path.join(package_path, 'examples', 'producer_sim'))
+    settings.add_converter_path(os.path.join(package_path, 'examples', 'converter'))
+    settings.add_receiver_path(os.path.join(package_path, 'examples', 'receiver'))
+except ImportError:
+    pass
+

@@ -1,0 +1,6 @@
+''' To open the online monitor using all example entities shown here, that are
+    simulation producer, converter, and receiver
+    open a terminal, go to this folder and type:
+
+    start_online_monitor configuration.yaml
+'''

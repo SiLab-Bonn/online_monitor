@@ -29,7 +29,6 @@ def create_forwarder_config_yaml(n_converter, bidirectional=False, one_io=True):
                 'kind': 'forwarder',
                 'frontend': 'tcp://127.0.0.1:55%02d' % index,
                 'backend': 'tcp://127.0.0.1:55%02d' % (index + 1),
-                'max_cpu_load': None,
                 'connection': 'bidirectional' if bidirectional else 'unidirectional'
             }
     else:  # 2 / 2 incoming/outgoing connections
@@ -40,7 +39,6 @@ def create_forwarder_config_yaml(n_converter, bidirectional=False, one_io=True):
                              'tcp://127.0.0.1:56%02d' % index],
                 'backend': ['tcp://127.0.0.1:55%02d' % (index + 1),
                             'tcp://127.0.0.1:56%02d' % (index + 1)],
-                'max_cpu_load': None,
                 'connection': 'bidirectional' if bidirectional else 'unidirectional'
             }
     conf['converter'] = devices
@@ -104,13 +102,13 @@ class TestConverter(unittest.TestCase):
         for config_path in cls.configs_path:
             os.remove(config_path)
 
-    # start 10 forwarder in a chain and do "whisper down the lane"
     def test_converter_communication(self):
+        ''' Start 10 forwarder in a chain and do "whisper down the lane '''
         # Forward receivers with single in/out
         converter_manager_process = run_script_in_shell(
             converter_script_path, self.configs_path[0])
         # 10 converter in 10 processes + ZMQ thread take time to start up
-        time.sleep(1.5)
+        time.sleep(4.5)
         no_data = True  # flag set to False if data is received
         context = zmq.Context()
         # Socket facing last converter
@@ -122,10 +120,10 @@ class TestConverter(unittest.TestCase):
         receiver.connect(r'tcp://127.0.0.1:5510')
         # do not filter any data
         receiver.setsockopt_string(zmq.SUBSCRIBE, u'')
-        time.sleep(1.5)
+        time.sleep(4.5)
         msg = 'This is a test message'
         sender.send_json(msg)
-        time.sleep(1.5)
+        time.sleep(4.5)
         try:
             ret_msg = receiver.recv_json(flags=zmq.NOBLOCK)
             no_data = False
@@ -141,14 +139,13 @@ class TestConverter(unittest.TestCase):
         self.assertFalse(no_data, 'Did not receive any data')
         self.assertNotEqual(converter_manager_process.poll(), None)
 
-    # start 3 forwarder in a chain with 2 i/o each and do "whisper down the
-    # lane"
     def test_converter_communication_2(self):
+        ''' Start 3 forwarder in a chain with 2 i/o each and do "whisper down the lane" '''
         # Forward receivers with 2 in/out
         converter_manager_process = run_script_in_shell(
             converter_script_path, self.configs_path[1])
         # 10 converter in 10 processes + ZMQ thread take time to start up
-        time.sleep(1.5)
+        time.sleep(4.5)
         context = zmq.Context()
         # Sockets facing last converter inputs
         # publish data where first transveiver listens to
@@ -166,7 +163,7 @@ class TestConverter(unittest.TestCase):
         receiver_2.connect(r'tcp://127.0.0.1:5603')
         # do not filter any data
         receiver_2.setsockopt_string(zmq.SUBSCRIBE, u'')
-        time.sleep(1.5)
+        time.sleep(4.5)
         msg = 'This is a test message'
         msg_2 = 'This is another test message'
 
@@ -199,7 +196,7 @@ class TestConverter(unittest.TestCase):
             ret_msg = receiver_2.recv_json(flags=zmq.NOBLOCK)
 
         sender_2.send_json(msg_2)
-        time.sleep(1.5)
+        time.sleep(4.5)
         no_data_2 = []
         for _ in range(4):
             # flag set to False if data is received
@@ -240,100 +237,8 @@ class TestConverter(unittest.TestCase):
         self.assertNotEqual(converter_manager_process.poll(), None)
 
     @unittest.skip('Not implemented yet')
-    # start 3 forwarder in a chain with 2 i/o each and do "whisper down the
-    # lane"
     def test_converter_bidirectional_communication(self):
-        # Forward receivers with 2 in/out
-        converter_manager_process = run_script_in_shell(
-            converter_script_path, self.configs_path[2])
-        # 10 converter in 10 processes + ZMQ thread take time to start up
-        time.sleep(1.5)
-        context = zmq.Context()
-        # Sockets facing last converter inputs
-        # publish data where first transveiver listens to
-        sender = context.socket(zmq.REQ)
-        sender.bind(r'tcp://127.0.0.1:5500')
-        # publish data where first transveiver 2nd input listens to
-        sender_2 = context.socket(zmq.REQ)
-        sender_2.bind(r'tcp://127.0.0.1:5600')
-        # subscriber to the last transveiver in the chain
-        receiver = context.socket(zmq.REP)
-        receiver.connect(r'tcp://127.0.0.1:5503')
-        # subscriber to the last transveiver in the chain
-        receiver_2 = context.socket(zmq.REP)
-        receiver_2.connect(r'tcp://127.0.0.1:5603')
-        time.sleep(1.5)
-        msg = 'This is a test message'
-        msg_2 = 'This is another test message'
-
-        sender.send_json(msg)
-        time.sleep(1.5)
-        no_data = []
-        # forwarder forwards all inputs to all outputs; for 3 forwarder in a
-        # chain with 2 i/o each you expect 2**3 times the input message
-        for _ in range(4):
-            # flag set to False if data is received
-            no_data_out_1, no_data_out_2 = True, True
-            try:
-                ret_msg = receiver.recv_json(flags=zmq.NOBLOCK)
-                no_data_out_1 = False
-                self.assertEqual(msg, ret_msg)
-            except zmq.Again:
-                pass
-            try:
-                ret_msg = receiver_2.recv_json(flags=zmq.NOBLOCK)
-                no_data_out_2 = False
-                self.assertEqual(msg, ret_msg)
-            except zmq.Again:
-                pass
-            no_data.append(no_data_out_1)
-            no_data.append(no_data_out_2)
-
-        with self.assertRaises(zmq.Again):  # should have no data
-            ret_msg = receiver.recv_json(flags=zmq.NOBLOCK)
-        with self.assertRaises(zmq.Again):  # should have no data
-            ret_msg = receiver_2.recv_json(flags=zmq.NOBLOCK)
-
-        sender_2.send_json(msg_2)
-        time.sleep(1.5)
-        no_data_2 = []
-        for _ in range(4):
-            # flag set to False if data is received
-            no_data_out_1, no_data_out_2 = True, True
-            try:
-                ret_msg = receiver.recv_json(flags=zmq.NOBLOCK)
-                no_data_out_1 = False
-                self.assertEqual(msg_2, ret_msg)
-            except zmq.Again:  # pragma: no cover
-                pass
-            try:
-                ret_msg = receiver_2.recv_json(flags=zmq.NOBLOCK)
-                no_data_out_2 = False
-                self.assertEqual(msg_2, ret_msg)
-            except zmq.Again:  # pragma: no cover
-                pass
-            no_data_2.append(no_data_out_1)
-            no_data_2.append(no_data_out_2)
-
-        with self.assertRaises(zmq.Again):  # should have no data
-            ret_msg = receiver.recv_json(flags=zmq.NOBLOCK)
-        with self.assertRaises(zmq.Again):  # should have no data
-            ret_msg = receiver_2.recv_json(flags=zmq.NOBLOCK)
-
-        kill(converter_manager_process)
-        time.sleep(0.5)
-        receiver.close()
-        receiver_2.close()
-        sender.close()
-        sender_2.close()
-        context.term()
-
-        self.assertTrue(
-            all(item is False for item in no_data), 'Did not receive enough data')
-        self.assertTrue(
-            all(item is False for item in no_data_2), 'Did not receive enough data')
-        # check if all processes are closed
-        self.assertNotEqual(converter_manager_process.poll(), None)
+        pass
 
     @unittest.skipIf(os.name == 'nt', "Test requires to send CRTL event; That is difficult under windows.")
     # test the setup and close of converter processes handled by the converter
@@ -348,6 +253,7 @@ class TestConverter(unittest.TestCase):
             time.sleep(2.0)
             # check if all processes are closed
             self.assertNotEqual(converter_manager_process.poll(), None)
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestConverter)

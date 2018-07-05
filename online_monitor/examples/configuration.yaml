@@ -10,20 +10,26 @@ producer_sim :
         backend : tcp://127.0.0.1:5501
 
 converter :
-    DUT0 :
+    CON0 :
         kind : example_converter
         frontend : tcp://127.0.0.1:5500
         backend : tcp://127.0.0.1:5600
         threshold : 8
-    DUT1 :
+    CON1 :
         kind : forwarder
         frontend : tcp://127.0.0.1:5500
         backend : tcp://127.0.0.1:5601
         max_cpu_load : 30
-    DUT2 :
+    CON2 :
         kind : bidirectional_converter
         frontend : tcp://127.0.0.1:5500
-        backend : tcp://127.0.0.1:5602       
+        backend : tcp://127.0.0.1:5602
+    CON3 :
+        kind : position_correlator
+        frontend :
+          - tcp://127.0.0.1:5500
+          - tcp://127.0.0.1:5501
+        backend : tcp://127.0.0.1:5603   
 
 
 receiver :

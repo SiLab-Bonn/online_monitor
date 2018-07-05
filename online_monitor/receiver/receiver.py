@@ -10,9 +10,9 @@ class DataWorker(QtCore.QObject):
     data = QtCore.pyqtSignal(dict)
     finished = QtCore.pyqtSignal()
 
-    def __init__(self, deserialzer):
+    def __init__(self, deserializer):
         QtCore.QObject.__init__(self)
-        self.deserialzer = deserialzer
+        self.deserializer = deserializer
         self._stop_readout = Event()
         self._send_data = None
 
@@ -40,7 +40,7 @@ class DataWorker(QtCore.QObject):
                 self._send_data = None
             try:
                 data_serialized = self.receiver.recv(flags=zmq.NOBLOCK)
-                data = self.deserialzer(data_serialized)
+                data = self.deserializer(data_serialized)
                 self.data.emit(data)
             except zmq.Again:
                 pass
@@ -61,12 +61,10 @@ class Receiver(QtCore.QObject):
     Usage:
     '''
 
-    def __init__(self, frontend, kind, name='Undefined', max_cpu_load=100,
-                 loglevel='INFO', **kwarg):
+    def __init__(self, frontend, kind, name='Undefined', loglevel='INFO', **kwarg):
         QtCore.QObject.__init__(self)
         self.kind = kind
         self.frontend_address = frontend
-        self.max_cpu_load = max_cpu_load
         self.name = name  # name of the DAQ/device
         self.config = kwarg
         # Flag to tell receiver if its active (viewed int the foreground)
@@ -91,7 +89,7 @@ class Receiver(QtCore.QObject):
                      self.frontend_address)
         self.thread = QtCore.QThread()  # no parent
 
-        self.worker = DataWorker(self.deserialze_data)  # no parent
+        self.worker = DataWorker(self.deserialize_data)  # no parent
         # move worker instance to new thread
         self.worker.moveToThread(self.thread)
 
@@ -153,7 +151,7 @@ class Receiver(QtCore.QObject):
     def send_command(self, command):
         self.worker.send_data(command)
 
-    def deserialze_data(self, data):
+    def deserialize_data(self, data):
         ''' Has to convert the data do a python dict '''
-        raise NotImplementedError('You have to implement a deserialze_data '
+        raise NotImplementedError('You have to implement a deserialize_data '
                                   'method. Look at the examples!')

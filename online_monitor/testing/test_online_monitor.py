@@ -12,7 +12,6 @@ from PyQt5.QtWidgets import QApplication
 
 import online_monitor
 from online_monitor import OnlineMonitor
-from online_monitor.utils import settings
 
 # Get package path
 # Get the absoulte path of the online_monitor installation
@@ -42,14 +41,12 @@ def create_config_yaml():
         'kind': 'example_converter',
         'frontend': 'tcp://127.0.0.1:6500',
         'backend': 'tcp://127.0.0.1:6600',
-        'max_cpu_load': None,
         'threshold': 8
     }
     devices['DUT1'] = {
         'kind': 'forwarder',
         'frontend': 'tcp://127.0.0.1:6600',
         'backend': 'tcp://127.0.0.1:6601',
-        'max_cpu_load': None
     }
     conf['converter'] = devices
     # Add receiver
@@ -88,19 +85,6 @@ class TestOnlineMonitor(unittest.TestCase):
         # created where nosetests are called
         cls.config_path = os.path.join(
             os.path.dirname(__file__), 'tmp_cfg.yml')
-        # Add examples folder to entity search paths
-        # Get the absoulte path of the online_monitor installation
-        package_path = os.path.dirname(online_monitor.__file__)
-        # Add examples folder to entity search paths
-        settings.add_producer_sim_path(os.path.join(package_path,
-                                                    'examples',
-                                                    'producer_sim'))
-        settings.add_converter_path(os.path.join(package_path,
-                                                 'examples',
-                                                 'converter'))
-        settings.add_receiver_path(os.path.join(package_path,
-                                                'examples',
-                                                'receiver'))
 
         with open(cls.config_path, 'w') as outfile:
             config_file = create_config_yaml()
