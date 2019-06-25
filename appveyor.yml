@@ -6,10 +6,9 @@ environment:
     WITH_COMPILER: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_compiler.cmd"
   matrix:
     - PYTHON: 2.7
-    - PYTHON: 3.5
+    - PYTHON: 3.7
 
 platform:
-  - x86
   - x64
   
 os: unstable  # add desktop support
