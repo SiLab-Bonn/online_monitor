@@ -1,6 +1,5 @@
 import time
 import numpy as np
-import logging
 
 from online_monitor.utils.producer_sim import ProducerSim
 from online_monitor.utils import utils
