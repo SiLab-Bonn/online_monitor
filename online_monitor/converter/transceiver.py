@@ -4,7 +4,6 @@ import zmq
 import logging
 import signal
 import psutil
-import sys
 
 try:
     import queue as queue
@@ -160,9 +159,6 @@ class Transceiver(multiprocessing.Process):
             for actual_frontend in self.frontends:
                 try:
                     actual_raw_data = actual_frontend[1].recv(flags=zmq.NOBLOCK)
-                    # http://stackoverflow.com/questions/24369666/typeerror-b1-is-not-json-serializable
-                    if sys.version_info >= (3, 0):
-                        actual_raw_data = actual_raw_data.decode('utf-8')
                     raw_data.append((actual_frontend[0],
                                      self.deserialize_data(actual_raw_data)))
                 except zmq.Again:  # no data
@@ -180,7 +176,7 @@ class Transceiver(multiprocessing.Process):
                     for actual_backend in self.backends:
                         try:
                             # Check if command was send
-                            command = actual_backend[1].recv(zmq.NOBLOCK)
+                            command = actual_backend[1].recv_json(zmq.NOBLOCK)
                             logging.debug("%s converter %s received command %s",
                                           self.kind, self.name, command)
                             commands.append(command)
@@ -196,8 +192,6 @@ class Transceiver(multiprocessing.Process):
         '''
         for frontend_data in data:
             serialized_data = self.serialize_data(frontend_data)
-            if sys.version_info >= (3, 0):
-                serialized_data = serialized_data.encode('utf-8')
             for actual_backend in self.backends:
                 actual_backend[1].send(serialized_data)
 
@@ -268,7 +262,9 @@ class Transceiver(multiprocessing.Process):
         pass
 
     def deserialize_data(self, data):
-        return data
+        ''' To be overwritten when custom serialization is used
+        '''
+        return zmq.utils.jsonapi.loads(data, object_hook=utils.json_numpy_obj_hook)
 
     def interpret_data(self, data):
         # Data is a list of tuples, with the input address in the first place
@@ -280,7 +276,9 @@ class Transceiver(multiprocessing.Process):
                                   "method!")
 
     def serialize_data(self, data):
-        return data
+        ''' To be overwritten when object needs custom serialization
+        '''
+        return zmq.utils.jsonapi.dumps(data, cls=utils.NumpyEncoder)
 
     def handle_command(self, commands):
         ''' Command received from a receiver (bidir. commun. mode).'''
