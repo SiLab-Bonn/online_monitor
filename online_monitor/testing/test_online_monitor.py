@@ -165,6 +165,7 @@ class TestOnlineMonitor(unittest.TestCase):
         self.assertEqual(self.online_monitor.tab_widget.count(),
                          3, 'Number of tab widgets wrong')  # 2 receiver + status widget expected
 
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestOnlineMonitor)
     unittest.TextTestRunner(verbosity=2).run(suite)
