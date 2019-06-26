@@ -107,6 +107,7 @@ class TestConverter(unittest.TestCase):
         self.assertTrue(all(have_data), 'Did not receive any data')
         self.assertNotEqual(producer_process.poll(), None)
 
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestConverter)
     unittest.TextTestRunner(verbosity=2).run(suite)

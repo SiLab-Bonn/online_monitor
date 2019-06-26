@@ -40,7 +40,7 @@ class TestUtils(unittest.TestCase):
         cls.configuration = create_forwarder_config_yaml(10)
         with open(cls.config_path, 'w') as outfile:
             outfile.write(cls.configuration)
-        cls.configuration = yaml.load(cls.configuration)
+        cls.configuration = yaml.safe_load(cls.configuration)
 
     @classmethod
     def tearDownClass(cls):  # remove created files
@@ -72,7 +72,6 @@ class TestUtils(unittest.TestCase):
                    'thus no data can be plotted. '
                    'Change %s!' % self.config_path))
 
-    @log_capture()
     def test_numpy_serializer(self):
         # C_CONTIGUOUS : True
         data = {'array': np.ones((100, 101))}
@@ -97,6 +96,14 @@ class TestUtils(unittest.TestCase):
         data_deserialized = json.loads(
             data_serialized, object_hook=utils.json_numpy_obj_hook)
         self.assertTrue((data['array'] == data_deserialized['array']).all())
+
+    def test_simple_encoder(self):
+        data = np.ones((100, 101))
+        meta = {"a": 1, "b": "2"}
+        data_buffer = utils.simple_enc(data, meta)
+        data_des, meta_des = utils.simple_dec(data_buffer)
+        self.assertTrue(np.all(data == data_des))
+        self.assertTrue(meta == meta_des)
 
     def test_entity_loader(self):
         utils.load_converter('forwarder', base_class_type=Transceiver,

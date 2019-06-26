@@ -10,14 +10,24 @@ import numpy as np
 from importlib import import_module
 from inspect import getmembers, isclass
 import struct
-from array import *
+from array import array
 
 if sys.version_info < (3, 0):
     import cPickle as pickle
+    import imp
+
+    def frombytes(v, b):  # Python 2/3 compatibility function for array.tobytes function
+        return v.fromstring(b)
+    def tobytes(v):
+        return v.tostring()
 else:
     import pickle as pickle
+    from importlib.machinery import SourceFileLoader
 
-import imp  # Only available in python 2
+    def frombytes(v, b):  # Python 2/3 compatibility function for array.tobytes function
+        return v.frombytes(b)
+    def tobytes(v):
+        return v.tobytes()
 
 # Installing blosc can be troublesome under windows, thus do not requiere it
 try:
@@ -104,7 +114,10 @@ def _factory(importname, base_class_type, path=None, *args, **kargs):
         sys.path.append(path)
         # Absolute full path of python module
         absolute_path = os.path.join(path, importname) + '.py'
-        module = imp.load_source(importname, absolute_path)
+        if sys.version_info < (3, 0):
+            module = imp.load_source(importname, absolute_path)
+        else:
+            module = SourceFileLoader(importname, absolute_path).load_module()
     else:
         module = import_module(importname)
 
@@ -206,11 +219,11 @@ def json_numpy_obj_hook(dct):
     :return: (ndarray) if input was an encoded ndarray
     """
     if isinstance(dct, dict) and '__ndarray__' in dct:
-        array = dct['__ndarray__']
+        a = dct['__ndarray__']
         # http://stackoverflow.com/questions/24369666/typeerror-b1-is-not-json-serializable
         if sys.version_info >= (3, 0):
-            array = array.encode('utf-8')
-        data = base64.b64decode(array)
+            a = a.encode('utf-8')
+        data = base64.b64decode(a)
         if has_blosc:
             data = blosc.decompress(data)
 
@@ -230,11 +243,11 @@ def simple_enc(data=None, meta={}):
 
     if data is not None:
         meta['data_meta'] = {'dtype': data.dtype, 'shape': data.shape}
-        data_buffer.fromstring(data.data)
+        frombytes(data_buffer, data.tobytes())
 
     meta_json = pickle.dumps(meta)
     meta_json_buffer = array('B', [])
-    meta_json_buffer.fromstring(meta_json)
+    frombytes(meta_json_buffer, meta_json)
 
     meta_len = len(meta_json)
 
@@ -243,7 +256,7 @@ def simple_enc(data=None, meta={}):
     data_buffer.extend(meta_json_buffer)
     data_buffer.extend(meta_len_byte)
 
-    return data_buffer
+    return tobytes(data_buffer)
 
 
 def simple_dec(data_buffer):

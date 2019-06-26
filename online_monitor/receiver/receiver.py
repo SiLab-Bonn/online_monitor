@@ -36,7 +36,7 @@ class DataWorker(QtCore.QObject):
                     raise RuntimeError('You send data without a bidirectional '
                                        'connection! Define a bidirectional '
                                        'connection.')
-                self.receiver.send(self._send_data)
+                self.receiver.send_json(self._send_data)
                 self._send_data = None
             try:
                 data_serialized = self.receiver.recv(flags=zmq.NOBLOCK)
@@ -149,9 +149,12 @@ class Receiver(QtCore.QObject):
                                   'method!')
 
     def send_command(self, command):
+        ''' Send command to transceiver
+
+            Has to be json serializable
+        '''
         self.worker.send_data(command)
 
     def deserialize_data(self, data):
         ''' Has to convert the data do a python dict '''
-        raise NotImplementedError('You have to implement a deserialize_data '
-                                  'method. Look at the examples!')
+        return zmq.utils.jsonapi.loads(data, object_hook=utils.json_numpy_obj_hook)

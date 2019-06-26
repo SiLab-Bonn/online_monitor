@@ -6,10 +6,9 @@ environment:
     WITH_COMPILER: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_compiler.cmd"
   matrix:
     - PYTHON: 2.7
-    - PYTHON: 3.5
+    - PYTHON: 3.7
 
 platform:
-  - x86
   - x64
   
 os: unstable  # add desktop support
@@ -24,7 +23,7 @@ install:
   # Miniconda setup + necessary external packages
   - set PATH=C:\Miniconda;C:\Miniconda\Scripts;%PATH%  # miniconda is already installed on appveyor: https://github.com/appveyor/ci/issues/359
   - conda update conda --yes
-  - conda install --yes pyqt pyyaml pyzmq numpy
+  - conda install --yes pyqt pyyaml pyzmq numpy pytest
   - conda update --all --yes
   - pip install -r requirements.txt
   - python setup.py develop

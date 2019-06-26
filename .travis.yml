@@ -24,14 +24,14 @@ install:
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda update --yes conda
-  - conda install --yes pyqt pyyaml pyzmq blosc coverage
+  - conda install --yes pyqt pyyaml pyzmq numpy blosc pytest coverage
   - pip install xvfbwrapper  # virtual x server for Qt gui tests
   - pip install coveralls  # coverage testing
   # Install instructions valid for all python versions
   - pip install --upgrade pip
   - pip install -r requirements.txt --cache-dir $HOME/.pip-cache
   - python setup.py develop
-  - conda info -e
+  # - conda info -e
 
 script:
   # Hack to allow tests coverage in multi processes, http://coverage.readthedocs.org/en/latest/subprocess.html
@@ -39,18 +39,18 @@ script:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       touch $HOME/miniconda/lib/python2.7/site-packages/converage.pth && printf "import coverage; coverage.process_startup()" > $HOME/miniconda/lib/python2.7/site-packages/converage.pth;
     else
-      touch $HOME/miniconda/lib/python3.6/site-packages/converage.pth && printf "import coverage; coverage.process_startup()" > $HOME/miniconda/lib/python3.6/site-packages/converage.pth;
+      touch $HOME/miniconda/lib/python3.7/site-packages/converage.pth && printf "import coverage; coverage.process_startup()" > $HOME/miniconda/lib/python3.7/site-packages/converage.pth;
     fi
   - nosetests --with-coverage --cover-package=online_monitor
 
 after_success:
   - coveralls --data_file .coverage.*
 
-deploy:
-  provider: pypi
-  user: DavidLP
-  password:
-    secure: EOfeXP4oyoNLY8Ot2/pX3k2Acvk5Xn0VkBeqXHND/rjm4iveUGrLbMDOffDnvkFgSYQ6PO/UqZjSb8vPd5nQ1Uhw8YyEhXUTPVWOz7ebq/xOmI8DIpFQH24/u7K3D9ygm7mlN3ozz9/6Gvk2VXk8OUT8csMtIJ586FnNBFdq0XVXzneHx6Ppr4GvAvh5Li5dd0ZqL1Cd2JZZyhWbQzidJgBkU1NOD7pRmEPh7dfG23rOEuzHQPyip8PKw86ErbjRD6WevjyFsetT66je3G8+ZSvJIDNVQ95oohhBZ7bRA+VwHnt2MdWxBYSAq7ZxbNmcs5LsvuNiJRyGo9Iue97yKI/EX0GzK/mA0pO/kdu0n1BzXxVePtxBOxLgzmEKs2S0IV45zdlAIfOjs7gLM8mHjiFC6oFuDddKPp5dYRMpOERt3jfQVBbSWpGkN4tcwXZ/1xMm1IxTaU06YQMLKtRqo2N5k9aWMSsvFfagQ44WW658ra/15TdaZyniBCiYQ0a3NDYEpjZX4n4Sh0JDcGqlyOJcpcq+gl2NaIADX+X6Qoe6C7s036LowfoTDh83X72hjvm8smrdGL1op7DQo3dGxwU6FRvf78Qw528v2CkrdTHzIOr5IEuZkh+xGiGJE2UDTwHdq/nAr+O79s2yAakvf/DL/s8ZU+MvZ21dobtnLAg=
-  on:
-    tags: true
-    repo: SiLab-Bonn/online_monitor
+#deploy:
+#  provider: pypi
+#  user: DavidLP
+#  password:
+#    secure: EOfeXP4oyoNLY8Ot2/pX3k2Acvk5Xn0VkBeqXHND/rjm4iveUGrLbMDOffDnvkFgSYQ6PO/UqZjSb8vPd5nQ1Uhw8YyEhXUTPVWOz7ebq/xOmI8DIpFQH24/u7K3D9ygm7mlN3ozz9/6Gvk2VXk8OUT8csMtIJ586FnNBFdq0XVXzneHx6Ppr4GvAvh5Li5dd0ZqL1Cd2JZZyhWbQzidJgBkU1NOD7pRmEPh7dfG23rOEuzHQPyip8PKw86ErbjRD6WevjyFsetT66je3G8+ZSvJIDNVQ95oohhBZ7bRA+VwHnt2MdWxBYSAq7ZxbNmcs5LsvuNiJRyGo9Iue97yKI/EX0GzK/mA0pO/kdu0n1BzXxVePtxBOxLgzmEKs2S0IV45zdlAIfOjs7gLM8mHjiFC6oFuDddKPp5dYRMpOERt3jfQVBbSWpGkN4tcwXZ/1xMm1IxTaU06YQMLKtRqo2N5k9aWMSsvFfagQ44WW658ra/15TdaZyniBCiYQ0a3NDYEpjZX4n4Sh0JDcGqlyOJcpcq+gl2NaIADX+X6Qoe6C7s036LowfoTDh83X72hjvm8smrdGL1op7DQo3dGxwU6FRvf78Qw528v2CkrdTHzIOr5IEuZkh+xGiGJE2UDTwHdq/nAr+O79s2yAakvf/DL/s8ZU+MvZ21dobtnLAg=
+#  on:
+#    tags: true
+#    repo: SiLab-Bonn/online_monitor
