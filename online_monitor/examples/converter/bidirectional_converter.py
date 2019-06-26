@@ -1,5 +1,5 @@
 ''' Example how to define a converter that is bidirectional (can receive commands from a receiver) '''
-import json
+import zmq
 import numpy as np
 
 from online_monitor.utils import utils
@@ -13,7 +13,7 @@ class ExampleConverter(Transceiver):
         self.threshold = 0
 
     def deserialize_data(self, data):
-        return json.loads(data, object_hook=utils.json_numpy_obj_hook)
+        return zmq.utils.jsonapi.loads(data, object_hook=utils.json_numpy_obj_hook)
 
     def interpret_data(self, data):  # apply a threshold to the data
         data = data[0][1]
@@ -25,7 +25,7 @@ class ExampleConverter(Transceiver):
             return [data_with_threshold]
 
     def serialize_data(self, data):
-        return json.dumps(data, cls=utils.NumpyEncoder)
+        return zmq.utils.jsonapi.dumps(data, cls=utils.NumpyEncoder)
 
     def handle_command(self, command):
         self.threshold = int(command[0])
