@@ -1,4 +1,4 @@
-import json
+import zmq
 import numpy as np
 
 from online_monitor.utils import utils
@@ -8,7 +8,7 @@ from online_monitor.converter.transceiver import Transceiver
 class ExampleConverter(Transceiver):
 
     def deserialize_data(self, data):
-        return json.loads(data, object_hook=utils.json_numpy_obj_hook)
+        return zmq.utils.jsonapi.loads(data, object_hook=utils.json_numpy_obj_hook)
 
     def interpret_data(self, data):  # apply a threshold to the data
         data = data[0][1]
@@ -20,4 +20,4 @@ class ExampleConverter(Transceiver):
             return [data_with_threshold]
 
     def serialize_data(self, data):
-        return json.dumps(data, cls=utils.NumpyEncoder)
+        return zmq.utils.jsonapi.dumps(data, cls=utils.NumpyEncoder)
