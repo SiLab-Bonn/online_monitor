@@ -31,7 +31,7 @@ install:
   - pip install --upgrade pip
   - pip install -r requirements.txt --cache-dir $HOME/.pip-cache
   - python setup.py develop
-  - conda info -e
+  # - conda info -e
 
 script:
   # Hack to allow tests coverage in multi processes, http://coverage.readthedocs.org/en/latest/subprocess.html
