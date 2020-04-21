@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
+import pkg_resources
 
 version = '0.4.1'
 author = 'David-Leon Pohl'
@@ -62,6 +63,5 @@ try:
     settings.add_producer_sim_path(os.path.join(package_path, 'examples', 'producer_sim'))
     settings.add_converter_path(os.path.join(package_path, 'examples', 'converter'))
     settings.add_receiver_path(os.path.join(package_path, 'examples', 'receiver'))
-except ImportError:
+except (ImportError, pkg_resources.DistributionNotFound):
     pass
-
