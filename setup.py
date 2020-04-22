@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 import pkg_resources
 
-version = '0.4.1'
+version = '0.4.2'
 author = 'David-Leon Pohl'
 author_email = 'pohl@physik.uni-bonn.de'
 
