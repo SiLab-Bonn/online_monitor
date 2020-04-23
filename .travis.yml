@@ -1,17 +1,17 @@
 language: python
 python:
-- 2.7
-- 3.7
+  - 2.7
+  - 3.7
 
 sudo: false
 
 cache:
   directories:
-  - $HOME/.pip-cache/
+    - $HOME/.pip-cache/
 
 notifications:
   email:
-  - pohl@physik.uni-bonn.de
+    - pohl@physik.uni-bonn.de
 
 install:
   # Use Miniconda Python to have precompiled QT for user space
@@ -20,18 +20,15 @@ install:
     else
       wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
     fi
-  - chmod +x miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda update --yes conda
+  - conda info -a
   - conda install --yes pyqt pyyaml pyzmq numpy blosc pytest coverage
   - pip install xvfbwrapper  # virtual x server for Qt gui tests
   - pip install coveralls  # coverage testing
-  # Install instructions valid for all python versions
-  - pip install --upgrade pip
-  - pip install -r requirements.txt --cache-dir $HOME/.pip-cache
-  - python setup.py develop
-  # - conda info -e
+  - pip install -e .
+  - conda list
 
 script:
   # Hack to allow tests coverage in multi processes, http://coverage.readthedocs.org/en/latest/subprocess.html
