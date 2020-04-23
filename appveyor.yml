@@ -5,12 +5,17 @@ environment:
     # See: http://stackoverflow.com/a/13751649/163740
     WITH_COMPILER: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_compiler.cmd"
   matrix:
-    - PYTHON: 2.7
-    - PYTHON: 3.7
+    - PYTHON_VERSION: 2.7
+      MINICONDA: C:\Miniconda-x64
+      PYTHON_ARCH: "64"
+    - PYTHON_VERSION: 3.7
+      MINICONDA: C:\Miniconda37-x64
+      PYTHON_ARCH: "64"
 
-platform:
-  - x64
-  
+# platform:
+#   - x86
+#   - x64
+
 os: unstable  # add desktop support
 
 #matrix:
@@ -21,12 +26,12 @@ init:
 
 install:
   # Miniconda setup + necessary external packages
-  - set PATH=C:\Miniconda;C:\Miniconda\Scripts;%PATH%  # miniconda is already installed on appveyor: https://github.com/appveyor/ci/issues/359
+  - set PATH=%MINICONDA%;%MINICONDA%\Scripts;%MINICONDA%\Library\bin;%PATH%
   - conda update conda --yes
+  - conda info -a
   - conda install --yes pyqt pyyaml pyzmq numpy pytest
-  - conda update --all --yes
-  - pip install -r requirements.txt
-  - python setup.py develop
+  - pip install -e .
+  - conda list
 
 build: off
 
