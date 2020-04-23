@@ -45,7 +45,7 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
             return receivers
         if self.configuration['receiver']:
             logging.info('Starting %d receivers', len(self.configuration['receiver']))
-            for (receiver_name, receiver_settings) in self.configuration['receiver'].items():
+            for (receiver_name, receiver_settings) in sorted(self.configuration['receiver'].items()):
                 receiver_settings['name'] = receiver_name
                 receiver = utils.load_receiver(receiver_settings['kind'], base_class_type=Receiver, *(), **receiver_settings)
                 receiver.setup_widgets(self.tab_widget, name=receiver_name)
