@@ -90,11 +90,6 @@ class TestOnlineMonitor(unittest.TestCase):
             config_file = create_config_yaml()
             outfile.write(config_file)
         # linux CI travis runs headless, thus virtual x server is needed for
-        # gui testing
-        if os.getenv('CI', False):
-            from xvfbwrapper import Xvfb
-            cls.vdisplay = Xvfb()
-            cls.vdisplay.start()
         # Start the simulation producer to create some fake data
         cls.producer_process = run_script_in_shell(
             producer_manager_path, cls.config_path)
