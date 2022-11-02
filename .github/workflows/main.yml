@@ -62,13 +62,13 @@ jobs:
 
       - name: Testing on ref -> ${{github.head_ref || github.ref_name}}
         shell: bash -l {0}
-        run: nosetests online_monitor
-#        run: |
-#          export COVERAGE_PROCESS_START=$PWD/.coveragerc
-#          mkdir -p -- $CONDA/lib/python${{matrix.python-version}}/site-packages
-#          touch $CONDA/lib/python${{matrix.python-version}}/site-packages/converage.pth
-#          printf "import coverage; coverage.process_startup()" > $CONDA/lib/python${{matrix.python-version}}/site-packages/converage.pth;
-#          nosetests --with-coverage --cover-package=online_monitor
+#        run: nosetests online_monitor
+        run: |
+          export COVERAGE_PROCESS_START=$PWD/.coveragerc
+          mkdir -p -- $CONDA/lib/python${{matrix.python-version}}/site-packages
+          touch $CONDA/lib/python${{matrix.python-version}}/site-packages/converage.pth
+          printf "import coverage; coverage.process_startup()" > $CONDA/lib/python${{matrix.python-version}}/site-packages/converage.pth;
+          nosetests --with-coverage --cover-package=online_monitor
         if: success()
 
       - name: Coveralls
