@@ -1,7 +1,8 @@
 pyzmq  # inter process communication library
 pyyaml  # configuration parsing
 psutil  # to get process stats
-pyqtgraph  # plotting library
+pyqtgraph==0.11  # plotting library
+pyqt5==5.15
 nose # unittests
 testfixtures  # for unittests with logging output inspection
 # coverage  # for unit test coverage stats, only needed for CI autocoverage
