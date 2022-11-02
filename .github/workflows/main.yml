@@ -45,7 +45,7 @@ jobs:
         run: |
           conda info -a
           pip install -r requirements.txt
-          pip install coveralls blosc
+          pip install coveralls coverage blosc
 
       - name: Package installation
         shell: bash -l {0}
