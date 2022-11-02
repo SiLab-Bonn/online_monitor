@@ -44,15 +44,12 @@ jobs:
         shell: bash -l {0}
         run: |
           conda info -a
-          conda activate
-          conda install pip
           pip install -r requirements.txt
           pip install coverage coveralls blosc
 
       - name: Package installation
         shell: bash -l {0}
         run: |
-          conda activate
           pip install -e .
 
       - name: xvfb setup
@@ -67,7 +64,6 @@ jobs:
         shell: bash -l {0}
 #        run: nosetests online_monitor
         run: |
-          conda activate
           export COVERAGE_PROCESS_START=$PWD/.coveragerc
           mkdir -p -- $CONDA/lib/python${{matrix.python-version}}/site-packages
           touch $CONDA/lib/python${{matrix.python-version}}/site-packages/coverage.pth
@@ -75,9 +71,7 @@ jobs:
           nosetests --with-coverage --cover-package=online_monitor
         if: success()
 
-      - name: Coveralls
-        shell: bash -l {0}
-        run: |
-          conda activate
-          coveralls --data_file .coverage.*
+#      - name: Coveralls
+#        shell: bash -l {0}
+#        run: coveralls --data_file .coverage.*
   
