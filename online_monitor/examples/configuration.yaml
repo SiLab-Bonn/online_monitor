@@ -24,12 +24,6 @@ converter :
         kind : bidirectional_converter
         frontend : tcp://127.0.0.1:5500
         backend : tcp://127.0.0.1:5602
-    CON3 :
-        kind : position_correlator
-        frontend :
-          - tcp://127.0.0.1:5500
-          - tcp://127.0.0.1:5501
-        backend : tcp://127.0.0.1:5603   
 
 
 receiver :
@@ -40,6 +34,4 @@ receiver :
     DUT2 :
         kind : bidirectional_receiver
         frontend : tcp://127.0.0.1:5602
- #   DUT2 :
- #       kind : example_receiver
-  #      frontend : tcp://127.0.0.1:5602
+ 
