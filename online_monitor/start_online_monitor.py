@@ -4,7 +4,7 @@ import os
 import psutil
 import subprocess
 import logging
-from PyQt5 import Qt
+from PyQt5 import QtWidgets
 
 import online_monitor
 from online_monitor.utils import settings
@@ -62,7 +62,7 @@ def main():
         except psutil.NoSuchProcess:  # If the process was never started it cannot be killed
             pass
     # Start the online monitor
-    app = Qt.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     win = OnlineMonitorApplication(args.config_file)
     win.show()
     sys.exit(appExec())

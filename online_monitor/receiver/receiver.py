@@ -1,4 +1,4 @@
-from pyqtgraph.Qt import QtCore
+from PyQt5 import QtCore
 import zmq
 import logging
 from threading import Event

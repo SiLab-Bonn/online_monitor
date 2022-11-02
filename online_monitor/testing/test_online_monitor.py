@@ -8,7 +8,7 @@ import subprocess
 import time
 import os
 import psutil
-from PyQt5.QtWidgets import QApplication
+from PyQt5 import QtWidgets
 
 import online_monitor
 from online_monitor import OnlineMonitor
@@ -91,7 +91,7 @@ class TestOnlineMonitor(unittest.TestCase):
             outfile.write(config_file)
         # linux CI travis runs headless, thus virtual x server is needed for
         # gui testing
-        if os.getenv('TRAVIS', False):
+        if os.getenv('CI', False):
             from xvfbwrapper import Xvfb
             cls.vdisplay = Xvfb()
             cls.vdisplay.start()
@@ -103,7 +103,7 @@ class TestOnlineMonitor(unittest.TestCase):
             converter_manager_path, cls.config_path)
         # Create Gui
         time.sleep(2)
-        cls.app = QApplication(sys.argv)
+        cls.app = QtWidgets.QApplication(sys.argv)
         cls.online_monitor = OnlineMonitor.OnlineMonitorApplication(
             cls.config_path)
         time.sleep(2)
