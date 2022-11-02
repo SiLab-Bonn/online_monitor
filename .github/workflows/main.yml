@@ -45,7 +45,7 @@ jobs:
         run: |
           conda info -a
           pip install -r requirements.txt
-          pip install coveralls coverage blosc
+          pip install coverage coveralls blosc
 
       - name: Package installation
         shell: bash -l {0}
@@ -58,7 +58,7 @@ jobs:
           sudo apt-get install qt5-default
           sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0
           # start xvfb in the background
-          sudo /usr/bin/Xvfb $DISPLAY -screen 0 1366x768x24 &
+          sudo /usr/bin/Xvfb $DISPLAY -screen 0 1920x1080x24 &
 
       - name: Testing on ref -> ${{github.head_ref || github.ref_name}}
         shell: bash -l {0}
@@ -66,8 +66,8 @@ jobs:
         run: |
           export COVERAGE_PROCESS_START=$PWD/.coveragerc
           mkdir -p -- $CONDA/lib/python${{matrix.python-version}}/site-packages
-          touch $CONDA/lib/python${{matrix.python-version}}/site-packages/converage.pth
-          printf "import coverage; coverage.process_startup()" > $CONDA/lib/python${{matrix.python-version}}/site-packages/converage.pth;
+          touch $CONDA/lib/python${{matrix.python-version}}/site-packages/coverage.pth
+          printf "import coverage; coverage.process_startup()" > $CONDA/lib/python${{matrix.python-version}}/site-packages/coverage.pth;
           nosetests --with-coverage --cover-package=online_monitor
         if: success()
 
