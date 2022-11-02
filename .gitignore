@@ -62,3 +62,6 @@ target/
 
 # Tmp files
 *tmp*
+
+# OnlineMonitor.ini will be adjusted after installation
+*OnlineMonitor.ini
