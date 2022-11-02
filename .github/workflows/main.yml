@@ -20,8 +20,8 @@ jobs:
     name: Testing Python ${{matrix.python-version}} on ${{matrix.os}}
     runs-on: ${{matrix.os}}
 
-    env:
-      DISPLAY: :0
+#    env:
+#      DISPLAY: :0
     
     strategy:
       fail-fast: false
@@ -45,19 +45,19 @@ jobs:
         run: |
           conda info -a
           conda install pyqt pyyaml pyzmq numpy blosc pytest coverage
-          pip install coveralls
+          pip install coveralls xvfbwrapper
 
       - name: Package installation
         shell: bash -l {0}
         run: |
           pip install -e .
 
-      - name: xvfb setup
-        shell: bash -l {0}
-        run: |
-          sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0
-          # start xvfb in the background
-          sudo /usr/bin/Xvfb $DISPLAY -screen 0 1366x768x24 &
+#      - name: xvfb setup
+#        shell: bash -l {0}
+#        run: |
+#          sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0
+#          # start xvfb in the background
+#          sudo /usr/bin/Xvfb $DISPLAY -screen 0 1366x768x24 &
 
       - name: Testing on ref -> ${{github.head_ref || github.ref_name}}
         shell: bash -l {0}
