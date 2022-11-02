@@ -57,7 +57,7 @@ jobs:
 #          touch $CONDA/lib/python${{matrix.python-version}}/site-packages/converage.pth
 #          printf "import coverage; coverage.process_startup()" > $CONDA/lib/python${{matrix.python-version}}/site-packages/converage.pth;
 #          nosetests --with-coverage --cover-package=online_monitor
-           nosetests online_monitor
+#          nosetests online_monitor
         if: success()
 
       - name: Coveralls
