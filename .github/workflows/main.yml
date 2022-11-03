@@ -48,18 +48,20 @@ jobs:
         run: |
           pip install -e .
 
-#      - name: Qt5 defaults
-#        shell: bash -l {0}
-#        run: |
-#          if [ "$RUNNER_OS" = "Linux" ]
-#          then
-#            sudo apt-get install qt5-default
-#          fi
-#
-#          if [ "$RUNNER_OS" = "Windows" ]
-#          then
-#            choco install qt5-default
-#          fi
+      - name: Qt5 defaults
+        shell: bash -l {0}
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]];
+          then
+            echo "Qt5 default installation on $RUNNER_OS"
+            sudo apt-get install qt5-default
+          fi
+
+          if [[ "$RUNNER_OS" == "Linux" ]];
+          then
+            echo "Qt5 default installation on $RUNNER_OS"
+            choco install qt5-default
+          fi
 
       - name: Headless display setup
         uses: pyvista/setup-headless-display-action@v1
@@ -67,13 +69,15 @@ jobs:
       - name: Testing on branch -> ${{github.head_ref || github.ref_name}}
         shell: bash -l {0}
         run: |
-          if [ "$RUNNER_OS" = "Linux" ]
+          if [[ "$RUNNER_OS" == "Linux" ]];
           then
+            echo "Testing on $RUNNER_OS"
             nosetests --with-coverage --cover-package=online_monitor
           fi
 
-          if [ "$RUNNER_OS" = "Windows" ]
+          if [[ "$RUNNER_OS" == "Linux" ]];
           then
+            echo "Testing on $RUNNER_OS"
             nosetests online_monitor
           fi
           
