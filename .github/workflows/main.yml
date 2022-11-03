@@ -61,9 +61,8 @@ jobs:
           # start xvfb in the background
           sudo /usr/bin/Xvfb $DISPLAY -screen 0 1920x1080x24 &
         if: ${{matrix.os}} == 'windows-latest'
-        run: |
-          choco install qt5-default
-
+        run: choco install qt5-default
+          
       - name: Testing on ref -> ${{github.head_ref || github.ref_name}}
         shell: bash -l {0}
         run: |
