@@ -32,16 +32,14 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      - name: Anaconda ${{matrix.python-version}} setup
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Setup python
+        uses: actions/setup-python@v4
         with:
-          auto-update-conda: true
           python-version: ${{matrix.python-version}}
 
       - name: Dependency installation
         shell: bash -l {0}
         run: |
-          conda info -a
           pip install -r requirements.txt
           pip install coverage coveralls blosc
 
@@ -71,10 +69,10 @@ jobs:
         run: |
           if [ "$RUNNER_OS" = "Linux" ]
           then
-            export COVERAGE_PROCESS_START=$PWD/.coveragerc
-            mkdir -p -- $CONDA/lib/python${{matrix.python-version}}/site-packages
-            touch $CONDA/lib/python${{matrix.python-version}}/site-packages/coverage.pth
-            printf "import coverage; coverage.process_startup()" > $CONDA/lib/python${{matrix.python-version}}/site-packages/coverage.pth;
+#            export COVERAGE_PROCESS_START=$PWD/.coveragerc
+#            mkdir -p -- $CONDA/lib/python${{matrix.python-version}}/site-packages
+#            touch $CONDA/lib/python${{matrix.python-version}}/site-packages/coverage.pth
+#            printf "import coverage; coverage.process_startup()" > $CONDA/lib/python${{matrix.python-version}}/site-packages/coverage.pth;
             nosetests --with-coverage --cover-package=online_monitor
           fi
 
