@@ -18,16 +18,14 @@ jobs:
   # This workflow contains a single job called "build"
   tests:
     name: Testing Python ${{matrix.python-version}} on ${{matrix.os}}
-    runs-on: ${{matrix.os}}
-
-    env:
-      DISPLAY: :0
     
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
         python-version: ["3.8", "3.9"]
+
+    runs-on: ${{matrix.os}}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -52,17 +50,9 @@ jobs:
         run: |
           pip install -e .
 
-      - name: xvfb setup
-        shell: bash -l {0}
-        if: ${{matrix.os}} == 'ubuntu-latest'
-        run: |
-          sudo apt-get install qt5-default
-          sudo apt-get install -y xvfb libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0
-          # start xvfb in the background
-          sudo /usr/bin/Xvfb $DISPLAY -screen 0 1920x1080x24 &
-        if: ${{matrix.os}} == 'windows-latest'
-        run: choco install qt5-default
-          
+      - name: Headless display setup
+        uses: pyvista/setup-headless-display-action@v1  
+        
       - name: Testing on ref -> ${{github.head_ref || github.ref_name}}
         shell: bash -l {0}
         run: |
