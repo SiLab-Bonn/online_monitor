@@ -2,7 +2,7 @@ pyzmq  # inter process communication library
 pyyaml  # configuration parsing
 psutil  # to get process stats
 pyqtgraph==0.11  # plotting library
-pyqt5==5.15
+pyqt5=>=5.15.2
 nose # unittests
 pytest
 testfixtures  # for unittests with logging output inspection
