@@ -53,13 +53,12 @@ jobs:
       - name: Qt5 defaults
         shell: bash -l {0}
         run: |
-          echo $RUNNER_OS
-          if [$RUNNER_OS == 'Linux']
+          if [ "$RUNNER_OS" == "Linux" ]
           then
-            sudo apt install qt5-default
+            sudo apt-get install qt5-default
           fi
 
-          if [$RUNNER_OS == 'Windows']
+          if [ "$RUNNER_OS" == "Windows"]
           then
             choco install qt5-default
           fi
@@ -70,11 +69,20 @@ jobs:
       - name: Testing on ref -> ${{github.head_ref || github.ref_name}}
         shell: bash -l {0}
         run: |
-          export COVERAGE_PROCESS_START=$PWD/.coveragerc
-          mkdir -p -- $CONDA/lib/python${{matrix.python-version}}/site-packages
-          touch $CONDA/lib/python${{matrix.python-version}}/site-packages/coverage.pth
-          printf "import coverage; coverage.process_startup()" > $CONDA/lib/python${{matrix.python-version}}/site-packages/coverage.pth;
-          nosetests --with-coverage --cover-package=online_monitor
+          if [ "$RUNNER_OS" == "Linux" ]
+          then
+            export COVERAGE_PROCESS_START=$PWD/.coveragerc
+            mkdir -p -- $CONDA/lib/python${{matrix.python-version}}/site-packages
+            touch $CONDA/lib/python${{matrix.python-version}}/site-packages/coverage.pth
+            printf "import coverage; coverage.process_startup()" > $CONDA/lib/python${{matrix.python-version}}/site-packages/coverage.pth;
+            nosetests --with-coverage --cover-package=online_monitor
+          fi
+
+          if [ "$RUNNER_OS" == "Windows"]
+          then
+            nosetests online_monitor
+          fi
+          
         if: success()
 
 #      - name: Coveralls
