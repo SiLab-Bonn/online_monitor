@@ -58,7 +58,7 @@ jobs:
             sudo apt-get install qt5-default
           fi
 
-          if [ "$RUNNER_OS" == "Windows"]
+          if [ "$RUNNER_OS" = "Windows" ]
           then
             choco install qt5-default
           fi
@@ -69,7 +69,7 @@ jobs:
       - name: Testing on ref -> ${{github.head_ref || github.ref_name}}
         shell: bash -l {0}
         run: |
-          if [ "$RUNNER_OS" == "Linux" ]
+          if [ "$RUNNER_OS" = "Linux" ]
           then
             export COVERAGE_PROCESS_START=$PWD/.coveragerc
             mkdir -p -- $CONDA/lib/python${{matrix.python-version}}/site-packages
@@ -78,7 +78,7 @@ jobs:
             nosetests --with-coverage --cover-package=online_monitor
           fi
 
-          if [ "$RUNNER_OS" == "Windows"]
+          if [ "$RUNNER_OS" = "Windows" ]
           then
             nosetests online_monitor
           fi
