@@ -1,11 +1,8 @@
 import ast
 import sys
 import os
+import configparser as ConfigParser
 
-try:
-    import ConfigParser
-except ImportError:  # pragma: no cover
-    import configparser as ConfigParser  # renaming in python 3k
 
 _file_name = os.path.dirname(sys.modules[__name__].__file__) + r'/../OnlineMonitor.ini'
 

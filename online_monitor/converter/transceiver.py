@@ -4,13 +4,7 @@ import zmq
 import logging
 import signal
 import psutil
-
-try:
-    import queue as queue
-except ImportError:  # python 2
-    import Queue as queue
-
-
+import queue as queue
 from online_monitor.utils import utils
 
 

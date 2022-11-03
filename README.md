@@ -9,10 +9,10 @@ The last stable code is hosted on PyPi. Thus for installation type:
 pip install online_monitor
 ```
 
-Otherwise download the code and
+Otherwise download the code and run
 
 ```
-python setup.py develop
+pip install -e .
 ```
 
 You can run the unit tests to check the installation
@@ -55,7 +55,4 @@ To start the converters type:
 start_converters configuration.yaml
 ```
 
-Everything is tested with high coverage and supposed to work under Linux/Windows 32/64 bit and Python 2/3.
-A more detailed documention will follow the next release.
-
-
+Everything is tested with high coverage and supposed to work under Linux/Windows 32/64 bit and Python 3.
