@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest, windows-latest]
         python-version: ["3.8", "3.9"]
         
     runs-on: ${{matrix.os}}
@@ -69,9 +69,23 @@ jobs:
       - name: Testing on branch -> ${{github.head_ref || github.ref_name}}
         shell: bash -l {0}
         run: |
+          if [[ "$RUNNER_OS" == "Linux" ]];
+          then
             echo "Testing on $RUNNER_OS"
             nosetests --with-coverage --cover-package=online_monitor
+          fi
+
+          if [[ "$RUNNER_OS" == "Windows" ]];
+          then
+            echo "Testing on $RUNNER_OS"
+            nosetests --cover-package=online_monitor
+          fi
+
+      - name: Coveralls          
         if: success()
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
 # export COVERAGE_PROCESS_START=$PWD/.coveragerc
 # mkdir -p -- $CONDA/lib/python${{matrix.python-version}}/site-packages
