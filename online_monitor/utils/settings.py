@@ -1,7 +1,7 @@
 import ast
 import sys
 import os
-from configparser import ConfigParser
+from configparser import ConfigParser, NoOptionError
 
 
 _file_name = os.path.dirname(sys.modules[__name__].__file__) + r'/../OnlineMonitor.ini'
@@ -12,7 +12,7 @@ def add_converter_path(path):  # path where to search for converter modules
     config.read(_file_name)
     try:
         paths = get_converter_path()
-    except ConfigParser.NoOptionError:
+    except NoOptionError:
         config.set('converter', 'path', str([path])[1:-1])  # On first call the path section does not exist
         with open(_file_name, 'w') as f:
             config.write(f)
@@ -29,7 +29,7 @@ def add_receiver_path(path):  # path where to search for converter modules
     config.read(_file_name)
     try:
         paths = get_receiver_path()
-    except ConfigParser.NoOptionError:
+    except NoOptionError:
         config.set('receiver', 'path', str([path])[1:-1])  # On first call the path section does not exist
         with open(_file_name, 'w') as f:
             config.write(f)
@@ -46,7 +46,7 @@ def add_producer_sim_path(path):  # path where to search for converter modules
     config.read(_file_name)
     try:
         paths = get_producer_sim_path()
-    except ConfigParser.NoOptionError:
+    except NoOptionError:
         config.set('producer_sim', 'path', str([path])[1:-1])  # On first call the path section does not exist
         with open(_file_name, 'w') as f:
             config.write(f)
