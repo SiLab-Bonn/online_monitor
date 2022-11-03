@@ -43,7 +43,7 @@ class TestSettings(unittest.TestCase):
         self.assertFalse(r'/home/receiver/path' in settings.get_receiver_path())
         self.assertFalse(r'test/producer_sim/path' in settings.get_producer_sim_path())
 
-    @unittest.skipIf(os.name == 'nt', "This tests is only true on virtual linux x-server systems. Otherwise result value depends on test environment.")
+    @unittest.skipIf(os.name == 'nt' or not os.environ.get("CI"), "This tests is only true on virtual linux x-server systems. Otherwise result value depends on test environment.")
     def test_interface_settings(self):
         self.assertTupleEqual(settings.get_window_geometry(), (100, 100, 1024, 768), 'This can fail if you started the online monitor once and changed the windows size')
 
