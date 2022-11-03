@@ -51,7 +51,7 @@ jobs:
       - name: Qt5 defaults
         shell: bash -l {0}
         run: |
-          if [ "$RUNNER_OS" == "Linux" ]
+          if [ "$RUNNER_OS" = "Linux" ]
           then
             sudo apt-get install qt5-default
           fi
@@ -62,17 +62,13 @@ jobs:
           fi
 
       - name: Headless display setup
-        uses: pyvista/setup-headless-display-action@v1  
+        uses: pyvista/setup-headless-display-action@v1
 
       - name: Testing on ref -> ${{github.head_ref || github.ref_name}}
         shell: bash -l {0}
         run: |
           if [ "$RUNNER_OS" = "Linux" ]
           then
-#            export COVERAGE_PROCESS_START=$PWD/.coveragerc
-#            mkdir -p -- $CONDA/lib/python${{matrix.python-version}}/site-packages
-#            touch $CONDA/lib/python${{matrix.python-version}}/site-packages/coverage.pth
-#            printf "import coverage; coverage.process_startup()" > $CONDA/lib/python${{matrix.python-version}}/site-packages/coverage.pth;
             nosetests --with-coverage --cover-package=online_monitor
           fi
 
