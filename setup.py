@@ -2,9 +2,11 @@
 from setuptools import setup, find_packages
 import pkg_resources
 
-version = '0.4.2'
+version = '0.5.0'
 author = 'David-Leon Pohl'
 author_email = 'pohl@physik.uni-bonn.de'
+maintainer = 'Pascal Wolf'
+maintainer_email = 'wolf@physik.uni-bonn.de'
 
 # Requirements for core functionality from requirements.txt
 with open('requirements.txt') as f:
@@ -19,9 +21,9 @@ setup(
     license='MIT License',
     long_description='',
     author=author,
-    maintainer=author,
+    maintainer=maintainer,
     author_email=author_email,
-    maintainer_email=author_email,
+    maintainer_email=maintainer_email,
     install_requires=install_requires,
     packages=find_packages(),
     # Accept all data files and directories matched by MANIFEST.in or found in

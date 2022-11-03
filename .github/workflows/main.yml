@@ -1,0 +1,83 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches:
+      - main
+      - development
+  pull_request:
+    branches:
+      - main
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  tests:
+    name: Testing Python ${{matrix.python-version}} on ${{matrix.os}}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.8", "3.9"]
+        
+    runs-on: ${{matrix.os}}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{matrix.python-version}}
+
+      - name: Dependency installation
+        shell: bash -l {0}
+        run: |
+          pip install -r requirements.txt
+          pip install blosc
+
+      - name: Package installation
+        shell: bash -l {0}
+        run: |
+          pip install -e .
+
+      - name: Qt5 defaults
+        shell: bash -l {0}
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]];
+          then
+            echo "Qt5 default installation on $RUNNER_OS"
+            sudo apt-get install qt5-default
+          fi
+
+          if [[ "$RUNNER_OS" == "Windows" ]];
+          then
+            echo "Qt5 default installation on $RUNNER_OS"
+            choco install qt5-default
+          fi
+
+      - name: Headless display setup
+        uses: pyvista/setup-headless-display-action@v1
+
+      - name: Testing on branch -> ${{github.head_ref || github.ref_name}}
+        shell: bash -l {0}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]] && [[ ${{matrix.python-version}} == "3.9" ]];
+          then
+            echo "Generating coverage on $RUNNER_OS, Python ${{matrix.python-version}}"
+            pip install coverage coveralls 
+            coverage run --source=online_monitor -m pytest online_monitor/testing/
+            coveralls --service=github
+          else
+            echo "Testing on $RUNNER_OS"  
+            pytest online_monitor
+          fi

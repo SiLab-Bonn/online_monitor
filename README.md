@@ -1,7 +1,6 @@
 # A generic online monitor for real-time plots from independent data acquisition systems
-[![Build Status](https://travis-ci.org/SiLab-Bonn/online_monitor.svg?branch=master)](https://travis-ci.org/SiLab-Bonn/online_monitor)
+[![Build Status](https://github.com/Silab-Bonn/online_monitor/actions/workflows/main.yml/badge.svg?branch=development)](https://github.com/SiLab-Bonn/online_monitor/actions)
 [![Coverage Status](https://coveralls.io/repos/SiLab-Bonn/online_monitor/badge.svg?branch=master&service=github)](https://coveralls.io/github/SiLab-Bonn/online_monitor?branch=master)
-TBD
 
 # Installation
 
@@ -10,24 +9,27 @@ The last stable code is hosted on PyPi. Thus for installation type:
 pip install online_monitor
 ```
 
-Otherwise download the code and
+Otherwise download the code and run
 
 ```
-python setup.py develop
+pip install -e .
 ```
 
 You can run the unit tests to check the installation
 
 ```
-nosetests online_monitor
+pytest online_monitor
 ```
 
 # Usage
-
 For a demo type into the console:
 
 ```
   start_online_monitor
+```
+To stop all instances of `online_monitor` (e.g. converter, receiver, etc), type
+```
+stop_online_monitor
 ```
 
 # Info
@@ -56,7 +58,19 @@ To start the converters type:
 start_converters configuration.yaml
 ```
 
-Everything is tested with high coverage and supposed to work under Linux/Windows 32/64 bit and Python 2/3.
-A more detailed documention will follow the next release.
+# Custom receiver
+Have a look at [the examples](online_monitor/examples/receiver).
+When building your custom receiver, use `pyqtgraph` only for plotting-related tasks e.g. `pg.ImageItem` etc.
+Avoid using `pyqtgraph` for building generic widgets (especially the deprecated `QtGui` submodule), instead use `pyqt5` directly:
+```
+from PyQt5 import QtWidgets, QtCore
 
-
+my_custom_label = QtWidgets.QLabel("My label")
+my_custom_double_spinbox = QtWidgets.QDoubleSpinBox()
+my_custom_grid_layout = QtWidgets.QGridLayout()
+my_custom_signal = QtCore.pyqtSignal(str)
+...
+```
+# Testing
+Everything is tested on Windows and Linux for Python 3.8/9 with coverage.
+Have a look at the [tests](online_monitor/testing) as well as the respective [GH actions](https://github.com/SiLab-Bonn/online_monitor/actions) and [coverall.io](https://coveralls.io/github/SiLab-Bonn/online_monitor) pages. 

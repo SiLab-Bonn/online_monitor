@@ -7,27 +7,13 @@ import ast
 import base64
 import sys
 import numpy as np
+import struct
+import pickle as pickle
+from array import array
+from importlib.machinery import SourceFileLoader
 from importlib import import_module
 from inspect import getmembers, isclass
-import struct
-from array import array
-
-if sys.version_info < (3, 0):
-    import cPickle as pickle
-    import imp
-
-    def frombytes(v, b):  # Python 2/3 compatibility function for array.tobytes function
-        return v.fromstring(b)
-    def tobytes(v):
-        return v.tostring()
-else:
-    import pickle as pickle
-    from importlib.machinery import SourceFileLoader
-
-    def frombytes(v, b):  # Python 2/3 compatibility function for array.tobytes function
-        return v.frombytes(b)
-    def tobytes(v):
-        return v.tobytes()
+from online_monitor.utils import settings
 
 # Installing blosc can be troublesome under windows, thus do not requiere it
 try:
@@ -36,7 +22,11 @@ try:
 except ImportError:
     has_blosc = False
 
-from online_monitor.utils import settings
+# compatibility function for array.to/frombytes function
+def frombytes(v, b):
+    return v.frombytes(b)
+def tobytes(v):
+    return v.tobytes()
 
 
 def parse_arguments():
@@ -114,10 +104,7 @@ def _factory(importname, base_class_type, path=None, *args, **kargs):
         sys.path.append(path)
         # Absolute full path of python module
         absolute_path = os.path.join(path, importname) + '.py'
-        if sys.version_info < (3, 0):
-            module = imp.load_source(importname, absolute_path)
-        else:
-            module = SourceFileLoader(importname, absolute_path).load_module()
+        module = SourceFileLoader(importname, absolute_path).load_module()
     else:
         module = import_module(importname)
 
@@ -203,8 +190,7 @@ class NumpyEncoder(json.JSONEncoder):
                 obj_data = blosc.compress(obj_data, typesize=8)
             data_b64 = base64.b64encode(obj_data)
             # http://stackoverflow.com/questions/24369666/typeerror-b1-is-not-json-serializable
-            if sys.version_info >= (3, 0):
-                data_b64 = data_b64.decode('utf-8')
+            data_b64 = data_b64.decode('utf-8')
             return dict(__ndarray__=data_b64,
                         dtype=str(obj.dtype),
                         shape=obj.shape)
@@ -221,8 +207,7 @@ def json_numpy_obj_hook(dct):
     if isinstance(dct, dict) and '__ndarray__' in dct:
         a = dct['__ndarray__']
         # http://stackoverflow.com/questions/24369666/typeerror-b1-is-not-json-serializable
-        if sys.version_info >= (3, 0):
-            a = a.encode('utf-8')
+        a = a.encode('utf-8')
         data = base64.b64decode(a)
         if has_blosc:
             data = blosc.decompress(data)

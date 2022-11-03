@@ -1,7 +1,7 @@
 import sys
 import logging
 
-from PyQt5 import Qt
+from PyQt5 import QtWidgets, QtCore
 import pyqtgraph as pg
 from pyqtgraph.dockarea import DockArea, Dock
 
@@ -9,7 +9,7 @@ from online_monitor.utils import utils, settings
 from online_monitor.receiver.receiver import Receiver
 
 
-class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
+class OnlineMonitorApplication(QtWidgets.QMainWindow):
     app_name = 'Online Monitor'
 
     def __init__(self, config_file, loglevel='INFO'):
@@ -30,7 +30,7 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
         self.setWindowTitle(self.app_name)
         stored_windows_geometry = settings.get_window_geometry()
         if stored_windows_geometry:
-            self.setGeometry(pg.Qt.QtCore.QRect(*stored_windows_geometry))
+            self.setGeometry(QtCore.QRect(*stored_windows_geometry))
         # Fore/Background color
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')
@@ -65,7 +65,7 @@ class OnlineMonitorApplication(pg.Qt.QtGui.QMainWindow):
 
     def setup_widgets(self):
         # Main window with Tab widget
-        self.tab_widget = Qt.QTabWidget()
+        self.tab_widget = QtWidgets.QTabWidget()
         self.setCentralWidget(self.tab_widget)
         self.setup_status_widget(self.tab_widget)
         self.tab_widget.currentChanged.connect(self.on_tab_changed)
@@ -165,10 +165,10 @@ def main():  # pragma: no cover, cannot be tested in unittests due to qt event l
     args = utils.parse_arguments()
     utils.setup_logging(args.log)
 
-    app = Qt.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     win = OnlineMonitorApplication(args.config_file)  # enter remote IP to connect to the other side listening
     win.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 if __name__ == '__main__':

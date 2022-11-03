@@ -5,9 +5,7 @@ from zmq.utils import jsonapi
 import pyqtgraph as pg
 from pyqtgraph.dockarea import DockArea, Dock
 
-from PyQt5 import Qt
-from pyqtgraph.Qt import QtGui
-
+from PyQt5 import QtWidgets
 
 from online_monitor.utils import utils
 
@@ -35,11 +33,11 @@ class ExampleReceiver(Receiver):
         # Status widget
         dock_status = Dock("Status", size=(800, 1))
         dock_area.addDock(dock_status, 'top')
-        cw = QtGui.QWidget()
+        cw = QtWidgets.QWidget()
         cw.setStyleSheet("QWidget {background-color:white}")
-        layout = QtGui.QGridLayout()
+        layout = QtWidgets.QGridLayout()
         cw.setLayout(layout)
-        self.spin_box = Qt.QSpinBox(value=1)
+        self.spin_box = QtWidgets.QSpinBox(value=1)
         self.spin_box.setMaximum(10)
         self.spin_box.setSuffix(" Threshold")
 
