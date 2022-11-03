@@ -65,7 +65,7 @@ from PyQt5 import QtWidgets, QtCore
 
 my_custom_label = QtWidgets.QLabel("My label")
 my_custom_double_spinbox = QtWidgets.QDoubleSpinBox()
-my_custom_grid_layout = QtWidgets.QGridLazout()
-my_custom_signal = QtCore.pyqtSiganl(str)
+my_custom_grid_layout = QtWidgets.QGridLayout()
+my_custom_signal = QtCore.pyqtSignal(str)
 ...
 ```
