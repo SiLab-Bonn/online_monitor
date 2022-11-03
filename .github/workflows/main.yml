@@ -76,7 +76,7 @@ jobs:
             echo "Testing on $RUNNER_OS"
             pip install coverage coveralls 
             coverage run --source=online_monitor -m pytest online_monitor/testing/
-            coveralls --service=github
+            coveralls --service=github --data_file .coverage.*
           fi
 
           if [[ "$RUNNER_OS" == "Windows" ]];
