@@ -72,20 +72,21 @@ jobs:
           if [[ "$RUNNER_OS" == "Linux" ]];
           then
             echo "Testing on $RUNNER_OS"
-            nosetests --with-coverage --cover-package=online_monitor
+            coverage run --source=online_monitor -m nosetests online_monitor/testing/
+            coveralls
           fi
 
           if [[ "$RUNNER_OS" == "Windows" ]];
           then
             echo "Testing on $RUNNER_OS"
-            nosetests --cover-package=online_monitor
+            nosetests online_monitor
           fi
 
-      - name: Coveralls          
-        if: success()
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Coveralls          
+#        if: success()
+#        uses: coverallsapp/github-action@master
+#        with:
+#          github-token: ${{ secrets.GITHUB_TOKEN }}
 
 # export COVERAGE_PROCESS_START=$PWD/.coveragerc
 # mkdir -p -- $CONDA/lib/python${{matrix.python-version}}/site-packages
