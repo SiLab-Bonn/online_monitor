@@ -53,6 +53,7 @@ jobs:
       - name: Qt5 defaults
         shell: bash -l {0}
         run: |
+          echo $RUNNER_OS
           if [$RUNNER_OS == 'Linux']
           then
             sudo apt install qt5-default
