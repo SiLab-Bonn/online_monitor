@@ -55,4 +55,15 @@ To start the converters type:
 start_converters configuration.yaml
 ```
 
-Everything is tested with high coverage and supposed to work under Linux/Windows 32/64 bit and Python 3.
+Everything is tested on Windows and Linux for Python 3.8/9 with coverage.
+
+# Custom receiver
+When building your custom receiver, use `pyqtgraph` only for plotting-related tasks e.g. `pg.ImageItem` etc.
+Avoid using `pyqtgraph` for building generic widgets (especially the deprecated `QtGui` submodule), instead use `pyqt5` directly:
+```
+from PyQt5 import QtWidgets, QtCore
+
+my_custom_label = QtWidgets.QLabel("My label")
+my_custom_double_spinbox = QtWidgets.QDoubleSpinBox()
+my_custom_grid_layout = QtWidgets.QGridLazout()
+```
