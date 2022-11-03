@@ -22,11 +22,14 @@ pytest online_monitor
 ```
 
 # Usage
-
 For a demo type into the console:
 
 ```
   start_online_monitor
+```
+To stop all instances of `online_monitor` (e.g. converter, receiver, etc), type
+```
+stop_online_monitor
 ```
 
 # Info
@@ -55,9 +58,8 @@ To start the converters type:
 start_converters configuration.yaml
 ```
 
-Everything is tested on Windows and Linux for Python 3.8/9 with coverage.
-
 # Custom receiver
+Have a look at [the examples](online_monitor/examples/receiver).
 When building your custom receiver, use `pyqtgraph` only for plotting-related tasks e.g. `pg.ImageItem` etc.
 Avoid using `pyqtgraph` for building generic widgets (especially the deprecated `QtGui` submodule), instead use `pyqt5` directly:
 ```
@@ -69,3 +71,6 @@ my_custom_grid_layout = QtWidgets.QGridLayout()
 my_custom_signal = QtCore.pyqtSignal(str)
 ...
 ```
+# Testing
+Everything is tested on Windows and Linux for Python 3.8/9 with coverage.
+Have a look at the [tests](online_monitor/testing) as well as the respective [GH actions](https://github.com/SiLab-Bonn/online_monitor/actions) and [coverall.io](https://coveralls.io/github/SiLab-Bonn/online_monitor) pages. 
