@@ -70,32 +70,14 @@ jobs:
         shell: bash -l {0}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_FLAG_NAME: Python ${{ matrix.python-version }} on ${{ matrix.os }}
-          COVERALLS_PARALLEL: true
         run: |
-          if [[ "$RUNNER_OS" == "Linux" ]];
+          if [[ "$RUNNER_OS" == "Linux" ]] && [[ ${{matrix.python-version}} == "3.9" ]];
           then
-            echo "Testing on $RUNNER_OS"
+            echo "Generating coverage on $RUNNER_OS, Python ${{matrix.python-version}}"
             pip install coverage coveralls 
             coverage run --source=online_monitor -m pytest online_monitor/testing/
-            coveralls --service=github
-          fi
-
-          if [[ "$RUNNER_OS" == "Windows" ]];
-          then
-            echo "Testing on $RUNNER_OS"
+            coveralls --service=github --finish
+          else
+            echo "Testing on $RUNNER_OS"  
             pytest online_monitor
           fi
-
-  coveralls:
-    name: Indicate completion to coveralls.io
-    needs: tests
-    runs-on: ubuntu-latest
-    container: python:3-slim
-    steps:
-    - name: Finished
-      run: |
-        pip3 install --upgrade coveralls
-        coveralls --service=github --finish
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
