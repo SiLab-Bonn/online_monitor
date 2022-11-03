@@ -74,15 +74,15 @@ jobs:
           if [[ "$RUNNER_OS" == "Linux" ]];
           then
             echo "Testing on $RUNNER_OS"
-            pip install coverage coveralls nose
-            coverage run --source=online_monitor -m nosetests online_monitor/testing/
+            pip install coverage coveralls 
+            coverage run --source=online_monitor -m pytest online_monitor/testing/
             coveralls
           fi
 
           if [[ "$RUNNER_OS" == "Windows" ]];
           then
             echo "Testing on $RUNNER_OS"
-            nosetests online_monitor
+            pytest online_monitor
           fi
 
 #      - name: Coveralls          
