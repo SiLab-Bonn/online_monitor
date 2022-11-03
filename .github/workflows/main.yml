@@ -68,6 +68,8 @@ jobs:
 
       - name: Testing on branch -> ${{github.head_ref || github.ref_name}}
         shell: bash -l {0}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ "$RUNNER_OS" == "Linux" ]];
           then
