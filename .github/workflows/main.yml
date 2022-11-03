@@ -70,13 +70,15 @@ jobs:
         shell: bash -l {0}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: Python ${{ matrix.python-version }} on ${{ matrix.os }}
+          COVERALLS_PARALLEL: true
         run: |
           if [[ "$RUNNER_OS" == "Linux" ]];
           then
             echo "Testing on $RUNNER_OS"
             pip install coverage coveralls 
             coverage run --source=online_monitor -m pytest online_monitor/testing/
-            coveralls --service=github --data_file .coverage.*
+            coveralls --service=github
           fi
 
           if [[ "$RUNNER_OS" == "Windows" ]];
@@ -85,17 +87,15 @@ jobs:
             pytest online_monitor
           fi
 
-#      - name: Coveralls          
-#        if: success()
-#        uses: coverallsapp/github-action@master
-#        with:
-#          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-# export COVERAGE_PROCESS_START=$PWD/.coveragerc
-# mkdir -p -- $CONDA/lib/python${{matrix.python-version}}/site-packages
-# touch $CONDA/lib/python${{matrix.python-version}}/site-packages/coverage.pth
-# printf "import coverage; coverage.process_startup()" > $CONDA/lib/python${{matrix.python-version}}/site-packages/coverage.pth;
-#      - name: Coveralls
-#        shell: bash -l {0}
-#        run: coveralls --data_file .coverage.*
-  
+  coveralls:
+    name: Indicate completion to coveralls.io
+    needs: tests
+    runs-on: ubuntu-latest
+    container: python:3-slim
+    steps:
+    - name: Finished
+      run: |
+        pip3 install --upgrade coveralls
+        coveralls --service=github --finish
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
