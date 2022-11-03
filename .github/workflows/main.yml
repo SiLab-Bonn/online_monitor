@@ -57,7 +57,7 @@ jobs:
             sudo apt-get install qt5-default
           fi
 
-          if [[ "$RUNNER_OS" == "Linux" ]];
+          if [[ "$RUNNER_OS" == "Windows" ]];
           then
             echo "Qt5 default installation on $RUNNER_OS"
             choco install qt5-default
@@ -75,7 +75,7 @@ jobs:
             nosetests --with-coverage --cover-package=online_monitor
           fi
 
-          if [[ "$RUNNER_OS" == "Linux" ]];
+          if [[ "$RUNNER_OS" == "Windows" ]];
           then
             echo "Testing on $RUNNER_OS"
             nosetests online_monitor
