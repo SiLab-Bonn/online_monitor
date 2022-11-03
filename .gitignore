@@ -63,5 +63,5 @@ target/
 # Tmp files
 *tmp*
 
-# OnlineMonitor configuration is system dependant
+# OnlineMonitor.ini will be adjusted after installation
 *OnlineMonitor.ini
