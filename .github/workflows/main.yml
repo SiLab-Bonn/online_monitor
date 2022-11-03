@@ -41,7 +41,7 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install -r requirements.txt
-          pip install coverage coveralls blosc
+          pip install blosc
 
       - name: Package installation
         shell: bash -l {0}
@@ -74,6 +74,7 @@ jobs:
           if [[ "$RUNNER_OS" == "Linux" ]];
           then
             echo "Testing on $RUNNER_OS"
+            pip install coverage coveralls nose
             coverage run --source=online_monitor -m nosetests online_monitor/testing/
             coveralls
           fi
