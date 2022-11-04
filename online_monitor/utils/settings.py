@@ -8,7 +8,6 @@ _file_name = os.path.dirname(sys.modules[__name__].__file__) + r'/../OnlineMonit
 
 
 def check_package_initialized():
-    print("heeeeeelllllooooo")
     config = configparser.ConfigParser()
     config.read(_file_name)
     initialized = False
