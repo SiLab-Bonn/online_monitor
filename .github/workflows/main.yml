@@ -47,6 +47,7 @@ jobs:
         run: pip install -e .
 
       - name: Qt5 defaults
+        shell: bash -l {0}
         run: |
           if [[ "$RUNNER_OS" == "Linux" ]];
           then
