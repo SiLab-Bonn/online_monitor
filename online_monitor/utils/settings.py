@@ -7,6 +7,45 @@ import configparser
 _file_name = os.path.dirname(sys.modules[__name__].__file__) + r'/../OnlineMonitor.ini'
 
 
+def check_package_initialized():
+    print("heeeeeelllllooooo")
+    config = configparser.ConfigParser()
+    config.read(_file_name)
+    initialized = False
+    try:
+        initialized = ast.literal_eval(config.get('OnlineMonitor', 'initialized'))
+    except configparser.NoSectionError:
+        config.add_section('OnlineMonitor')
+        config.set('OnlineMonitor', 'initialized', str(False))
+        with open(_file_name, 'w') as f:
+            config.write(f)
+    
+    if not initialized:
+        initialize_monitor()
+
+
+def initialize_monitor():
+
+    ini_path = os.path.dirname(_file_name)
+    generate_abspath = lambda *keys: os.path.abspath(os.path.join(ini_path, *keys))
+
+    # Add online_monitor plugin folder to entity search paths
+    add_producer_sim_path(generate_abspath('utils'))
+    add_converter_path(generate_abspath('converter'))
+    add_receiver_path(generate_abspath('receiver'))
+
+    # Add example online_monitor plugins to entity search paths
+    add_producer_sim_path(generate_abspath('examples', 'producer_sim'))
+    add_converter_path(generate_abspath('examples', 'converter'))
+    add_receiver_path(generate_abspath('examples', 'receiver'))
+
+    config = configparser.ConfigParser()
+    config.read(_file_name)
+    config.set('OnlineMonitor', 'initialized', str(True))
+    with open(_file_name, 'w') as f:
+        config.write(f)
+    
+
 def add_converter_path(path):  # path where to search for converter modules
     config = configparser.ConfigParser()
     config.read(_file_name)
@@ -129,6 +168,5 @@ def get_window_geometry():
     config.read(_file_name)
     try:
         return ast.literal_eval(config.get('OnlineMonitor', 'geometry'))
-    except configparser.NoSectionError:
+    except configparser.NoOptionError:
         return (100, 100, 1024, 768)  # std. settings
-
