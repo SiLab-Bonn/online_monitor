@@ -36,20 +36,17 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{matrix.python-version}}
+          cache: 'pip'
 
       - name: Dependency installation
-        shell: bash -l {0}
         run: |
           pip install -r requirements.txt
           pip install blosc
 
       - name: Package installation
-        shell: bash -l {0}
-        run: |
-          pip install -e .
+        run: pip install -e .
 
       - name: Qt5 defaults
-        shell: bash -l {0}
         run: |
           if [[ "$RUNNER_OS" == "Linux" ]];
           then
@@ -67,17 +64,28 @@ jobs:
         uses: pyvista/setup-headless-display-action@v1
 
       - name: Testing on branch -> ${{github.head_ref || github.ref_name}}
-        shell: bash -l {0}
+        run: pytest online_monitor
+
+  coveralls:
+
+    name: Generating coverage report and upload to coveralls.io
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+
+      - name: Qt5 defaults
+        run: sudo apt-get install qt5-default  
+
+      - name: Coverage report and upload  
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [[ "$RUNNER_OS" == "Linux" ]] && [[ ${{matrix.python-version}} == "3.9" ]];
-          then
-            echo "Generating coverage on $RUNNER_OS, Python ${{matrix.python-version}}"
-            pip install coverage coveralls 
-            coverage run --source=online_monitor -m pytest online_monitor/testing/
-            coveralls --service=github
-          else
-            echo "Testing on $RUNNER_OS"  
-            pytest online_monitor
-          fi
+          pip install coverage coveralls 
+          coverage run --source=online_monitor -m pytest online_monitor/testing/
+          coveralls --service=github
+          
