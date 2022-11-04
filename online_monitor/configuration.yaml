@@ -13,7 +13,7 @@ converter :
         kind : example_converter
         frontend : tcp://127.0.0.1:5500
         backend : tcp://127.0.0.1:5680
-        max_cpu_load : 30
+        max_buffer : 30
         threshold : 8
     DUT1 :
          kind : forwarder

@@ -19,7 +19,7 @@ converter :
         kind : forwarder
         frontend : tcp://127.0.0.1:5500
         backend : tcp://127.0.0.1:5601
-        max_cpu_load : 30
+        max_buffer : 30
     CON2 :
         kind : bidirectional_converter
         frontend : tcp://127.0.0.1:5500
