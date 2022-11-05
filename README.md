@@ -6,6 +6,7 @@
 
 The last stable code is hosted on PyPi. Thus for installation type:
 ```
+pip install --upgrade pip
 pip install online_monitor
 ```
 
