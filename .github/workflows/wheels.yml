@@ -25,7 +25,7 @@ jobs:
       
     - uses: actions/upload-artifact@v2
       with:
-        path: ./wheels/*.whl
+        path: ./wheels/online_monitor*.whl
 
   build_sdist:
     name: Build source distribution
@@ -46,4 +46,4 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          path: dist/*.tar.gz
+          path: dist/online_monitor*.tar.gz
