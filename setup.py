@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 
 
-version = '0.5.1'
+version = '0.5.2'
 author = 'David-Leon Pohl'
 author_email = 'pohl@physik.uni-bonn.de'
 maintainer = 'Pascal Wolf'

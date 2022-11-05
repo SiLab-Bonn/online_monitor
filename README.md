@@ -83,6 +83,10 @@ my_custom_grid_layout = QtWidgets.QGridLayout()
 my_custom_signal = QtCore.pyqtSignal(str)
 ...
 ```
+
+# Custom producer
+The producer allows to replay previously recorded data at a custom replay rate. For most SiLAB-type DAQ systems, the [silab_default_producer](online_monitor/examples/producer_sim/silab_default_producer.py) works out-of-the box and is automatically availabe after install.
+
 # Testing
 Everything is tested on Windows and Linux for Python 3.8/9 with coverage.
 Have a look at the [tests](online_monitor/testing) as well as the respective [GH actions](https://github.com/SiLab-Bonn/online_monitor/actions) and [coverall.io](https://coveralls.io/github/SiLab-Bonn/online_monitor) pages. 
