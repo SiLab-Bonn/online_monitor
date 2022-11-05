@@ -43,6 +43,8 @@ setup(
             'start_online_monitor = online_monitor.start_online_monitor:main',
             # Helper function to clean up crashed instances
             'stop_online_monitor = online_monitor.stop_online_monitor:main',
+            # Conveinience function to easially plugin online monitor 
+            'plugin_online_monitor = online_monitor.plugin_online_monitor:main',
         ]
     },
     platforms='any'
