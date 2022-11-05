@@ -61,14 +61,14 @@ start_converters configuration.yaml
 # Custom plugins
 To use your own `online_monitor` plugins within your e.g. DAQ system, you have to add your respective converter / receiver/ etc paths to the [OnlineMonitor.ini](online_monitor/OnlineMonitor.ini). This can be done by using the `plugin_online_monitor` script, running
 ```
-plugin_online_monitor path/to/my/plugin
+plugin_online_monitor path/to/my/plugin/folder
 ```
 or
 ```
-cd path/to/my/plugin
+cd path/to/my/plugin/folder
 plugin_online_monitor
 ```
-This makes all converter / receiver / etc. instances within `path/to/plugin` available to `online_monitor`.
+This makes all converter / receiver / etc. instances within `path/to/plugin/folder` available to `online_monitor`.
 
 # Custom receiver
 Have a look at [the examples](online_monitor/examples/receiver).
