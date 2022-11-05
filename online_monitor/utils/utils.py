@@ -121,8 +121,8 @@ def _factory(importname, base_class_type, path=None, *args, **kargs):
 # importname; return first occurence
 def load_producer_sim(importname, base_class_type, *args, **kargs):
     # Try to find converter in given sim producer paths
-    # Loop over all paths
-    for producer_sim_path in settings.get_producer_sim_path():
+    # Loop over all paths, also look in current path 
+    for producer_sim_path in settings.get_producer_sim_path() + [os.getcwd()]:
         try:
             return _factory(importname, base_class_type, producer_sim_path, *args, **kargs)
         except IOError:  # Module not found in actual path
@@ -141,8 +141,8 @@ def load_converter(importname, base_class_type, *args, **kargs):
     except ImportError:  # converter is not defined in online_monitor
         pass
     # Module not is not a online monitor module, try to find converter in
-    # given converter paths
-    for converter_path in settings.get_converter_path():
+    # given converter paths, also look in current path
+    for converter_path in settings.get_converter_path() + [os.getcwd()]:
         try:
             return _factory(importname, base_class_type, converter_path,
                             *args, **kargs)
@@ -162,8 +162,8 @@ def load_receiver(importname, base_class_type, *args, **kargs):
     except ImportError:  # converter is not defined in online_monitor
         pass
     # Module not is not a online monitor module, try to find receiver in given
-    # converter paths
-    for receiver_path in settings.get_receiver_path():
+    # converter paths, also look in current path
+    for receiver_path in settings.get_receiver_path() + [os.getcwd()]:
         try:
             return _factory(importname, base_class_type, receiver_path, *args, **kargs)
         except IOError:  # Module not found in actual path
