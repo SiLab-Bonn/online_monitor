@@ -81,12 +81,6 @@ class TestStartScripts(unittest.TestCase):
         with open(cls.config_path, 'w') as outfile:
             config_file = create_config_yaml()
             outfile.write(config_file)
-        # linux CI travis runs headless, thus virtual x server is needed for
-        # gui testing
-        if os.getenv('TRAVIS', False):
-            from xvfbwrapper import Xvfb
-            cls.vdisplay = Xvfb()
-            cls.vdisplay.start()
 
     @classmethod
     def tearDownClass(cls):  # remove created files
