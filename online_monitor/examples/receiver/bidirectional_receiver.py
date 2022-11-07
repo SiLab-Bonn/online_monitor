@@ -13,6 +13,7 @@ from online_monitor.utils import utils
 class ExampleReceiver(Receiver):
 
     def setup_receiver(self):
+        self.plot_data = None
         self.set_bidirectional_communication()  # We want to change converter settings
 
     def setup_widgets(self, parent, name):
@@ -52,4 +53,8 @@ class ExampleReceiver(Receiver):
     def handle_data(self, data):
         for actual_data_type, actual_data in data.items():
             if 'time_stamp' not in actual_data_type:  # time stamp info is not plotted
-                self.position_img.setImage(actual_data[:], autoDownsample=True)
+                self.plot_data = actual_data[:]
+
+    def refresh_data(self):
+        if self.plot_data is not None:
+            self.position_img.setImage(self.plot_data, autoDownsample=True)
