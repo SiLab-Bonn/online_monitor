@@ -1,12 +1,12 @@
 producer_sim :
     DAQ0 :
         kind : example_producer_sim
-        delay : 0.2
+        delay : 0.02
         backend : tcp://127.0.0.1:5500
         
     DAQ1 :
         kind : example_producer_sim
-        delay : 0.2
+        delay : 0.02
         backend : tcp://127.0.0.1:5501
 
 converter :
