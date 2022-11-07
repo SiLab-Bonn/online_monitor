@@ -14,7 +14,7 @@ from importlib.machinery import SourceFileLoader
 from importlib import import_module
 from inspect import getmembers, isclass
 from online_monitor.utils import settings
-from matplotlib.cm import get_cmap
+from matplotlib import colormaps
 from copy import copy
 
 # Installing blosc can be troublesome under windows, thus do not requiere it
@@ -26,7 +26,7 @@ except ImportError:
 
 def lut_from_colormap(cm_name='viridis'):
     # https://github.com/pyqtgraph/pyqtgraph/issues/561
-    colormap = copy(get_cmap(cm_name))
+    colormap = copy(colormaps[cm_name])
     colormap._init()
     return (colormap._lut[:-3] * 255).astype(np.uint8)
 
