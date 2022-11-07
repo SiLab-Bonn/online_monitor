@@ -6,6 +6,8 @@ from threading import Event
 from online_monitor.utils import utils
 
 
+
+
 class DataWorker(QtCore.QObject):
     data = QtCore.pyqtSignal(dict)
     finished = QtCore.pyqtSignal()
@@ -61,6 +63,24 @@ class Receiver(QtCore.QObject):
     Usage:
     '''
 
+    @property
+    def refresh_rate(self):
+        return self._refresh_rate
+
+    @refresh_rate.setter
+    def refresh_rate(self, rate):
+
+        if isinstance(rate, (int, float)):
+            
+            if rate == 0:
+                logging.warning(f"{self.name} receiver refreshing stopped. Data is not buffered!")
+                self.refresh_timer.stop()
+            else:
+                logging.debug(f"{self.name} receiver refreshing at {rate} Hz!")
+                self.refresh_timer.start(int(1e3 / rate))  # timer interval needs to be given in ms
+            
+        self._refresh_rate = rate        
+
     def __init__(self, frontend, kind, name='Undefined', loglevel='INFO', **kwarg):
         QtCore.QObject.__init__(self)
         self.kind = kind
@@ -80,6 +100,13 @@ class Receiver(QtCore.QObject):
         self.setup_receiver_device()
 
         self.setup_receiver()
+
+        # Qtimer to detach plot refresh rate from data rate
+        self.refresh_timer = QtCore.QTimer()
+        self.refresh_timer.timeout.connect(self.refresh_data)
+        self.refresh_rate = None  # go as fast as data
+
+        self._deprecation_warning_handle_data_issued = False
 
     def set_bidirectional_communication(self):
         self.socket_type = zmq.DEALER
@@ -128,6 +155,8 @@ class Receiver(QtCore.QObject):
         ''' Forwards data to data handling function if reveiver is active'''
         if self._active:
             self.handle_data(data)
+            if self.refresh_rate is None:
+                self.refresh_data()
 
     def setup_receiver(self):
         ''' Method can be defined to setup receiver specific parameters
@@ -147,6 +176,15 @@ class Receiver(QtCore.QObject):
         '''
         raise NotImplementedError('You have to implement a handle_data '
                                   'method!')
+
+    def refresh_data(self):
+        ''' Method can be defined to detach data handling from refreshing plot data
+        '''
+        if not self._deprecation_warning_handle_data_issued:
+            warning_msg =  "Plotting in the 'handle_data' method is deprecated. Use the 'refresh_data' to plot e.g. set data to a pg.ImageItem, allowing to separate data handling from visualization" 
+            logging.warning('DeprecationWarning: ' + warning_msg)
+            self._deprecation_warning_handle_data_issued = True
+
 
     def send_command(self, command):
         ''' Send command to transceiver

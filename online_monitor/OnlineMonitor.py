@@ -20,6 +20,44 @@ class OnlineMonitorApplication(QtWidgets.QMainWindow):
         self.setup_style()
         self.setup_widgets()
         self.receivers = self.start_receivers()
+        self.add_refresh_toolbar()
+
+    def add_refresh_toolbar(self):
+
+        menu_bar = self.menuBar()
+        settings_menu = menu_bar.addMenu('Settings')
+        
+        refresh_toolbar = self.addToolBar('Refresh rates')
+        settings_menu.addAction(refresh_toolbar.toggleViewAction())
+        refresh_toolbar.addWidget(QtWidgets.QLabel('Receiver refresh rates'))
+        refresh_toolbar.addSeparator()
+        
+        # Loop over receivers and make widgets
+        for recv in self.receivers:
+            widget_recv = QtWidgets.QWidget()
+            layout_recv = QtWidgets.QHBoxLayout()
+            widget_recv.setLayout(layout_recv)
+            label_recv = QtWidgets.QLabel(f'{recv.name}:')
+            spinbox_recv = QtWidgets.QSpinBox()
+            spinbox_recv.setRange(0, 100)
+            spinbox_recv.setSuffix(' Hz')
+            spinbox_recv.setValue(10)
+            checkbox_unlock = QtWidgets.QCheckBox('unlocked')
+            checkbox_unlock.setToolTip("Unlock refresh rate to match data rate")
+
+            # Connections
+            checkbox_unlock.stateChanged.connect(lambda state, spbx=spinbox_recv: spbx.setEnabled(not state))
+            checkbox_unlock.stateChanged.connect(lambda state, r=recv, spbx=spinbox_recv:
+                                                     setattr(r, 'refresh_rate', None if state else spbx.value()))
+            spinbox_recv.valueChanged.connect(lambda val, r=recv: setattr(r, 'refresh_rate', val))
+            
+            spinbox_recv.valueChanged.emit(spinbox_recv.value())
+
+            layout_recv.addWidget(label_recv)
+            layout_recv.addWidget(spinbox_recv)
+            layout_recv.addWidget(checkbox_unlock)
+            refresh_toolbar.addWidget(widget_recv)
+            refresh_toolbar.addSeparator()
 
     def closeEvent(self, event):
         super(OnlineMonitorApplication, self).closeEvent(event)
