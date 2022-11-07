@@ -24,6 +24,7 @@ class ExampleReceiver(Receiver):
         position_graphics.show()
         view = position_graphics.addViewBox()
         self.position_img = pg.ImageItem(border='w')
+        self.position_img.setLookupTable(utils.lut_from_colormap('plasma'))
         view.addItem(self.position_img)
         dock_position.addWidget(position_graphics)
 
