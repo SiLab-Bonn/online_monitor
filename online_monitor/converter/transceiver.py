@@ -223,7 +223,7 @@ class Transceiver(multiprocessing.Process):
                 if data is not None and len(data) != 0:
                     self.send_data(data)
             else:
-                logging.warning('Converter cannot keep up, omitting data for interpretation!')
+                logging.warning(f'Converter {self.name} cannot keep up, omitting data for interpretation!')
 
         self.be_stop.set()
         be_thread.join()
