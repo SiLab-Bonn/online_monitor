@@ -182,7 +182,7 @@ class Receiver(QtCore.QObject):
         '''
         if not self._deprecation_warning_handle_data_issued:
             warning_msg =  "Plotting in the 'handle_data' method is deprecated. Use the 'refresh_data' to plot e.g. set data to a pg.ImageItem, allowing to separate data handling from visualization" 
-            logging.warning(f'DeprecationWarning in {self.name}: ' + warning_msg)
+            logging.warning(f'DeprecationWarning in {self.name} receiver: ' + warning_msg)
             self._deprecation_warning_handle_data_issued = True
 
 
