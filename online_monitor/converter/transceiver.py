@@ -4,7 +4,7 @@ import zmq
 import logging
 import signal
 import psutil
-import queue as queue
+from queue import Queue
 from online_monitor.utils import utils
 
 
@@ -113,7 +113,7 @@ class Transceiver(multiprocessing.Process):
             actual_frontend[1].connect(actual_frontend_address)
             self.frontends.append(actual_frontend)
             self.fe_poller.register(actual_frontend[1], zmq.POLLIN)
-        self.raw_data = queue.Queue()
+        self.raw_data = Queue()
         self.fe_stop = threading.Event()
 
     def _setup_backend(self):
