@@ -68,15 +68,12 @@ class Transceiver(multiprocessing.Process):
         # just one frontend socket given
         if not isinstance(self.frontend_address, list):
             self.frontend_address = [self.frontend_address]
-            self.n_frontends = 1
-        else:
-            self.n_frontends = len(self.frontend_address)
+        self.n_frontends = len(self.frontend_address)
+        
         # just one backend socket given
         if not isinstance(self.backend_address, list):
             self.backend_address = [self.backend_address]
-            self.n_backends = 1
-        else:
-            self.n_backends = len(self.backend_address)
+        self.n_backends = len(self.backend_address)
 
         self.exit = multiprocessing.Event()  # exit signal
 
