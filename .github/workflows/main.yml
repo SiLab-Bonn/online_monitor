@@ -51,7 +51,7 @@ jobs:
           if [[ "$RUNNER_OS" == "Linux" ]];
           then
             echo "Qt5 default installation on $RUNNER_OS"
-            sudo apt-get install qt5-default
+            sudo apt-get install qttools5-dev-tools
           fi
 
           if [[ "$RUNNER_OS" == "Windows" ]];
@@ -85,7 +85,7 @@ jobs:
           pip install -r requirements.txt
           pip install blosc
           pip install -e .
-          sudo apt-get install qt5-default
+          sudo apt-get install qttools5-dev-tools
           
       - name: Headless display setup
         uses: pyvista/setup-headless-display-action@v1    
