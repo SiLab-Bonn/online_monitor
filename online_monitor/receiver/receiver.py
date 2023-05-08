@@ -2,6 +2,7 @@ from PyQt5 import QtCore
 import zmq
 import logging
 from threading import Event
+from queue import Queue
 
 from online_monitor.utils import utils
 
@@ -16,7 +17,7 @@ class DataWorker(QtCore.QObject):
         QtCore.QObject.__init__(self)
         self.deserializer = deserializer
         self._stop_readout = Event()
-        self._send_data = None
+        self._data_out = Queue()
 
     def connect_zmq(self, frontend_address, socket_type):
         self.context = zmq.Context()
@@ -33,26 +34,23 @@ class DataWorker(QtCore.QObject):
         ''' Infinite loop via QObject.moveToThread(), does not block event loop
         '''
         while(not self._stop_readout.wait(0.01)):  # use wait(), do not block
-            if self._send_data:
+            if not self._data_out.empty():
                 if self.socket_type != zmq.DEALER:
                     raise RuntimeError('You send data without a bidirectional '
                                        'connection! Define a bidirectional '
                                        'connection.')
-                self.receiver.send_json(self._send_data)
-                self._send_data = None
-            try:
+                self.receiver.send_json(self.data_out.get_nowait())
+            if self.receiver.poll(timeout=1, flags=zmq.POLLIN):
                 data_serialized = self.receiver.recv(flags=zmq.NOBLOCK)
                 data = self.deserializer(data_serialized)
                 self.data.emit(data)
-            except zmq.Again:
-                pass
         self.finished.emit()
 
     def shutdown(self):
         self._stop_readout.set()
 
-    def send_data(self, data):  # FIXME: not thread safe
-        self._send_data = data
+    def send_data(self, data):
+        self._data_out.put_nowait(data)
 
 
 class Receiver(QtCore.QObject):
