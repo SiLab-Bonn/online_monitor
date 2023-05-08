@@ -46,7 +46,7 @@ class Transceiver(multiprocessing.Process):
 
     def __init__(self, frontend, backend, kind, name='Undefined',
                  max_buffer=None, loglevel='INFO', **kwarg):
-        multiprocessing.Process.__init__(self)
+        super(Transceiver, self).__init__()
 
         self.kind = kind  # kind of transeiver (e.g. forwarder)
         self.frontend_address = frontend  # socket facing a data publisher
