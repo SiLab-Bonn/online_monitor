@@ -5,8 +5,6 @@ import time
 import numpy as np
 import zmq
 
-from zmq.tests import BaseZMQTestCase
-
 from online_monitor.utils import utils
 
 
@@ -106,23 +104,49 @@ def recv_std(socket):
     return data_with_meta_data['data']
 
 
-class TestSerialization(BaseZMQTestCase):
+class TestSerialization(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        cls.ctx = zmq.Context()
+
+        cls.sock_A = cls.ctx.socket(zmq.PAIR)
+        cls.sock_A.setsockopt(zmq.LINGER, 0)
+        port = cls.sock_A.bind_to_random_port('tcp://127.0.0.1')
+
+        cls.sock_B = cls.ctx.socket(zmq.PAIR)
+        cls.sock_B.setsockopt(zmq.LINGER, 0)
+        cls.sock_B.connect(f'tcp://127.0.0.1:{port}')
+
+        time.sleep(1)
+
+        return super().setUpClass()
+    
+    @classmethod
+    def tearDownClass(cls):
+
+        cls.sock_A.close()
+        cls.sock_B.close()
+        cls.ctx.term()
+
+        return super().tearDownClass()
+
     def test_std_send_rcv(self):
         ''' Serialization schema for numpy arrays using json
 
             https://stackoverflow.com/questions/27909658/json-encoder-and-decoder-for-complex-numpy-arrays
             Works also with record arrays
         '''
-        a, b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         # UInt32 array data
         data, scan_par_id = get_test_raw_data()
-        send_std(socket=a, data=data, scan_par_id=scan_par_id, name='testdata')
-        A = recv_std(socket=b)
+        send_std(socket=self.sock_A, data=data, scan_par_id=scan_par_id, name='testdata')
+        A = recv_std(socket=self.sock_B)
         np.testing.assert_array_equal(data[0], A)
         # Record array data
         data, scan_par_id = get_test_rec_array_data()
-        send_std(socket=a, data=data, scan_par_id=scan_par_id, name='testdata')
-        A = recv_std(socket=b)
+        send_std(socket=self.sock_A, data=data, scan_par_id=scan_par_id, name='testdata')
+        A = recv_std(socket=self.sock_B)
         self.assertTrue((data[0] == A).all())
 
     def test_normal_send_rcv(self):
@@ -131,12 +155,11 @@ class TestSerialization(BaseZMQTestCase):
             https://pyzmq.readthedocs.io/en/latest/serialization.html
             Not working for record arrays
          '''
-        a, b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         time.sleep(0.5)  # needed to setup socket pair, otherwise first message might be not send
         data, scan_par_id = get_test_raw_data()
         # UInt32 array data
-        send_normal(socket=a, data=data, scan_par_id=scan_par_id, name='testdata')
-        A = recv_normal(socket=b)
+        send_normal(socket=self.sock_A, data=data, scan_par_id=scan_par_id, name='testdata')
+        A = recv_normal(socket=self.sock_B)
         np.testing.assert_array_equal(data[0], A)
         # Record array data
 
@@ -146,16 +169,15 @@ class TestSerialization(BaseZMQTestCase):
             Works also with record arrays and is 20% faster than
             https://stackoverflow.com/questions/27909658/json-encoder-and-decoder-for-complex-numpy-arrays
         '''
-        a, b = self.create_bound_pair(zmq.PAIR, zmq.PAIR)
         # UInt32 array data
         data, scan_par_id = get_test_raw_data()
-        send_simple(socket=a, data=data, scan_par_id=scan_par_id, name='testdata')
-        A = recv_simple(socket=b)
+        send_simple(socket=self.sock_A, data=data, scan_par_id=scan_par_id, name='testdata')
+        A = recv_simple(socket=self.sock_B)
         np.testing.assert_array_equal(data[0], A)
         # Record array data
         data, scan_par_id = get_test_rec_array_data()
-        send_simple(socket=a, data=data, scan_par_id=scan_par_id, name='testdata')
-        A = recv_simple(socket=b)
+        send_simple(socket=self.sock_A, data=data, scan_par_id=scan_par_id, name='testdata')
+        A = recv_simple(socket=self.sock_B)
         self.assertTrue((data[0] == A).all())
 
 

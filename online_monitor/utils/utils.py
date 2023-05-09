@@ -10,7 +10,7 @@ import numpy as np
 import struct
 import pickle as pickle
 from array import array
-from importlib.machinery import SourceFileLoader
+import importlib.util as imp_util
 from importlib import import_module
 from inspect import getmembers, isclass
 from online_monitor.utils import settings
@@ -112,7 +112,9 @@ def _factory(importname, base_class_type, path=None, *args, **kargs):
         sys.path.append(path)
         # Absolute full path of python module
         absolute_path = os.path.join(path, importname) + '.py'
-        module = SourceFileLoader(importname, absolute_path).load_module()
+        spec = imp_util.spec_from_file_location(importname, absolute_path)
+        module = imp_util.module_from_spec(spec)
+        spec.loader.exec_module(module)        
     else:
         module = import_module(importname)
 
