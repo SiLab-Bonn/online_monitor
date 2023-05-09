@@ -133,6 +133,7 @@ class OnlineMonitorApplication(QtWidgets.QMainWindow):
             try:
                 if self.configuration['converter']:
                     try:
+                        # FIXME: that does not at all do what it should... PROD <-> CONV <-> RECV should be matched by front-/backend addresses, not by name of the receiver... 
                         actual_converter = self.configuration['converter'][receiver_name]
                         view = status_graphics_widget.addViewBox(row=receiver_index, col=1, lockAspect=True, enableMouse=False)
                         text = pg.TextItem('Producer\n%s' % receiver_name, border='b', fill=(0, 0, 255, 100), anchor=(0.5, 0.5), color=(0, 0, 0, 200))
