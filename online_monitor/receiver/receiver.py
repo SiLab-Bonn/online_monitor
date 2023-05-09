@@ -1,6 +1,7 @@
-from PyQt5 import QtCore
 import zmq
 import logging
+import traceback
+from PyQt5 import QtCore
 from threading import Event
 from queue import Queue
 
@@ -8,49 +9,69 @@ from online_monitor.utils import utils
 
 
 
+class QtWorkerSignals(QtCore.QObject):
 
-class DataWorker(QtCore.QObject):
-    data = QtCore.pyqtSignal(dict)
     finished = QtCore.pyqtSignal()
+    exception = QtCore.pyqtSignal(Exception, str)
+    timeout = QtCore.pyqtSignal()
 
-    def __init__(self, deserializer):
-        QtCore.QObject.__init__(self)
-        self.deserializer = deserializer
-        self._stop_readout = Event()
-        self._data_out = Queue()
 
-    def connect_zmq(self, frontend_address, socket_type):
-        self.context = zmq.Context()
-        self.receiver = self.context.socket(socket_type)  # subscriber
-        self.socket_type = socket_type
-        # A subscriber has to set to not filter any data
-        if self.socket_type == zmq.SUB:
-            self.receiver.setsockopt_string(zmq.SUBSCRIBE, u'')
-        # Buffer only 10 meassages, then throw data away
-        self.receiver.set_hwm(10)
-        self.receiver.connect(frontend_address)
+class QtWorker(QtCore.QRunnable):
+    """
+    Implements a worker on which functions can be executed for multi-threading within Qt.
+    The worker is an instance of QRunnable, which can be started and handled automatically by Qt and its QThreadPool.
+    """
 
-    def receive_data(self):  # pragma: no cover; no covered since qt event loop
-        ''' Infinite loop via QObject.moveToThread(), does not block event loop
-        '''
-        while(not self._stop_readout.wait(0.01)):  # use wait(), do not block
-            if not self._data_out.empty():
-                if self.socket_type != zmq.DEALER:
-                    raise RuntimeError('You send data without a bidirectional '
-                                       'connection! Define a bidirectional '
-                                       'connection.')
-                self.receiver.send_json(self._data_out.get_nowait())
-            if self.receiver.poll(timeout=1, flags=zmq.POLLIN):
-                data_serialized = self.receiver.recv(flags=zmq.NOBLOCK)
-                data = self.deserializer(data_serialized)
-                self.data.emit(data)
-        self.finished.emit()
+    def __init__(self, func, *args, **kwargs):
+        super(QtWorker, self).__init__()
 
-    def shutdown(self):
-        self._stop_readout.set()
+        # Main function which will be executed on this thread
+        self.func = func
+        # Arguments of main function
+        self.args = args
+        # Keyword arguments of main function
+        self.kwargs = kwargs
 
-    def send_data(self, data):
-        self._data_out.put_nowait(data)
+        # Needs to be done this way since QRunnable cannot emit signals; QObject needed
+        self.signals = QtWorkerSignals()
+
+        # Timer to inform that a timeout occurred
+        self.timer = QtCore.QTimer()
+        self.timer.setSingleShot(True)
+        self.timeout = None
+
+    def set_timeout(self, timeout):
+        self.timeout = int(timeout)
+
+    @QtCore.pyqtSlot()
+    def run(self):
+        """
+        Runs the function func with given arguments args and keyword arguments kwargs.
+        If errors or exceptions occur, a signal sends the exception to main thread.
+        """
+
+        # Start timer if needed
+        if self.timeout is not None:
+            self.timer.timeout.connect(self.signals.timeout.emit())
+            self.timer.start(self.timeout)
+
+        try:
+            if self.args and self.kwargs:
+                self.func(*self.args, **self.kwargs)
+            elif self.args:
+                self.func(*self.args)
+            elif self.kwargs:
+                self.func(**self.kwargs)
+            else:
+                self.func()
+
+        except Exception as e:
+            # Format traceback and send
+            trc_bck = traceback.format_exc()
+            # Emit exception signal
+            self.signals.exception.emit(e, trc_bck)
+
+        self.signals.finished.emit()
 
 
 class Receiver(QtCore.QObject):
@@ -60,6 +81,8 @@ class Receiver(QtCore.QObject):
 
     Usage:
     '''
+
+    data = QtCore.pyqtSignal(dict)
 
     @property
     def refresh_rate(self):
@@ -89,8 +112,8 @@ class Receiver(QtCore.QObject):
         self._active = False
         # Standard is unidirectional communication with PUB/SUB pattern
         self.socket_type = zmq.SUB
-
-        self.frontend_address = self.frontend_address
+        self.ctx = zmq.Context()
+        self.threadpool = QtCore.QThreadPool()
 
         utils.setup_logging(loglevel)
         logging.debug("Initialize %s receiver %s at %s", self.kind, self.name,
@@ -105,6 +128,35 @@ class Receiver(QtCore.QObject):
         self.refresh_rate = None  # go as fast as data
 
         self._deprecation_warning_handle_data_issued = False
+        self._stop_recv_data = Event()
+        self._cmd_queue = Queue()
+
+    def _receive_data(self):
+        """
+        This function is run as a QRunnable in a different thread;
+        Therefore create sockets in here.
+        """
+        receiver = self.ctx.socket(self.socket_type)
+        receiver.setsockopt(zmq.RCVTIMEO, int(100))  # wait up to 100 ms for data
+        # A subscriber has to set to not filter any data
+        if self.socket_type == zmq.SUB:
+            receiver.setsockopt(zmq.SUBSCRIBE, b'')
+        # Buffer only 10 meassages, then throw data away
+        receiver.set_hwm(10)
+        receiver.connect(self.frontend_address)
+
+        while not self._stop_recv_data.is_set():
+
+            # We want to check for outgoing commands if we have a dealer
+            while not self._cmd_queue.empty() and self.socket_type == zmq.DEALER:
+                # Push out all commands in the queue
+                receiver.send_json(self._cmd_queue.get_nowait())
+
+            try:
+                data = self.deserialize_data(receiver.recv())
+                self.data.emit(data)
+            except zmq.Again:
+                pass
 
     def set_bidirectional_communication(self):
         self.socket_type = zmq.DEALER
@@ -112,38 +164,32 @@ class Receiver(QtCore.QObject):
     def setup_receiver_device(self):  # start new receiver thread
         logging.info("Start %s receiver %s at %s", self.kind, self.name,
                      self.frontend_address)
-        self.thread = QtCore.QThread()  # no parent
-
-        self.worker = DataWorker(self.deserialize_data)  # no parent
-        # move worker instance to new thread
-        self.worker.moveToThread(self.thread)
+        
+        self.qt_worker = QtWorker(func=self._receive_data)
 
     # Slot called if the receiver tab widget gets active
     def active(self, value):
         self._active = value
 
     def start(self):
-        # Connect to ZMQ publisher
-        self.worker.connect_zmq(self.frontend_address, self.socket_type)
-        # Quit thread on worker finished
-        self.worker.finished.connect(self.thread.quit)
+        
         # Activate data handle
-        self.worker.data.connect(self.handle_data_if_active)
+        self.data.connect(self.handle_data_if_active)
 
-        # Start receive data loop when thread starts
-        self.thread.started.connect(self.worker.receive_data)
         # Print on thread finished info
-        self.thread.finished.connect(self.finished_info)
-        self.thread.start()  # start thread
+        self.qt_worker.signals.finished.connect(self.finished_info)
+        
+        # Start the runnable
+        self.threadpool.start(self.qt_worker)
 
     def shutdown(self):
+        
         # Set signal to quit receive loop; can take some time
-        self.worker.shutdown()
-        # Tell thread to exit, loop is/should be terminated already
-        self.thread.exit()
+        self._stop_recv_data.set()
+        
         # Delay needed if thread did not exit yet, otherwise message:
         # QThread: Destroyed while thread is still running
-        self.thread.wait(500)
+        self.threadpool.waitForDone(500)
 
     def finished_info(self):  # called when thread finished successfully
         logging.info("Close %s receiver %s at %s", self.kind, self.name,
@@ -189,7 +235,7 @@ class Receiver(QtCore.QObject):
 
             Has to be json serializable
         '''
-        self.worker.send_data(command)
+        self._cmd_queue.put_nowait(command)
 
     def deserialize_data(self, data):
         ''' Has to convert the data do a python dict '''
