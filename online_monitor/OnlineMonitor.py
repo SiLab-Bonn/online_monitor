@@ -93,7 +93,7 @@ class OnlineMonitorApplication(QtWidgets.QMainWindow):
 
     def on_tab_changed(self, value):
         for index, actual_receiver in enumerate(self.receivers, start=1):  # First index is status tab widget
-            actual_receiver.active(True if index == value else False)
+            actual_receiver.active(index == value)
 
     def stop_receivers(self):
         if self.receivers:
