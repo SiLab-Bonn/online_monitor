@@ -39,7 +39,7 @@ class DataWorker(QtCore.QObject):
                     raise RuntimeError('You send data without a bidirectional '
                                        'connection! Define a bidirectional '
                                        'connection.')
-                self.receiver.send_json(self.data_out.get_nowait())
+                self.receiver.send_json(self._data_out.get_nowait())
             if self.receiver.poll(timeout=1, flags=zmq.POLLIN):
                 data_serialized = self.receiver.recv(flags=zmq.NOBLOCK)
                 data = self.deserializer(data_serialized)
