@@ -52,3 +52,4 @@ version = {attr = "online_monitor.__version__"}
 
 [tool.setuptools]
 packages = ["online_monitor"]
+
