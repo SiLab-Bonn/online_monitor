@@ -21,7 +21,7 @@ dependencies = [
     "pyyaml",  # configuration parsing
     "psutil", # to get process stats
     "pyqtgraph>=0.13",  # plotting library
-    "pyqt5==5.15.2",  # https://stackoverflow.com/questions/65447314/attributeerror-module-sipbuild-api-has-no-attribute-prepare-metadata-for-bui/65449548#65449548
+    "pyqt5>=5.15.10",
     "pytest",
     "matplotlib",  # generate colormaps for lookuptables
     "testfixtures",  # for unittests with logging output inspection
@@ -52,3 +52,4 @@ version = {attr = "online_monitor.__version__"}
 
 [tool.setuptools]
 packages = ["online_monitor"]
+
