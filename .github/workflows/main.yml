@@ -59,7 +59,7 @@ jobs:
       - name: Testing on branch -> ${{github.head_ref || github.ref_name}}
         run: pytest online_monitor
 
-  # coveralls:
+  coveralls:
 
     name: Generating coverage report and upload to coveralls.io
     runs-on: ubuntu-latest
