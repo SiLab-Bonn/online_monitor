@@ -26,7 +26,7 @@ jobs:
 
     - name: Build wheels
       run:
-        python -m pip wheel --whell-dir=./wheels .
+        python -m pip wheel --wheel-dir=./wheels .
 
     - uses: actions/upload-artifact@v4
       with:
