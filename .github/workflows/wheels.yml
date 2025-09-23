@@ -9,7 +9,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubunu-22-04, ubuntu-24.04]  # , windows-2025, macos-15]
+        os: [ubunu-22.04, ubuntu-24.04]  # , windows-2025, macos-15]
         python_version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
     - uses: actions/checkout@v5
@@ -30,7 +30,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: ${{matrix.os}}-py${{matrix.python_version}}
+        name: ${{matrix.os}}-py${{matrix.python_version}}.whl
         path: ./wheels/*.whl
 
   merge:
