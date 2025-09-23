@@ -30,7 +30,18 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
+        name: ${{matrix.os}}-py${{matrix.python_version}}
         path: ./wheels/*.whl
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: build_wheels
+    steps:
+    - name: Merge artifacts
+      uses: actions/upload-artifact/merge@v4
+      with:
+        name: wheels
+        pattern: "*-py*"
 
   build_sdist:
     name: Build source distribution
@@ -51,4 +62,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
+          name: 'sdist.tar.gz'
           path: dist/online_monitor*.tar.gz
