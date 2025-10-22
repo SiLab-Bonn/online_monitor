@@ -4,7 +4,7 @@ import os
 import psutil
 import subprocess
 import logging
-from PyQt5 import QtWidgets
+from PyQt6 import QtWidgets
 
 
 from online_monitor.utils import settings

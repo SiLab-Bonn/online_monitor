@@ -73,9 +73,9 @@ This makes all converter / receiver / etc. instances within `path/to/plugin/fold
 # Custom receiver
 Have a look at [the examples](online_monitor/examples/receiver).
 When building your custom receiver, use `pyqtgraph` only for plotting-related tasks e.g. `pg.ImageItem` etc.
-Avoid using `pyqtgraph` for building generic widgets (especially the deprecated `QtGui` submodule), instead use `pyqt5` directly:
+Avoid using `pyqtgraph` for building generic widgets (especially the deprecated `QtGui` submodule), instead use `pyqt6` directly:
 ```
-from PyQt5 import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore
 
 my_custom_label = QtWidgets.QLabel("My label")
 my_custom_double_spinbox = QtWidgets.QDoubleSpinBox()
