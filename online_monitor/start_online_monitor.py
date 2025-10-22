@@ -46,7 +46,7 @@ def main():
 
 # Helper function to run code after OnlineMonitor Application exit
     def appExec():
-        app.exec_()
+        app.exec()
         # Stop other processes
         try:
             kill(producer_sim_process)
