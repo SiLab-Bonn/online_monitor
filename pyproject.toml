@@ -3,7 +3,7 @@ requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pymosa"
+name = "online_monitor"
 dynamic = ["version"]
 keywords = ['online monitor', 'real time', 'plots']
 license = { "text" = "MIT License" }
@@ -46,7 +46,7 @@ plugin_online_monitor = 'online_monitor.plugin_online_monitor:main'
 "Repository" = 'https://github.com/SiLab-Bonn/online_monitor'
 
 [tool.setuptools.dynamic]
-version = {attr = "online_monitor.__version__"}
+version = {attr = "online_monitor.__init__.__version__"}
 
 [tool.setuptools]
 packages = ["online_monitor"]
