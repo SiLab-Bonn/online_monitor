@@ -4,7 +4,7 @@ import os
 import psutil
 import subprocess
 import logging
-from PyQt5 import QtWidgets
+from PyQt6 import QtWidgets
 
 
 from online_monitor.utils import settings
@@ -46,7 +46,7 @@ def main():
 
 # Helper function to run code after OnlineMonitor Application exit
     def appExec():
-        app.exec_()
+        app.exec()
         # Stop other processes
         try:
             kill(producer_sim_process)

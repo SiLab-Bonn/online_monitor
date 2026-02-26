@@ -5,7 +5,7 @@ from zmq.utils import jsonapi
 import pyqtgraph as pg
 from pyqtgraph.dockarea import DockArea, Dock
 
-from PyQt5 import QtWidgets
+from PyQt6 import QtWidgets
 
 from online_monitor.utils import utils
 

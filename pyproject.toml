@@ -21,7 +21,7 @@ dependencies = [
     "pyyaml",  # configuration parsing
     "psutil", # to get process stats
     "pyqtgraph>=0.13",  # plotting library
-    "pyqt5>=5.15.10",
+    "PyQt6",
     "pytest",
     "matplotlib",  # generate colormaps for lookuptables
     "testfixtures",  # for unittests with logging output inspection
