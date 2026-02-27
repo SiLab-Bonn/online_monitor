@@ -70,7 +70,8 @@ jobs:
         with:
           qt: true
 
-      - name: Coverage report and upload  
+      - name: Coverage report and upload
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
